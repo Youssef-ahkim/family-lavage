@@ -1,1 +1,101 @@
 @import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #0070f3;
+  --color-brand-gold: #c5a059;
+  --font-heading: var(--font-geist-sans);
+}
+
+@layer base {
+  body {
+    @apply bg-black text-white antialiased selection:bg-brand-blue/30 selection:text-white scroll-smooth;
+  }
+
+  button {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-8 py-4 bg-brand-blue hover:bg-brand-blue/90 text-white font-bold rounded-xl transition-all active:scale-95 shadow-lg shadow-brand-blue/20 flex items-center justify-center;
+  }
+
+  .btn-outline-gold {
+    @apply px-8 py-4 border-2 border-brand-gold/50 hover:border-brand-gold text-brand-gold font-bold rounded-xl transition-all active:scale-95 bg-brand-gold/5 hover:bg-brand-gold/10 flex items-center justify-center;
+  }
+
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+
+  .glass-dark {
+    @apply bg-black/40 backdrop-blur-xl border-b border-white/5;
+  }
+
+  .section-heading {
+    @apply text-4xl md:text-6xl font-black italic tracking-tighter uppercase mb-6;
+  }
+}
+
+/* Custom Utilities */
+@layer utilities {
+  .text-gradient-blue {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-blue to-teal-400;
+  }
+
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-gold to-yellow-200;
+  }
+
+  .reveal {
+    animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Delay classes for sequential reveal */
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-500 {
+  animation-delay: 0.5s;
+}
