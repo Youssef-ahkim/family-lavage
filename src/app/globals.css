@@ -30,7 +30,7 @@
   }
 
   .glass-light {
-    @apply bg-white/70 backdrop-blur-xl border-b border-zinc-200/50;
+    @apply bg-white/90 backdrop-blur-2xl border-b border-zinc-200/80;
   }
 
   .glass-dark {

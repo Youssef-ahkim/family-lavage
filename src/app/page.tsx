@@ -178,14 +178,14 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/40 via-transparent to-transparent " />
 
-                <div className={`absolute bottom-8 ${dir === 'rtl' ? 'right-8 left-auto' : 'left-8 right-auto'} p-6 glass rounded-2xl border border-zinc-200/50 shadow-xl`}>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-brand-blue rounded-full flex items-center justify-center animate-float">
+                <div className={`absolute bottom-8 ${dir === 'rtl' ? 'right-8 left-auto' : 'left-8 right-auto'} p-6 glass-dark rounded-3xl border border-white/20 shadow-2xl backdrop-blur-xl`}>
+                  <div className={`flex items-center gap-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                    <div className="w-12 h-12 bg-brand-blue rounded-2xl flex items-center justify-center shadow-lg shadow-brand-blue/30 animate-pulse">
                       <Star className="text-white w-6 h-6 fill-current" />
                     </div>
                     <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
-                      <p className="font-bold text-zinc-900 uppercase text-xs tracking-widest">{t.hero.guarantee}</p>
-                      <p className="text-zinc-600 text-sm italic">{t.hero.subGuarantee}</p>
+                      <p className="font-black text-white uppercase text-xs tracking-[0.2em] mb-1">{t.hero.guarantee}</p>
+                      <p className="text-zinc-400 text-xs italic font-medium">{t.hero.subGuarantee}</p>
                     </div>
                   </div>
                 </div>

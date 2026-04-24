@@ -5,8 +5,12 @@ import Link from "next/link";
 import { Menu, X, Car, Globe } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
+import { usePathname } from "next/navigation";
 
 const Navbar = () => {
+  const pathname = usePathname();
+  const isBookingPage = pathname === "/booking";
+  
   const { language, setLanguage, dir } = useLanguage();
   const t = translations[language].nav;
   
@@ -22,10 +26,10 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { name: t.services, href: "#services" },
-    { name: t.process, href: "#process" },
-    { name: t.pricing, href: "#subscriptions" },
-    { name: t.contact, href: "#contact" },
+    { name: t.services, href: "/#services" },
+    { name: t.process, href: "/#process" },
+    { name: t.pricing, href: "/#subscriptions" },
+    { name: t.contact, href: "/#contact" },
   ];
 
   useEffect(() => {
@@ -93,11 +97,13 @@ const Navbar = () => {
               ))}
             </div>
 
-            <Link href="/booking">
-              <button className="px-6 py-2.5 bg-brand-blue text-white text-sm font-bold rounded-lg hover:bg-brand-blue/90 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
-                {t.book}
-              </button>
-            </Link>
+            {!isBookingPage && (
+              <Link href="/booking">
+                <button className="px-6 py-2.5 bg-brand-blue text-white text-sm font-bold rounded-lg hover:bg-brand-blue/90 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
+                  {t.book}
+                </button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -142,11 +148,13 @@ const Navbar = () => {
                   {link.name}
                 </Link>
               ))}
-              <Link href="/booking" className="w-full max-w-xs" onClick={() => setIsMobileMenuOpen(false)}>
-                <button className="w-full py-4 bg-brand-blue text-white font-bold rounded-xl shadow-lg shadow-brand-blue/20">
-                  {t.book}
-                </button>
-              </Link>
+              {!isBookingPage && (
+                <Link href="/booking" className="w-full max-w-xs" onClick={() => setIsMobileMenuOpen(false)}>
+                  <button className="w-full py-4 bg-brand-blue text-white font-bold rounded-xl shadow-lg shadow-brand-blue/20">
+                    {t.book}
+                  </button>
+                </Link>
+              )}
             </div>
           </div>
         </>

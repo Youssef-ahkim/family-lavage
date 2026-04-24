@@ -126,7 +126,7 @@ const BookingPage = () => {
                     {b.recommended}
                   </span>
                 )}
-                <div className={`w-14 h-14 rounded-2xl bg-white border border-zinc-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ${dir === 'rtl' ? 'mr-0 ml-auto' : ''}`}>
+                <div className={`w-14 h-14 rounded-2xl bg-white border border-zinc-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ${dir === 'rtl' ? 'ml-auto mr-0' : 'mr-auto ml-0'}`}>
                   <div className="text-brand-blue">{service.icon}</div>
                 </div>
                 <h3 className="text-2xl font-black uppercase italic tracking-tight mb-2">{service.title}</h3>
@@ -136,7 +136,7 @@ const BookingPage = () => {
                 </div>
                 <ul className="space-y-3">
                   {service.features.map((f, i) => (
-                    <li key={i} className={`flex items-center gap-3 text-sm text-zinc-500 font-medium ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                    <li key={i} className={`flex items-center gap-3 text-sm text-zinc-500 font-medium ${dir === 'rtl' ? 'flex-row-reverse text-right' : 'text-left'}`}>
                       <CheckCircle2 size={14} className="text-brand-blue shrink-0" />
                       <span>{f}</span>
                     </li>
@@ -153,9 +153,9 @@ const BookingPage = () => {
             <form className="space-y-8 bg-zinc-50 p-8 md:p-12 rounded-[3rem] border border-zinc-100">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-zinc-400 px-1">{b.form.fullname}</label>
+                  <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{b.form.fullname}</label>
                   <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5" />
+                    <User className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
                     <input
                       required
                       type="text"
@@ -163,14 +163,14 @@ const BookingPage = () => {
                       placeholder={b.form.placeholderName}
                       value={formData.fullname}
                       onChange={handleInputChange}
-                      className="w-full pl-12 pr-4 py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all"
+                      className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all`}
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-zinc-400 px-1">{b.form.phone}</label>
+                  <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{b.form.phone}</label>
                   <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5" />
+                    <Phone className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
                     <input
                       required
                       type="tel"
@@ -178,14 +178,14 @@ const BookingPage = () => {
                       placeholder={b.form.placeholderPhone}
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full pl-12 pr-4 py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all"
+                      className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all`}
                     />
                   </div>
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-zinc-400 px-1">{b.form.carModel}</label>
+                  <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{b.form.carModel}</label>
                   <div className="relative">
-                    <Car className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5" />
+                    <Car className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
                     <input
                       required
                       type="text"
@@ -193,56 +193,56 @@ const BookingPage = () => {
                       placeholder={b.form.placeholderCar}
                       value={formData.carModel}
                       onChange={handleInputChange}
-                      className="w-full pl-12 pr-4 py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all"
+                      className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all`}
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-zinc-400 px-1">{b.form.date}</label>
+                  <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{b.form.date}</label>
                   <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5" />
+                    <Calendar className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
                     <input
                       required
                       type="date"
                       name="date"
                       value={formData.date}
                       onChange={handleInputChange}
-                      className="w-full pl-12 pr-4 py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all"
+                      className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all`}
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-zinc-400 px-1">{b.form.time}</label>
+                  <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{b.form.time}</label>
                   <div className="relative">
-                    <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5" />
+                    <Clock className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
                     <input
                       required
                       type="time"
                       name="time"
                       value={formData.time}
                       onChange={handleInputChange}
-                      className="w-full pl-12 pr-4 py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all"
+                      className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all`}
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-between items-center pt-8">
+              <div className={`flex justify-between items-center pt-8 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="flex items-center gap-2 text-zinc-400 font-bold hover:text-zinc-950 transition-colors"
+                  className={`flex items-center gap-2 text-zinc-400 font-bold hover:text-zinc-950 transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
                 >
-                  <ChevronLeft size={20} /> {language === 'fr' ? 'Retour' : (language === 'ar' ? 'رجوع' : 'Back')}
+                  <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> {language === 'fr' ? 'Retour' : (language === 'ar' ? 'رجوع' : 'Back')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep(3)}
                   disabled={!formData.fullname || !formData.phone || !formData.carModel || !formData.date || !formData.time}
-                  className="btn-primary group disabled:opacity-50 disabled:hover:scale-100"
+                  className={`btn-primary group disabled:opacity-50 disabled:hover:scale-100 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
                 >
                   {language === 'fr' ? 'Suivant' : (language === 'ar' ? 'التالي' : 'Next')}
-                  <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                  <ChevronRight size={20} className={`transition-transform ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
                 </button>
               </div>
             </form>
@@ -253,7 +253,7 @@ const BookingPage = () => {
         {step === 3 && (
           <div className="reveal">
             <div className="bg-zinc-50 p-8 md:p-12 rounded-[3rem] border border-zinc-100">
-              <div className="flex items-center gap-4 mb-10">
+              <div className={`flex items-center gap-4 mb-10 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                 <div className="w-12 h-12 bg-brand-blue rounded-full flex items-center justify-center">
                   <ClipboardCheck className="text-white w-6 h-6" />
                 </div>
@@ -262,52 +262,52 @@ const BookingPage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
                 <div className="space-y-6">
-                  <div className="flex justify-between border-b border-zinc-200 pb-4">
+                  <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                     <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{b.form.fullname}</span>
                     <span className="font-black text-sm uppercase">{formData.fullname}</span>
                   </div>
-                  <div className="flex justify-between border-b border-zinc-200 pb-4">
+                  <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                     <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{b.form.phone}</span>
                     <span className="font-black text-sm uppercase">{formData.phone}</span>
                   </div>
-                  <div className="flex justify-between border-b border-zinc-200 pb-4">
+                  <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                     <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{b.vehicle}</span>
                     <span className="font-black text-sm uppercase">{formData.carModel}</span>
                   </div>
                 </div>
                 <div className="space-y-6">
-                  <div className="flex justify-between border-b border-zinc-200 pb-4">
+                  <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                     <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{language === 'fr' ? 'Date & Heure' : 'Date & Time'}</span>
                     <span className="font-black text-sm uppercase">{formData.date} | {formData.time}</span>
                   </div>
-                  <div className="flex justify-between border-b border-zinc-200 pb-4">
+                  <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                     <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{b.steps.service}</span>
-                    <span className="font-black text-sm uppercase text-brand-blue">{selectedService === 'vip' ? t.pricing.plans.vip.name : (language === 'fr' ? 'Lavage Simple' : 'Basic Wash')}</span>
+                    <span className="font-black text-sm uppercase text-brand-blue">{selectedService === 'vip' ? t.pricing.plans.vip.name : (language === 'fr' ? 'Lavage Simple' : (language === 'ar' ? 'غسيل عادي' : 'Basic Wash'))}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white p-8 rounded-2xl border border-zinc-200 flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
-                <div>
+              <div className={`bg-white p-8 rounded-2xl border border-zinc-200 flex flex-col md:flex-row justify-between items-center gap-6 mb-12 ${dir === 'rtl' ? 'md:flex-row-reverse' : ''}`}>
+                <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
                   <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">{b.summary.total}</p>
-                  <div className="flex items-baseline gap-2">
+                  <div className={`flex items-baseline gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                     <span className="text-5xl font-black tracking-tighter text-zinc-950">{selectedService === 'vip' ? '600' : '100'}</span>
                     <span className="text-sm font-black text-zinc-400 uppercase">DH</span>
                   </div>
                 </div>
-                <div className="text-center md:text-right">
+                <div className={`text-center ${dir === 'rtl' ? 'md:text-left' : 'md:text-right'}`}>
                   <p className="text-zinc-500 text-sm italic mb-2">{b.summary.atLocation}</p>
                   <p className="text-xs font-black text-brand-blue uppercase tracking-widest">Marjane Casablanca</p>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+              <div className={`flex flex-col sm:flex-row justify-between items-center gap-6 ${dir === 'rtl' ? 'sm:flex-row-reverse' : ''}`}>
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="flex items-center gap-2 text-zinc-400 font-bold hover:text-zinc-950 transition-colors"
+                  className={`flex items-center gap-2 text-zinc-400 font-bold hover:text-zinc-950 transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
                 >
-                  <ChevronLeft size={20} /> {language === 'fr' ? 'Retour' : (language === 'ar' ? 'رجوع' : 'Back')}
+                  <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> {language === 'fr' ? 'Retour' : (language === 'ar' ? 'رجوع' : 'Back')}
                 </button>
                 <button
                   onClick={handleSubmit}
