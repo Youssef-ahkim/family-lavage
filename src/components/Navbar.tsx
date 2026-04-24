@@ -44,9 +44,9 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-        ? "py-4 glass-light shadow-xl shadow-zinc-200/50"
-        : "py-8 bg-transparent"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
+        ? "py-3 glass-light shadow-lg shadow-zinc-200/20"
+        : "py-6 bg-white/40 backdrop-blur-sm"
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

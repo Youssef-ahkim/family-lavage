@@ -8,7 +8,7 @@
 
 @layer base {
   body {
-    @apply bg-black text-white antialiased selection:bg-brand-blue/30 selection:text-white scroll-smooth;
+    @apply bg-white text-zinc-950 antialiased selection:bg-brand-blue/30 selection:text-white scroll-smooth;
   }
 
   button {
@@ -27,6 +27,10 @@
 
   .glass {
     @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+
+  .glass-light {
+    @apply bg-white/70 backdrop-blur-xl border-b border-zinc-200/50;
   }
 
   .glass-dark {
