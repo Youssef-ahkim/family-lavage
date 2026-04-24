@@ -135,15 +135,19 @@ export default function Home() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-5 mb-16">
-                <button className="btn-primary group">
-                  {t.hero.btnSimple}
-                  <div className="w-1.5 h-1.5 rounded-full bg-white ml-3 opacity-50 group-hover:scale-150 transition-transform" />
-                  <span className="text-xs font-medium ml-2">(100DH)</span>
-                </button>
-                <button className="btn-outline-gold group gap-3">
-                  {t.hero.btnVip}
-                  <ArrowRight size={18} className={`${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'} transition-transform`} />
-                </button>
+                <Link href="/booking">
+                  <button className="btn-primary group w-full sm:w-auto">
+                    {t.hero.btnSimple}
+                    <div className="w-1.5 h-1.5 rounded-full bg-white ml-3 opacity-50 group-hover:scale-150 transition-transform" />
+                    <span className="text-xs font-medium ml-2">(100DH)</span>
+                  </button>
+                </Link>
+                <Link href="/booking">
+                  <button className="btn-outline-gold group gap-3 w-full sm:w-auto">
+                    {t.hero.btnVip}
+                    <ArrowRight size={18} className={`${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'} transition-transform`} />
+                  </button>
+                </Link>
               </div>
 
               <div className="grid grid-cols-3 gap-4 pt-8 border-t border-zinc-200">
@@ -295,14 +299,16 @@ export default function Home() {
                   ))}
                 </ul>
 
-                <button className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${plan.gold
-                  ? 'bg-brand-gold text-black hover:bg-white hover:scale-105 active:scale-95'
-                  : plan.name.includes('Mois') || plan.name.includes('Month') || plan.name.includes('شهري')
-                    ? 'bg-brand-blue text-white hover:bg-brand-blue/80 hover:scale-105 active:scale-95'
-                    : 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200 hover:scale-105 active:scale-95'
-                  }`}>
-                  {plan.cta}
-                </button>
+                <Link href="/booking" className="w-full">
+                  <button className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${plan.gold
+                    ? 'bg-brand-gold text-black hover:bg-white hover:scale-105 active:scale-95'
+                    : plan.name.includes('Mois') || plan.name.includes('Month') || plan.name.includes('شهري')
+                      ? 'bg-brand-blue text-white hover:bg-brand-blue/80 hover:scale-105 active:scale-95'
+                      : 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200 hover:scale-105 active:scale-95'
+                    }`}>
+                    {plan.cta}
+                  </button>
+                </Link>
               </div>
             ))}
           </div>

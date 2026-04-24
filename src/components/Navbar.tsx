@@ -93,9 +93,11 @@ const Navbar = () => {
               ))}
             </div>
 
-            <button className="px-6 py-2.5 bg-brand-blue text-white text-sm font-bold rounded-lg hover:bg-brand-blue/90 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
-              {t.book}
-            </button>
+            <Link href="/booking">
+              <button className="px-6 py-2.5 bg-brand-blue text-white text-sm font-bold rounded-lg hover:bg-brand-blue/90 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
+                {t.book}
+              </button>
+            </Link>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -140,9 +142,11 @@ const Navbar = () => {
                   {link.name}
                 </Link>
               ))}
-              <button className="w-full max-w-xs py-4 bg-brand-blue text-white font-bold rounded-xl shadow-lg shadow-brand-blue/20">
-                {t.book}
-              </button>
+              <Link href="/booking" className="w-full max-w-xs" onClick={() => setIsMobileMenuOpen(false)}>
+                <button className="w-full py-4 bg-brand-blue text-white font-bold rounded-xl shadow-lg shadow-brand-blue/20">
+                  {t.book}
+                </button>
+              </Link>
             </div>
           </div>
         </>
