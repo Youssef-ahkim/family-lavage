@@ -133,32 +133,74 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <>
-          {/* Backdrop Blur Overlay */}
-          <div className="md:hidden absolute top-full left-0 right-0 glass-light border-t border-zinc-200 animate-in slide-in-from-top duration-300">
-            <div className="px-4 py-12 flex flex-col gap-6 items-center text-center">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-xl font-bold text-zinc-800 hover:text-brand-blue"
+      <div
+        className={`fixed inset-0 z-50 bg-white transition-all duration-500 md:hidden ${isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Mobile Menu Header */}
+          <div className="flex justify-between items-center px-4 py-6 border-b border-zinc-100">
+            <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2">
+              <div className="p-2 bg-brand-blue rounded-lg">
+                <Car className="text-white w-6 h-6" />
+              </div>
+              <span className="text-xl font-black tracking-tighter italic">
+                FAMILY <span className="text-brand-blue">LAVAGE</span>
+              </span>
+            </Link>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="p-2 text-zinc-600 hover:text-zinc-950 bg-zinc-100 rounded-full"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          {/* Mobile Menu Links */}
+          <div className="flex-1 flex flex-col items-center justify-center gap-8 px-6">
+            {navLinks.map((link, i) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`text-3xl font-black uppercase italic tracking-tighter transition-all duration-300 hover:text-brand-blue ${isMobileMenuOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+                  }`}
+                style={{ transitionDelay: `${i * 100}ms` }}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* Mobile Menu Footer */}
+          <div className="p-8 border-t border-zinc-100">
+            {!isBookingPage && (
+              <Link href="/booking" onClick={() => setIsMobileMenuOpen(false)}>
+                <button className="w-full py-5 bg-brand-blue text-white font-black uppercase tracking-[0.2em] text-sm rounded-2xl shadow-xl shadow-brand-blue/20 active:scale-95 transition-all">
+                  {t.book}
+                </button>
+              </Link>
+            )}
+            <div className="mt-8 flex justify-center gap-4">
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => {
+                    setLanguage(lang.code);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`px-4 py-2 text-xs font-black rounded-lg border transition-all ${language === lang.code
+                    ? "bg-brand-blue border-brand-blue text-white shadow-lg shadow-brand-blue/20"
+                    : "border-zinc-200 text-zinc-400 hover:border-zinc-400 hover:text-zinc-900"
+                    }`}
                 >
-                  {link.name}
-                </Link>
+                  {lang.label}
+                </button>
               ))}
-              {!isBookingPage && (
-                <Link href="/booking" className="w-full max-w-xs" onClick={() => setIsMobileMenuOpen(false)}>
-                  <button className="w-full py-4 bg-brand-blue text-white font-bold rounded-xl shadow-lg shadow-brand-blue/20">
-                    {t.book}
-                  </button>
-                </Link>
-              )}
             </div>
           </div>
-        </>
-      )}
+        </div>
+      </div>
     </nav>
   );
 };
