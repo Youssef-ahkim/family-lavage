@@ -5,7 +5,9 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
-import { ChevronLeft, ChevronRight, CheckCircle2, Car, Sparkles, Droplets, Zap, ShieldCheck, Clock, Calendar, User, Phone, ClipboardCheck } from "lucide-react";
+import pb from "@/lib/pocketbase";
+import { submitBooking } from "@/app/actions/booking";
+import { ChevronLeft, ChevronRight, CheckCircle2, Car, Sparkles, Droplets, Zap, ShieldCheck, Clock, Calendar, User, Phone, ClipboardCheck, AlertCircle, Loader2 } from "lucide-react";
 
 const BookingPage = () => {
   const { language, dir } = useLanguage();
@@ -21,7 +23,11 @@ const BookingPage = () => {
     date: "",
     time: "",
   });
+  const [hp, setHp] = useState(""); // Honeypot
+  const [startTime] = useState(Date.now()); // Load time for anti-spam
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const services = [
     {
@@ -49,10 +55,53 @@ const BookingPage = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    // Client-side rate limit check
+    const lastSubmit = localStorage.getItem('last_booking');
+    if (lastSubmit && Date.now() - parseInt(lastSubmit) < 60000) { // 1 minute limit
+      setError(language === 'fr' ? 'Veuillez attendre une minute avant de réserver à nouveau.' : (language === 'ar' ? 'يرجى الانتظار دقيقة قبل الحجز مرة أخرى.' : 'Please wait a minute before booking again.'));
+      return;
+    }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitted(true);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const bookingDateTime = new Date(`${formData.date}T${formData.time}`);
+
+      const result = await submitBooking({
+        full_name: formData.fullname,
+        phone: formData.phone,
+        plate_number: formData.carModel,
+        service_type: selectedService === "vip" ? "VIP" : "Simple",
+        price: selectedService === "vip" ? 600 : 100,
+        date: bookingDateTime.toISOString(),
+        notes: `Selected service: ${selectedService}. Language: ${language}.`,
+        hp: hp, // Honeypot field
+        ts: startTime.toString(), // Time when page was opened
+      });
+
+      if (result.success) {
+        localStorage.setItem('last_booking', Date.now().toString());
+        // Save ID in local storage as a backup for the "My Bookings" page
+        const existing = localStorage.getItem('my_booking_ids') || "";
+        const bookingId = result.id as string; 
+        const updated = existing ? `${existing},${bookingId}` : bookingId;
+        localStorage.setItem('my_booking_ids', updated);
+        
+        setIsSubmitted(true);
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (err: any) {
+      console.error("Booking error:", err);
+      setError(err.message || (language === 'fr' ? 'Erreur de connexion.' : 'Connection error.'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (isSubmitted) {
@@ -150,7 +199,19 @@ const BookingPage = () => {
         {/* Step 2: Form Details */}
         {step === 2 && (
           <div className="reveal">
-            <form className="space-y-8 bg-zinc-50 p-8 md:p-12 rounded-[3rem] border border-zinc-100">
+            <form className="space-y-8 bg-zinc-50 p-8 md:p-12 rounded-[3rem] border border-zinc-100 relative">
+              {/* Honeypot field - hidden from users */}
+              <div className="absolute -top-[1000px] left-0 opacity-0 pointer-events-none" aria-hidden="true">
+                <input
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  name="website_url"
+                  value={hp}
+                  onChange={(e) => setHp(e.target.value)}
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-2">
                   <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{b.form.fullname}</label>
@@ -301,6 +362,13 @@ const BookingPage = () => {
                 </div>
               </div>
 
+              {error && (
+                <div className={`mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 font-medium ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                  <AlertCircle className="shrink-0 w-5 h-5" />
+                  <p>{error}</p>
+                </div>
+              )}
+
               <div className={`flex flex-col sm:flex-row justify-between items-center gap-6 ${dir === 'rtl' ? 'sm:flex-row-reverse' : ''}`}>
                 <button
                   type="button"
@@ -311,9 +379,17 @@ const BookingPage = () => {
                 </button>
                 <button
                   onClick={handleSubmit}
-                  className="w-full sm:w-auto px-12 py-5 bg-brand-blue text-white font-black uppercase tracking-[0.2em] text-sm rounded-2xl hover:bg-brand-blue/80 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-brand-blue/20"
+                  disabled={loading}
+                  className="w-full sm:w-auto px-12 py-5 bg-brand-blue text-white font-black uppercase tracking-[0.2em] text-sm rounded-2xl hover:bg-brand-blue/80 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-brand-blue/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                 >
-                  {b.submit}
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      {language === 'fr' ? 'Traitement...' : (language === 'ar' ? 'جاري المعالجة...' : 'Processing...')}
+                    </>
+                  ) : (
+                    b.submit
+                  )}
                 </button>
               </div>
             </div>

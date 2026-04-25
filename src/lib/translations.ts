@@ -6,6 +6,7 @@ export const translations = {
       pricing: "Tarifs",
       contact: "Contact",
       book: "Réserver",
+      myBookings: "Mes Réservations",
     },
     hero: {
       title: "LAVEZ PENDANT",
@@ -29,20 +30,20 @@ export const translations = {
       viewPricing: "Voir les prix",
       items: [
         {
-          title: "Lavage Vapeur",
-          desc: "Nettoyage profond pour le moteur et l'intérieur de la voiture.",
+          title: "Polissage Intérieur",
+          desc: "Nettoyage complet des sièges, du tableau de bord et du sol pour un aspect neuf.",
         },
         {
-          title: "Lavage Extérieur",
-          desc: "Protection de la peinture et brillance avec des produits de qualité.",
+          title: "Polissage Extérieur",
+          desc: "Protection de la peinture et brillance extrême avec des produits de haute qualité.",
         },
         {
-          title: "Lavage Intérieur",
-          desc: "Nettoyage complet des sièges, du tableau de bord et du sol.",
+          title: "Parfum Spécial",
+          desc: "Élimination des odeurs et ajout d'une fragrance premium durable.",
         },
         {
-          title: "Bonne Odeur",
-          desc: "On enlève les mauvaises odeurs et on ajoute un parfum spécial.",
+          title: "Nettoyage Vapeur",
+          desc: "Désinfection et nettoyage profond pour le moteur et l'habitacle.",
         },
       ],
     },
@@ -86,20 +87,22 @@ export const translations = {
       },
       plans: {
         once: {
-          name: "Une seule fois",
-          features: ["Lavage extérieur", "Lavage intérieur", "Parfum spécial"],
+          name: "Paiement à la séance",
+          features: ["Polissage intérieur", "Polissage extérieur"],
         },
         month: {
-          name: "Abonnement Mois",
-          features: ["1 lavage par semaine", "Lavage extérieur", "Lavage intérieur", "Parfum spécial"],
-        },
-        vip: {
-          name: "Lavage VIP",
-          features: ["Lavage vapeur complet", "Lavage moteur", "Cire de luxe", "Parfum spécial"],
+          name: "Abonnement Mensuel",
+          subPrice: "Une fois par semaine",
+          features: ["Polissage intérieur", "Polissage extérieur"],
         },
         year: {
-          name: "Abonnement Année",
-          features: ["Lavages toute l'année", "Lavage vapeur inclus", "Lavage moteur", "Cire de luxe"],
+          name: "Abonnement Annuel",
+          subPrice: "Une fois par semaine",
+          features: ["Polissage intérieur", "Polissage extérieur", "Parfum spécial"],
+        },
+        vip: {
+          name: "Service VIP",
+          features: ["Polissage intérieur", "Polissage extérieur", "Parfum spécial", "Nettoyage vapeur profond", "Lavage moteur", "Nettoyage premium"],
         },
       },
       ctas: {
@@ -154,6 +157,16 @@ export const translations = {
       submit: "Confirmer la Réservation",
       success: "Réservation confirmée ! On vous attend au parking Marjane.",
     },
+    myBookings: {
+      title: "Mes Réservations",
+      noBookings: "Vous n'avez pas encore de réservations.",
+      cancel: "Annuler",
+      cancelling: "Annulation...",
+      cancelled: "Annulée",
+      confirmCancel: "Êtes-vous sûr de vouloir annuler cette réservation ?",
+      status: "Statut",
+      backHome: "Retour à l'accueil",
+    },
   },
   en: {
     nav: {
@@ -162,6 +175,7 @@ export const translations = {
       pricing: "Pricing",
       contact: "Contact",
       book: "Book Now",
+      myBookings: "My Bookings",
     },
     hero: {
       title: "WASH WHILE",
@@ -185,20 +199,20 @@ export const translations = {
       viewPricing: "View pricing",
       items: [
         {
-          title: "Steam Wash",
-          desc: "Deep cleaning for the engine and the interior of the car.",
+          title: "Interior Polishing",
+          desc: "Complete cleaning of seats, dashboard, and floor for a factory-fresh look.",
         },
         {
-          title: "Exterior Wash",
-          desc: "Paint protection and shine with quality products.",
+          title: "Exterior Polishing",
+          desc: "Paint protection and extreme shine using high-quality professional products.",
         },
         {
-          title: "Interior Wash",
-          desc: "Complete cleaning of the seats, dashboard, and floor.",
+          title: "Special Scent",
+          desc: "Effective odor removal and addition of a long-lasting premium fragrance.",
         },
         {
-          title: "Fresh Scent",
-          desc: "We remove bad odors and add a special fragrance.",
+          title: "Steam Cleaning",
+          desc: "Deep cleaning and disinfection for both the engine and car interior.",
         },
       ],
     },
@@ -242,20 +256,22 @@ export const translations = {
       },
       plans: {
         once: {
-          name: "One Time",
-          features: ["Exterior wash", "Interior wash", "Special fragrance"],
+          name: "Pay per service",
+          features: ["Interior polishing", "Exterior polishing"],
         },
         month: {
-          name: "Monthly Sub",
-          features: ["1 wash per week", "Exterior wash", "Interior wash", "Special fragrance"],
-        },
-        vip: {
-          name: "VIP Wash",
-          features: ["Full steam wash", "Engine wash", "Luxury wax", "Special fragrance"],
+          name: "Monthly Subscription",
+          subPrice: "One wash per week",
+          features: ["Interior polishing", "Exterior polishing"],
         },
         year: {
-          name: "Yearly Sub",
-          features: ["Year-round washes", "Steam wash included", "Engine wash", "Luxury wax"],
+          name: "Annual Subscription",
+          subPrice: "One wash per week",
+          features: ["Interior polishing", "Exterior polishing", "Special scent"],
+        },
+        vip: {
+          name: "VIP Service",
+          features: ["Interior polishing", "Exterior polishing", "Special scent", "Deep steam cleaning", "Engine wash", "Premium quality cleaning"],
         },
       },
       ctas: {
@@ -310,6 +326,16 @@ export const translations = {
       submit: "Confirm Booking",
       success: "Booking confirmed! We are waiting for you at Marjane parking.",
     },
+    myBookings: {
+      title: "My Bookings",
+      noBookings: "You don't have any bookings yet.",
+      cancel: "Cancel",
+      cancelling: "Cancelling...",
+      cancelled: "Cancelled",
+      confirmCancel: "Are you sure you want to cancel this booking?",
+      status: "Status",
+      backHome: "Back to Home",
+    },
   },
   ar: {
     nav: {
@@ -318,6 +344,7 @@ export const translations = {
       pricing: "الأسعار",
       contact: "اتصل بنا",
       book: "احجز الآن",
+      myBookings: "حجوزاتي",
     },
     hero: {
       title: "اغسل سيارتك",
@@ -341,20 +368,20 @@ export const translations = {
       viewPricing: "شاهد الأسعار",
       items: [
         {
+          title: "تلميع داخلي",
+          desc: "تنظيف كامل للمقاعد ولوحة القيادة والأرضية لتبدو سيارتك كأنها جديدة.",
+        },
+        {
+          title: "تلميع خارجي",
+          desc: "حماية الطلاء واللمعان الفائق باستخدام منتجات احترافية عالية الجودة.",
+        },
+        {
+          title: "معطر خاص",
+          desc: "إزالة الروائح الكريهة وإضافة عطر فاخر يدوم طويلاً.",
+        },
+        {
           title: "غسيل بالبخار",
-          desc: "تنظيف عميق للمحرك والمقصورة الداخلية للسيارة.",
-        },
-        {
-          title: "غسيل خارجي",
-          desc: "حماية الطلاء واللمعان بمنتجات عالية الجودة.",
-        },
-        {
-          title: "تنظيف داخلي",
-          desc: "تنظيف كامل للمقاعد ولوحة القيادة والأرضية.",
-        },
-        {
-          title: "رائحة زكية",
-          desc: "نزيل الروائح الكريهة ونضيف عطراً خاصاً.",
+          desc: "تنظيف عميق وتعقيم للمحرك والمقصورة الداخلية للسيارة.",
         },
       ],
     },
@@ -398,20 +425,22 @@ export const translations = {
       },
       plans: {
         once: {
-          name: "مرة واحدة",
-          features: ["غسيل خارجي", "غسيل داخلي", "عطر خاص"],
+          name: "الدفع عند الخدمة",
+          features: ["تلميع داخلي", "تلميع خارجي"],
         },
         month: {
           name: "اشتراك شهري",
-          features: ["غسيل واحد كل أسبوع", "غسيل خارجي", "غسيل داخلي", "عطر خاص"],
-        },
-        vip: {
-          name: "غسيل VIP",
-          features: ["غسيل بخار كامل", "غسيل المحرك", "شمع فاخر", "عطر خاص"],
+          subPrice: "يوم في كل أسبوع",
+          features: ["تلميع داخلي", "تلميع خارجي"],
         },
         year: {
           name: "اشتراك سنوي",
-          features: ["غسيل طوال العام", "يشمل الغسيل بالبخار", "غسيل المحرك", "شمع فاخر"],
+          subPrice: "يوم في كل أسبوع",
+          features: ["تلميع داخلي", "تلميع خارجي", "معطر خاص"],
+        },
+        vip: {
+          name: "خدمة VIP",
+          features: ["تلميع داخلي", "تلميع خارجي", "معطر خاص", "التنظيف العميق بالبخار", "غسل المحرك", "تنظيف فاخر بمواد عالية الجودة"],
         },
       },
       ctas: {
@@ -465,6 +494,16 @@ export const translations = {
       vehicle: "المركبة",
       submit: "تأكيد الحجز",
       success: "تم تأكيد الحجز! نحن في انتظاركم في موقف مرجان.",
+    },
+    myBookings: {
+      title: "حجوزاتي",
+      noBookings: "ليس لديك أي حجوزات بعد.",
+      cancel: "إلغاء",
+      cancelling: "جاري الإلغاء...",
+      cancelled: "ملغى",
+      confirmCancel: "هل أنت متأكد أنك تريد إلغاء هذا الحجز؟",
+      status: "الحالة",
+      backHome: "العودة للرئيسية",
     },
   },
 };

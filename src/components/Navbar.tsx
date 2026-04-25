@@ -30,6 +30,7 @@ const Navbar = () => {
     { name: t.process, href: "/#process" },
     { name: t.pricing, href: "/#subscriptions" },
     { name: t.contact, href: "/#contact" },
+    { name: t.myBookings, href: "/my-bookings" },
   ];
 
   useEffect(() => {

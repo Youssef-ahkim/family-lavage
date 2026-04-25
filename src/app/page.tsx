@@ -67,6 +67,7 @@ export default function Home() {
       price: "100",
       period: t.pricing.perWash,
       features: t.pricing.plans.once.features,
+      subPrice: (t.pricing.plans.once as any).subPrice,
       cta: t.pricing.ctas.book,
       accent: "border-white/10",
     },
@@ -75,27 +76,30 @@ export default function Home() {
       price: "350",
       period: t.pricing.perMonth,
       features: t.pricing.plans.month.features,
+      subPrice: (t.pricing.plans.month as any).subPrice,
       cta: t.pricing.ctas.subscribe,
       accent: "border-brand-blue/50 ring-1 ring-brand-blue/30",
       badge: t.pricing.badges.mostChosen,
-    },
-    {
-      name: t.pricing.plans.vip.name,
-      price: "600",
-      period: t.pricing.perWash,
-      features: t.pricing.plans.vip.features,
-      cta: t.pricing.ctas.takeVip,
-      accent: "border-brand-gold ring-2 ring-brand-gold/50",
-      badge: t.pricing.badges.luxe,
-      gold: true,
     },
     {
       name: t.pricing.plans.year.name,
       price: "3700",
       period: t.pricing.perYear,
       features: t.pricing.plans.year.features,
+      subPrice: (t.pricing.plans.year as any).subPrice,
       cta: t.pricing.ctas.takeYear,
       accent: "border-white/20",
+    },
+    {
+      name: t.pricing.plans.vip.name,
+      price: "600",
+      period: t.pricing.perWash,
+      features: t.pricing.plans.vip.features,
+      subPrice: (t.pricing.plans.vip as any).subPrice,
+      cta: t.pricing.ctas.takeVip,
+      accent: "border-brand-gold ring-2 ring-brand-gold/50",
+      badge: t.pricing.badges.luxe,
+      gold: true,
     },
   ];
 
@@ -280,12 +284,19 @@ export default function Home() {
 
                 <h3 className={`text-xl font-black mb-6 uppercase tracking-tight italic ${plan.gold ? 'text-brand-gold' : ''}`}>{plan.name}</h3>
 
-                <div className="flex items-baseline justify-center gap-1 mb-10">
-                  <span className="text-5xl font-black tracking-tighter text-zinc-900">{plan.price}</span>
-                  <div className="flex flex-col items-start leading-none">
-                    <span className="text-xs font-bold text-zinc-400 uppercase">DH</span>
-                    <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">{plan.period}</span>
+                <div className="flex flex-col items-center mb-10">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-5xl font-black tracking-tighter text-zinc-900">{plan.price}</span>
+                    <div className="flex flex-col items-start leading-none">
+                      <span className="text-xs font-bold text-zinc-400 uppercase">DH</span>
+                      <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">{plan.period}</span>
+                    </div>
                   </div>
+                  {plan.subPrice && (
+                    <div className="mt-3 bg-brand-gold/10 text-brand-gold text-[10px] font-black py-1.5 px-4 rounded-full uppercase tracking-widest">
+                      {plan.subPrice}
+                    </div>
+                  )}
                 </div>
 
                 <div className="h-px w-full bg-zinc-100 mb-10" />
