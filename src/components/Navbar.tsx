@@ -115,6 +115,8 @@ const Navbar = () => {
             {isAuthenticated ? (
               <button 
                 onClick={async () => {
+                  setIsAuthenticated(false);
+                  document.cookie = "pb_logged_in=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                   await logout();
                 }} 
                 className="text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
@@ -186,6 +188,8 @@ const Navbar = () => {
               {isAuthenticated ? (
                 <button 
                   onClick={async () => {
+                    setIsAuthenticated(false);
+                    document.cookie = "pb_logged_in=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                     await logout();
                   }} 
                   className="text-xl font-bold text-red-500 hover:text-red-600 mt-4"

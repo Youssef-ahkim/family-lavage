@@ -61,8 +61,8 @@ export async function updateBookingStatus(bookingId: string, newStatus: string) 
     revalidatePath('/my-bookings');
     return { success: true };
   } catch (error: any) {
-    console.error("Admin updateBookingStatus error:", error);
-    return { success: false, error: error.message };
+    console.error("Admin updateBookingStatus error:", error.response || error);
+    return { success: false, error: error.message, details: error.response };
   }
 }
 
@@ -75,6 +75,37 @@ export async function deleteBooking(bookingId: string) {
   } catch (error: any) {
     console.error("Admin deleteBooking error:", error);
     return { success: false, error: error.message };
+  }
+}
+
+export async function getAllUsers(page = 1, perPage = 20, searchQuery = '') {
+  try {
+    await authenticateAdmin();
+    const filters: string[] = [];
+    if (searchQuery) {
+      const q = searchQuery.replace(/"/g, '\\"');
+      filters.push(`(name ~ "${q}" || full_name ~ "${q}" || email ~ "${q}" || phone ~ "${q}" || id ~ "${q}")`);
+    }
+    const filter = filters.join(' && ');
+
+    const options: any = { 
+      sort: '-created',
+      requestKey: null,
+      fetch: (url: string, config: any) => fetch(url, { ...config, cache: 'no-store' })
+    };
+    if (filter) options.filter = filter;
+
+    const records = await pb.collection('users').getList(page, perPage, options);
+    return {
+      success: true,
+      items: JSON.parse(JSON.stringify(records.items)),
+      totalItems: records.totalItems,
+      totalPages: records.totalPages,
+      page: records.page,
+    };
+  } catch (error: any) {
+    console.error("Admin getAllUsers error:", error.response || error);
+    return { success: false, error: error.message, details: error.response, items: [], totalItems: 0, totalPages: 0, page: 1 };
   }
 }
 

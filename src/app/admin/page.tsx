@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { verifyAdmin, getAllBookings, updateBookingStatus, deleteBooking, getStats } from "@/app/actions/admin";
+import { verifyAdmin, getAllBookings, updateBookingStatus, deleteBooking, getStats, getAllUsers } from "@/app/actions/admin";
 import {
   Shield, ShieldAlert, Loader2, Calendar, Clock, Car, User, Phone,
   CheckCircle2, XCircle, AlertCircle, Trash2, ChevronLeft, ChevronRight,
@@ -34,7 +34,25 @@ type Stats = {
   totalRevenue: number;
 };
 
+type UserItem = {
+  id: string;
+  name: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  plate: string;
+  role: string;
+  created: string;
+};
+
 export default function AdminPage() {
+  const [activeTab, setActiveTab] = useState<"bookings" | "users">("bookings");
+  const [users, setUsers] = useState<UserItem[]>([]);
+  const [usersPage, setUsersPage] = useState(1);
+  const [totalUsersPages, setTotalUsersPages] = useState(1);
+  const [totalUsersItems, setTotalUsersItems] = useState(0);
+  const [usersSearchInput, setUsersSearchInput] = useState("");
+  const [usersSearchQuery, setUsersSearchQuery] = useState("");
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [bookings, setBookings] = useState<BookingItem[]>([]);
@@ -85,9 +103,29 @@ export default function AdminPage() {
     }
   }, [isAdmin, page, statusFilter, searchQuery]);
 
+  const fetchUsersData = useCallback(async () => {
+    if (!isAdmin) return;
+    setRefreshing(true);
+    try {
+      const res = await getAllUsers(usersPage, 15, usersSearchQuery);
+      if (res.success) {
+        setUsers(res.items as UserItem[]);
+        setTotalUsersPages(res.totalPages);
+        setTotalUsersItems(res.totalItems);
+      }
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [isAdmin, usersPage, usersSearchQuery]);
+
   useEffect(() => {
-    if (isAdmin) fetchData();
-  }, [isAdmin, fetchData]);
+    if (isAdmin) {
+      if (activeTab === "bookings") fetchData();
+      if (activeTab === "users") fetchUsersData();
+    }
+  }, [isAdmin, activeTab, fetchData, fetchUsersData]);
 
   const handleStatusChange = async (bookingId: string, newStatus: string) => {
     setUpdatingId(bookingId);
@@ -95,6 +133,8 @@ export default function AdminPage() {
     if (result.success) {
       setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
       fetchData(); // refresh stats
+    } else {
+      alert("Failed to update booking: " + (result.details?.message || result.error));
     }
     setUpdatingId(null);
   };
@@ -114,6 +154,12 @@ export default function AdminPage() {
     e.preventDefault();
     setSearchQuery(searchInput);
     setPage(1);
+  };
+
+  const handleUsersSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setUsersSearchQuery(usersSearchInput);
+    setUsersPage(1);
   };
 
   const formatDate = (dateStr: string) => {
@@ -221,6 +267,20 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* Tabs */}
+        <div className="flex items-center gap-4 border-b border-zinc-800/50 pb-4 mb-8">
+          <button onClick={() => setActiveTab("bookings")} className={`px-4 py-2 font-black uppercase text-sm tracking-widest transition-all ${activeTab === 'bookings' ? 'text-brand-blue border-b-2 border-brand-blue' : 'text-zinc-500 hover:text-zinc-300'}`}>
+            <Calendar className="w-4 h-4 inline-block mr-2 -mt-1" />
+            Bookings
+          </button>
+          <button onClick={() => setActiveTab("users")} className={`px-4 py-2 font-black uppercase text-sm tracking-widest transition-all ${activeTab === 'users' ? 'text-brand-blue border-b-2 border-brand-blue' : 'text-zinc-500 hover:text-zinc-300'}`}>
+            <Users className="w-4 h-4 inline-block mr-2 -mt-1" />
+            Clients & Subscribers
+          </button>
+        </div>
+
+        {activeTab === "bookings" ? (
+          <>
         {/* Filters */}
         <div className="flex flex-col md:flex-row gap-4 mb-8 reveal delay-100">
           <form onSubmit={handleSearch} className="flex-1 relative">
@@ -389,6 +449,123 @@ export default function AdminPage() {
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
+        )}
+        </>
+        ) : (
+          <>
+            {/* Users Filters */}
+            <div className="flex flex-col md:flex-row gap-4 mb-8 reveal delay-100">
+              <form onSubmit={handleUsersSearch} className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <input
+                  type="text"
+                  placeholder="Search clients by name, email, phone, or ID..."
+                  value={usersSearchInput}
+                  onChange={(e) => setUsersSearchInput(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3.5 bg-zinc-900/50 border border-zinc-800/50 rounded-xl text-white placeholder-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue/50 transition-all"
+                />
+              </form>
+            </div>
+
+            {/* Results Count */}
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
+                {totalUsersItems} client{totalUsersItems !== 1 ? 's' : ''} found
+              </p>
+              <p className="text-xs text-zinc-600">
+                Page {usersPage} of {totalUsersPages || 1}
+              </p>
+            </div>
+
+            {/* Users Table */}
+            <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-2xl overflow-hidden mb-6 reveal delay-200">
+              {users.length === 0 ? (
+                <div className="py-20 text-center">
+                  <Users className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
+                  <p className="text-zinc-500 font-bold">No clients found</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-zinc-800/50">
+                        {["Client", "Contact", "Vehicle", "Role", "Joined"].map(h => (
+                          <th key={h} className="text-left px-5 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map((user) => (
+                        <tr key={user.id} className="border-b border-zinc-800/30 hover:bg-zinc-800/20 transition-colors group">
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-zinc-800 rounded-full flex items-center justify-center text-zinc-400 shrink-0">
+                                <User className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <p className="font-bold text-white text-sm">{user.name || user.full_name || "—"}</p>
+                                <p className="text-zinc-600 text-[10px] font-mono">#{user.id.slice(0, 8)}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-5 py-4">
+                            <p className="text-zinc-300 font-medium text-xs">{user.email}</p>
+                            <p className="text-zinc-500 text-xs">{user.phone || "—"}</p>
+                          </td>
+                          <td className="px-5 py-4 text-zinc-400 font-medium">{user.plate || "—"}</td>
+                          <td className="px-5 py-4">
+                            <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${user.role === 'admin' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-brand-blue/10 text-blue-400 border-blue-500/20'}`}>
+                              {user.role || "client"}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap">
+                            <p className="text-zinc-300 font-medium text-xs">{formatDate(user.created)}</p>
+                            <p className="text-zinc-500 text-xs">{formatTime(user.created)}</p>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Pagination for Users */}
+            {totalUsersPages > 1 && (
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  onClick={() => setUsersPage(p => Math.max(1, p - 1))}
+                  disabled={usersPage <= 1}
+                  className="p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/50 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all disabled:opacity-30 disabled:pointer-events-none"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                {Array.from({ length: Math.min(totalUsersPages, 5) }, (_, i) => {
+                  let pageNum;
+                  if (totalUsersPages <= 5) { pageNum = i + 1; }
+                  else if (usersPage <= 3) { pageNum = i + 1; }
+                  else if (usersPage >= totalUsersPages - 2) { pageNum = totalUsersPages - 4 + i; }
+                  else { pageNum = usersPage - 2 + i; }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setUsersPage(pageNum)}
+                      className={`w-10 h-10 rounded-xl text-sm font-black transition-all ${usersPage === pageNum ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/20' : 'bg-zinc-900/50 text-zinc-500 hover:text-white border border-zinc-800/50'}`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => setUsersPage(p => Math.min(totalUsersPages, p + 1))}
+                  disabled={usersPage >= totalUsersPages}
+                  className="p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/50 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all disabled:opacity-30 disabled:pointer-events-none"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </main>
 

@@ -74,7 +74,6 @@ export async function submitBooking(formData: any) {
       }
     }
 
-    // 5. Create record in PocketBase
     const data: any = {
       full_name: cleanName,
       phone: cleanPhone,
@@ -84,6 +83,7 @@ export async function submitBooking(formData: any) {
       status: "pending",
       notes: cleanNotes + " (Validated Server Action)",
       date: formData.date,
+      created: new Date().toISOString(),
     };
 
     if (userId) {

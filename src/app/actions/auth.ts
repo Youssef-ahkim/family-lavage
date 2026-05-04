@@ -81,6 +81,7 @@ export async function signup(formData: FormData) {
       default_plate: plate,
       plate_number: plate,
       emailVisibility: true,
+      created: new Date().toISOString(),
     };
 
     await pb.collection('users').create(data);
