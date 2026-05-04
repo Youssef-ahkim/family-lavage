@@ -25,7 +25,8 @@ export async function login(formData: FormData) {
 
     cookieStore.set('pb_auth', cookieValue, {
       path: '/',
-      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      secure: process.env.DISABLE_SECURE_COOKIE === 'true' ? false : process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7 // 1 week
     });
@@ -85,7 +86,8 @@ export async function signup(formData: FormData) {
 
     cookieStore.set('pb_auth', cookieValue, {
       path: '/',
-      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      secure: process.env.DISABLE_SECURE_COOKIE === 'true' ? false : process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7 // 1 week
     });

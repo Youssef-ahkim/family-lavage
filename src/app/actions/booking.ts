@@ -101,7 +101,7 @@ export async function submitBooking(formData: any) {
         maxAge: 60 * 60 * 24 * 30, // 30 days
         path: '/',
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.DISABLE_SECURE_COOKIE === 'true' ? false : process.env.NODE_ENV === 'production',
         sameSite: 'lax',
       });
     }
