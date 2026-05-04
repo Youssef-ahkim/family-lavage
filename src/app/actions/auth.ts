@@ -18,21 +18,27 @@ export async function login(formData: FormData) {
     await pb.collection('users').authWithPassword(email, password);
     
     const cookieStore = await cookies();
-    const cookieString = pb.authStore.exportToCookie({ httpOnly: false });
-    // Parse the cookie string to set it properly in Next.js
-    const cookieParts = cookieString.split(';');
-    const cookieValue = cookieParts[0].split('=')[1];
-    
-    cookieStore.set('pb_auth', cookieValue, {
+    const token = pb.authStore.token;
+
+    cookieStore.set('pb_auth', token, {
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.DISABLE_SECURE_COOKIE === 'true' ? false : process.env.NODE_ENV === 'production',
+        httpOnly: true,
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7 // 1 week
     });
 
     return { success: true };
   } catch (error: any) {
-    console.error("Login Error:", error);
+    console.error("Login Error Details:", {
+        status: error.status,
+        message: error.message,
+        url: process.env.NEXT_PUBLIC_POCKETBASE_URL
+    });
+    
+    if (error.status === 0) {
+        return { success: false, error: "Cannot connect to database. Check if PocketBase is running." };
+    }
     return { success: false, error: "Invalid email or password." };
   }
 }
@@ -71,6 +77,7 @@ export async function signup(formData: FormData) {
         default_plate: plate,
         plate_number: plate,
         emailVisibility: true,
+        role: 'user', // Default role
     };
     
     await pb.collection('users').create(data);
@@ -79,20 +86,26 @@ export async function signup(formData: FormData) {
     await pb.collection('users').authWithPassword(email, password);
     
     const cookieStore = await cookies();
-    const cookieString = pb.authStore.exportToCookie({ httpOnly: false });
-    const cookieParts = cookieString.split(';');
-    const cookieValue = cookieParts[0].split('=')[1];
+    const token = pb.authStore.token;
     
-    cookieStore.set('pb_auth', cookieValue, {
+    cookieStore.set('pb_auth', token, {
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.DISABLE_SECURE_COOKIE === 'true' ? false : process.env.NODE_ENV === 'production',
+        httpOnly: true,
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7 // 1 week
     });
 
     return { success: true };
   } catch (error: any) {
-    console.error("Signup Error:", error);
+    console.error("Signup Error Details:", {
+        status: error.status,
+        message: error.message
+    });
+    
+    if (error.status === 0) {
+        return { success: false, error: "Cannot connect to database. Check if PocketBase is running." };
+    }
     return { success: false, error: error.response?.message || "Failed to create account. Email might already be in use." };
   }
 }
