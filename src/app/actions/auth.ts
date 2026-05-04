@@ -14,31 +14,25 @@ export async function login(formData: FormData) {
 
   try {
     const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
-    
-    await pb.collection('users').authWithPassword(email, password);
-    
-    const cookieStore = await cookies();
-    const token = pb.authStore.token;
 
-    cookieStore.set('pb_auth', token, {
-        path: '/',
-        secure: process.env.DISABLE_SECURE_COOKIE === 'true' ? false : process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7 // 1 week
+    await pb.collection('users').authWithPassword(email, password);
+
+    const cookieStore = await cookies();
+    const cookieString = pb.authStore.exportToCookie({ httpOnly: false });
+    // Parse the cookie string to set it properly in Next.js
+    const cookieParts = cookieString.split(';');
+    const cookieValue = cookieParts[0].split('=')[1];
+
+    cookieStore.set('pb_auth', cookieValue, {
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7 // 1 week
     });
 
     return { success: true };
   } catch (error: any) {
-    console.error("Login Error Details:", {
-        status: error.status,
-        message: error.message,
-        url: process.env.NEXT_PUBLIC_POCKETBASE_URL
-    });
-    
-    if (error.status === 0) {
-        return { success: false, error: "Cannot connect to database. Check if PocketBase is running." };
-    }
+    console.error("Login Error:", error);
     return { success: false, error: "Invalid email or password." };
   }
 }
@@ -65,47 +59,40 @@ export async function signup(formData: FormData) {
 
   try {
     const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
-    
+
     const data = {
-        email,
-        password,
-        passwordConfirm,
-        name,
-        full_name: name,
-        phone,
-        plate,
-        default_plate: plate,
-        plate_number: plate,
-        emailVisibility: true,
-        role: 'user', // Default role
+      email,
+      password,
+      passwordConfirm,
+      name,
+      full_name: name,
+      phone,
+      plate,
+      default_plate: plate,
+      plate_number: plate,
+      emailVisibility: true,
     };
-    
+
     await pb.collection('users').create(data);
-    
+
     // Auto login
     await pb.collection('users').authWithPassword(email, password);
-    
+
     const cookieStore = await cookies();
-    const token = pb.authStore.token;
-    
-    cookieStore.set('pb_auth', token, {
-        path: '/',
-        secure: process.env.DISABLE_SECURE_COOKIE === 'true' ? false : process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7 // 1 week
+    const cookieString = pb.authStore.exportToCookie({ httpOnly: false });
+    const cookieParts = cookieString.split(';');
+    const cookieValue = cookieParts[0].split('=')[1];
+
+    cookieStore.set('pb_auth', cookieValue, {
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7 // 1 week
     });
 
     return { success: true };
   } catch (error: any) {
-    console.error("Signup Error Details:", {
-        status: error.status,
-        message: error.message
-    });
-    
-    if (error.status === 0) {
-        return { success: false, error: "Cannot connect to database. Check if PocketBase is running." };
-    }
+    console.error("Signup Error:", error);
     return { success: false, error: error.response?.message || "Failed to create account. Email might already be in use." };
   }
 }
@@ -124,17 +111,17 @@ export async function getProfile() {
 
     const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
     pb.authStore.loadFromCookie(`pb_auth=${pbAuth.value}`);
-    
+
     if (pb.authStore.isValid && pb.authStore.model) {
       try {
         // Fetch fresh data from PocketBase to ensure we get newly added fields that might not be in a stale cookie
         const freshModel = await pb.collection('users').getOne(pb.authStore.model.id);
-        
+
         let phoneStr = freshModel.phone?.toString() || pb.authStore.model.phone?.toString() || "";
         if (phoneStr.length === 9 && !phoneStr.startsWith('0') && !phoneStr.startsWith('+')) {
-            phoneStr = '0' + phoneStr;
+          phoneStr = '0' + phoneStr;
         }
-        
+
         return {
           id: freshModel.id,
           name: freshModel.name || freshModel.full_name || freshModel.fullname || pb.authStore.model.name || "",
@@ -146,12 +133,12 @@ export async function getProfile() {
       } catch (e) {
         // Fallback to cookie model if fetch fails
         const model = pb.authStore.model;
-        
+
         let phoneStr = model.phone?.toString() || "";
         if (phoneStr.length === 9 && !phoneStr.startsWith('0') && !phoneStr.startsWith('+')) {
-            phoneStr = '0' + phoneStr;
+          phoneStr = '0' + phoneStr;
         }
-        
+
         return {
           id: model.id,
           name: model.name || model.full_name || model.fullname || "",
