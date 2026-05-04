@@ -31,6 +31,15 @@ export async function login(formData: FormData) {
       maxAge: 60 * 60 * 24 * 7 // 1 week
     });
 
+    // Secondary cookie for UI state (visible to client JS)
+    cookieStore.set('pb_logged_in', 'true', {
+      path: '/',
+      httpOnly: false,
+      secure: process.env.DISABLE_SECURE_COOKIE === 'true' ? false : process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7 // 1 week
+    });
+
     return { success: true };
   } catch (error: any) {
     console.error("Login Error:", error);
@@ -92,6 +101,15 @@ export async function signup(formData: FormData) {
       maxAge: 60 * 60 * 24 * 7 // 1 week
     });
 
+    // Secondary cookie for UI state (visible to client JS)
+    cookieStore.set('pb_logged_in', 'true', {
+      path: '/',
+      httpOnly: false,
+      secure: process.env.DISABLE_SECURE_COOKIE === 'true' ? false : process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7 // 1 week
+    });
+
     return { success: true };
   } catch (error: any) {
     console.error("Signup Error:", error);
@@ -102,6 +120,7 @@ export async function signup(formData: FormData) {
 export async function logout() {
   const cookieStore = await cookies();
   cookieStore.delete('pb_auth');
+  cookieStore.delete('pb_logged_in');
   redirect('/');
 }
 

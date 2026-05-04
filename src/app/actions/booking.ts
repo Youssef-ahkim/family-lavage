@@ -122,28 +122,44 @@ export async function submitBooking(formData: any) {
 export async function getMyBookings(fallbackIds?: string) {
   try {
     const cookieStore = await cookies();
+    
+    // 1. Check if user is logged in
+    const pbAuth = cookieStore.get('pb_auth');
+    if (pbAuth) {
+      try {
+        pb.authStore.loadFromCookie(`pb_auth=${pbAuth.value}`);
+        if (pb.authStore.isValid && pb.authStore.model) {
+          console.log("Fetching bookings for logged-in user:", pb.authStore.model.id);
+          const records = await pb.collection('bookings').getList(1, 50, {
+            filter: `user = "${pb.authStore.model.id}"`,
+            sort: '-created',
+          });
+          return JSON.parse(JSON.stringify(records.items));
+        }
+      } catch (e) {
+        console.error("Error fetching bookings for authenticated user:", e);
+      }
+    }
+
+    // 2. Fallback to guest bookings via cookie
     const cookieValue = cookieStore.get('my_bookings');
     const bookingIds = cookieValue?.value || fallbackIds || "";
 
-    console.log("Fetching bookings for IDs:", bookingIds);
+    console.log("Fetching guest bookings for IDs:", bookingIds);
 
     if (!bookingIds) {
-      console.log("No booking IDs found in cookie.");
       return [];
     }
 
     const idsArray = bookingIds.split(',').filter(id => id.length > 0);
-
     if (idsArray.length === 0) return [];
 
-    // Fetch bookings matching the IDs in the cookie
-    // Note: If this fails, check PocketBase 'List Rule' for bookings
     const records = await pb.collection('bookings').getList(1, 50, {
       filter: idsArray.map(id => `id = "${id}"`).join(' || '),
       sort: '-created',
     });
 
-    console.log(`Found ${records.items.length} records in PocketBase.`);
+    console.log(`Found ${records.items.length} guest records in PocketBase.`);
     return JSON.parse(JSON.stringify(records.items)); // Plain objects for client
   } catch (error: any) {
     if (error.status === 403 || error.status === 400) {

@@ -32,46 +32,10 @@ const MyBookingsPage = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const profile = await getProfile();
-        let filterStr = "";
-
-        if (profile && profile.id) {
-          // Logged in: Fetch ONLY from database
-          filterStr = `user = "${profile.id}"`;
-        } else {
-          // Guest: Fetch from local storage
-          const localIds = localStorage.getItem('my_booking_ids') || "";
-          const idsArray = localIds.split(',').map(id => id.trim()).filter(id => id.length > 1);
-
-          if (idsArray.length === 0) {
-            setLoading(false);
-            return;
-          }
-          filterStr = idsArray.map(id => `id = "${id}"`).join(' || ');
-        }
-
-        console.log("Fetching with filter:", filterStr);
-
-        // Use the configured pb client
-        const { default: pb } = await import('@/lib/pocketbase');
-
-        // Load auth state from browser cookie so pb is authenticated
-        pb.authStore.loadFromCookie(document.cookie);
-
-        // Disable auto-cancellation for this component to prevent "aborted" errors
-        pb.autoCancellation(false);
-
-        const records = await pb.collection('bookings').getList(1, 50, {
-          filter: filterStr,
-          // Removed sort to avoid potential field name issues causing 400 Bad Request
-        });
-
-        console.log("Fetched records:", records.items);
-        setBookings(records.items);
+        const data = await getMyBookings();
+        setBookings(data);
       } catch (err: any) {
-        console.error("Client-side fetch error:", err);
-        // Show the actual PB error message if available
-        if (err.data) console.error("Error data:", err.data);
+        console.error("Error fetching bookings:", err);
       } finally {
         setLoading(false);
       }

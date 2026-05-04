@@ -6,6 +6,7 @@ import { Menu, X, Car, Globe } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import { usePathname } from "next/navigation";
+import { logout } from "@/app/actions/auth";
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -19,7 +20,7 @@ const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    setIsAuthenticated(document.cookie.includes('pb_auth='));
+    setIsAuthenticated(document.cookie.includes('pb_logged_in=true'));
     
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -113,9 +114,8 @@ const Navbar = () => {
 
             {isAuthenticated ? (
               <button 
-                onClick={() => {
-                  document.cookie = 'pb_auth=; Max-Age=0; path=/';
-                  window.location.href = '/';
+                onClick={async () => {
+                  await logout();
                 }} 
                 className="text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
               >
@@ -185,9 +185,8 @@ const Navbar = () => {
               
               {isAuthenticated ? (
                 <button 
-                  onClick={() => {
-                    document.cookie = 'pb_auth=; Max-Age=0; path=/';
-                    window.location.href = '/';
+                  onClick={async () => {
+                    await logout();
                   }} 
                   className="text-xl font-bold text-red-500 hover:text-red-600 mt-4"
                 >
