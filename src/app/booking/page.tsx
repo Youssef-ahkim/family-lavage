@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import pb from "@/lib/pocketbase";
-import { submitBooking } from "@/app/actions/booking";
+import { submitBooking, getBookedTimes } from "@/app/actions/booking";
+import { getProfile } from "@/app/actions/auth";
 import { ChevronLeft, ChevronRight, CheckCircle2, Car, Sparkles, Droplets, Zap, ShieldCheck, Clock, Calendar, User, Phone, ClipboardCheck, AlertCircle, Loader2 } from "lucide-react";
 
 const BookingPage = () => {
@@ -28,6 +29,61 @@ const BookingPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [isFetchingSlots, setIsFetchingSlots] = useState(false);
+  const [todayDate] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+
+  useEffect(() => {
+    if (!formData.date) {
+      setBookedSlots([]);
+      return;
+    }
+
+    const fetchSlots = async () => {
+      setIsFetchingSlots(true);
+      try {
+        const dates = await getBookedTimes(formData.date);
+        const slots = dates.map(d => {
+          const safeDateStr = d.replace(' ', 'T');
+          const dateObj = new Date(safeDateStr);
+          const hours = dateObj.getHours().toString().padStart(2, '0');
+          const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+          return `${hours}:${minutes}`;
+        });
+        setBookedSlots(slots);
+      } catch (err) {
+        console.error("Error fetching slots:", err);
+      } finally {
+        setIsFetchingSlots(false);
+      }
+    };
+
+    fetchSlots();
+  }, [formData.date]);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const profile = await getProfile();
+        console.log("Loaded profile:", profile);
+        if (profile) {
+          setFormData(prev => ({
+            ...prev,
+            fullname: profile.name || prev.fullname,
+            phone: profile.phone || prev.phone,
+            carModel: profile.plate || prev.carModel,
+          }));
+        }
+      } catch (err) {
+        console.error("Error loading profile", err);
+      }
+    };
+    loadProfile();
+  }, []);
 
   const services = [
     {
@@ -52,13 +108,13 @@ const BookingPage = () => {
     setStep(2);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
-    
+
     // Client-side rate limit check
     const lastSubmit = localStorage.getItem('last_booking');
     if (lastSubmit && Date.now() - parseInt(lastSubmit) < 60000) { // 1 minute limit
@@ -86,12 +142,17 @@ const BookingPage = () => {
 
       if (result.success) {
         localStorage.setItem('last_booking', Date.now().toString());
-        // Save ID in local storage as a backup for the "My Bookings" page
-        const existing = localStorage.getItem('my_booking_ids') || "";
-        const bookingId = result.id as string; 
-        const updated = existing ? `${existing},${bookingId}` : bookingId;
-        localStorage.setItem('my_booking_ids', updated);
-        
+
+        // Only save booking ID in localStorage for GUEST users.
+        // Logged-in users have their bookings linked in the DB via user ID.
+        const profile = await getProfile();
+        if (!profile) {
+          const existing = localStorage.getItem('my_booking_ids') || "";
+          const bookingId = result.id as string;
+          const updated = existing ? `${existing},${bookingId}` : bookingId;
+          localStorage.setItem('my_booking_ids', updated);
+        }
+
         setIsSubmitted(true);
       } else {
         throw new Error(result.error);
@@ -221,6 +282,8 @@ const BookingPage = () => {
                       required
                       type="text"
                       name="fullname"
+                      pattern="[A-Za-zÀ-ÿ\s\-\']+"
+                      title="Name should only contain letters and spaces"
                       placeholder={b.form.placeholderName}
                       value={formData.fullname}
                       onChange={handleInputChange}
@@ -236,6 +299,8 @@ const BookingPage = () => {
                       required
                       type="tel"
                       name="phone"
+                      pattern="\+?[0-9\s\-\(\)]{8,15}"
+                      title="Please enter a valid phone number"
                       placeholder={b.form.placeholderPhone}
                       value={formData.phone}
                       onChange={handleInputChange}
@@ -266,6 +331,7 @@ const BookingPage = () => {
                       required
                       type="date"
                       name="date"
+                      min={todayDate}
                       value={formData.date}
                       onChange={handleInputChange}
                       className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all`}
@@ -276,14 +342,32 @@ const BookingPage = () => {
                   <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{b.form.time}</label>
                   <div className="relative">
                     <Clock className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
-                    <input
+                    <select
                       required
-                      type="time"
                       name="time"
                       value={formData.time}
                       onChange={handleInputChange}
-                      className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all`}
-                    />
+                      disabled={!formData.date || isFetchingSlots}
+                      className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all appearance-none cursor-pointer disabled:opacity-50`}
+                    >
+                      <option value="" disabled>
+                        {isFetchingSlots
+                          ? (language === 'fr' ? 'Chargement...' : (language === 'ar' ? 'جاري التحميل...' : 'Loading...'))
+                          : (language === 'fr' ? 'Sélectionner l\'heure' : (language === 'ar' ? 'اختر الوقت' : 'Select time'))}
+                      </option>
+                      {Array.from({ length: 16 * 4 + 1 }).map((_, i) => {
+                        const totalMinutes = i * 15 + 8 * 60; // start at 8:00
+                        const hours = Math.floor(totalMinutes / 60) % 24;
+                        const minutes = totalMinutes % 60;
+                        const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                        const isOccupied = bookedSlots.includes(timeString);
+                        return (
+                          <option key={timeString} value={timeString} disabled={isOccupied} className={isOccupied ? "text-red-500 bg-red-50" : ""}>
+                            {timeString} {isOccupied ? (language === 'fr' ? '(Occupé)' : language === 'ar' ? '(محجوز)' : '(Occupied)') : ''}
+                          </option>
+                        );
+                      })}
+                    </select>
                   </div>
                 </div>
               </div>

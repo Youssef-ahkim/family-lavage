@@ -7,6 +7,8 @@ export const translations = {
       contact: "Contact",
       book: "Réserver",
       myBookings: "Mes Réservations",
+      login: "Connexion",
+      signup: "S'inscrire",
     },
     hero: {
       title: "LAVEZ PENDANT",
@@ -167,6 +169,19 @@ export const translations = {
       status: "Statut",
       backHome: "Retour à l'accueil",
     },
+    auth: {
+      loginTitle: "Connexion",
+      signupTitle: "Créer un compte",
+      email: "Email",
+      password: "Mot de passe",
+      passwordConfirm: "Confirmer le mot de passe",
+      name: "Nom complet",
+      loginBtn: "Se connecter",
+      signupBtn: "S'inscrire",
+      noAccount: "Pas encore de compte ?",
+      hasAccount: "Déjà un compte ?",
+      error: "Erreur d'authentification",
+    },
   },
   en: {
     nav: {
@@ -176,6 +191,8 @@ export const translations = {
       contact: "Contact",
       book: "Book Now",
       myBookings: "My Bookings",
+      login: "Login",
+      signup: "Sign Up",
     },
     hero: {
       title: "WASH WHILE",
@@ -336,6 +353,19 @@ export const translations = {
       status: "Status",
       backHome: "Back to Home",
     },
+    auth: {
+      loginTitle: "Login",
+      signupTitle: "Create an Account",
+      email: "Email",
+      password: "Password",
+      passwordConfirm: "Confirm Password",
+      name: "Full Name",
+      loginBtn: "Login",
+      signupBtn: "Sign Up",
+      noAccount: "Don't have an account?",
+      hasAccount: "Already have an account?",
+      error: "Authentication error",
+    },
   },
   ar: {
     nav: {
@@ -345,6 +375,8 @@ export const translations = {
       contact: "اتصل بنا",
       book: "احجز الآن",
       myBookings: "حجوزاتي",
+      login: "تسجيل الدخول",
+      signup: "إنشاء حساب",
     },
     hero: {
       title: "اغسل سيارتك",
@@ -504,6 +536,19 @@ export const translations = {
       confirmCancel: "هل أنت متأكد أنك تريد إلغاء هذا الحجز؟",
       status: "الحالة",
       backHome: "العودة للرئيسية",
+    },
+    auth: {
+      loginTitle: "تسجيل الدخول",
+      signupTitle: "إنشاء حساب",
+      email: "البريد الإلكتروني",
+      password: "كلمة المرور",
+      passwordConfirm: "تأكيد كلمة المرور",
+      name: "الاسم الكامل",
+      loginBtn: "دخول",
+      signupBtn: "تسجيل",
+      noAccount: "ليس لديك حساب؟",
+      hasAccount: "لديك حساب بالفعل؟",
+      error: "خطأ في المصادقة",
     },
   },
 };

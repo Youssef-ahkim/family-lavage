@@ -16,8 +16,11 @@ const Navbar = () => {
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    setIsAuthenticated(document.cookie.includes('pb_auth='));
+    
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
@@ -105,6 +108,29 @@ const Navbar = () => {
                 </button>
               </Link>
             )}
+
+            <div className="h-4 w-px bg-zinc-200" />
+
+            {isAuthenticated ? (
+              <button 
+                onClick={() => {
+                  document.cookie = 'pb_auth=; Max-Age=0; path=/';
+                  window.location.href = '/';
+                }} 
+                className="text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
+              >
+                {language === 'fr' ? 'Déconnexion' : language === 'ar' ? 'تسجيل الخروج' : 'Logout'}
+              </button>
+            ) : (
+              <div className="flex items-center gap-4">
+                <Link href="/login" className="text-sm font-medium text-zinc-600 hover:text-brand-blue transition-colors">
+                  {t.login}
+                </Link>
+                <Link href="/signup" className="text-sm font-bold bg-zinc-100 hover:bg-zinc-200 text-zinc-900 px-4 py-2 rounded-lg transition-colors">
+                  {t.signup}
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -155,6 +181,31 @@ const Navbar = () => {
                     {t.book}
                   </button>
                 </Link>
+              )}
+              
+              {isAuthenticated ? (
+                <button 
+                  onClick={() => {
+                    document.cookie = 'pb_auth=; Max-Age=0; path=/';
+                    window.location.href = '/';
+                  }} 
+                  className="text-xl font-bold text-red-500 hover:text-red-600 mt-4"
+                >
+                  {language === 'fr' ? 'Déconnexion' : language === 'ar' ? 'تسجيل الخروج' : 'Logout'}
+                </button>
+              ) : (
+                <div className="flex flex-col gap-4 mt-4 w-full max-w-xs">
+                  <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                    <button className="w-full py-4 border-2 border-zinc-200 text-zinc-800 font-bold rounded-xl hover:border-brand-blue/30">
+                      {t.login}
+                    </button>
+                  </Link>
+                  <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                    <button className="w-full py-4 bg-zinc-100 text-zinc-900 font-bold rounded-xl hover:bg-zinc-200">
+                      {t.signup}
+                    </button>
+                  </Link>
+                </div>
               )}
             </div>
           </div>
