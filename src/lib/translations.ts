@@ -9,6 +9,19 @@ export const translations = {
       myBookings: "Mes Réservations",
       login: "Connexion",
       signup: "S'inscrire",
+      profile: "Mon Profil",
+      logout: "Déconnexion",
+    },
+    profile: {
+      title: "Mon Profil",
+      personalInfo: "Informations Personnelles",
+      myReservations: "Mes Réservations",
+      noReservations: "Vous n'avez pas encore de réservations.",
+      name: "Nom",
+      email: "Email",
+      phone: "Téléphone",
+      plate: "Matricule",
+      backHome: "Retour à l'accueil",
     },
     hero: {
       title: "LAVEZ PENDANT",
@@ -181,7 +194,27 @@ export const translations = {
       noAccount: "Pas encore de compte ?",
       hasAccount: "Déjà un compte ?",
       error: "Erreur d'authentification",
+      errors: {
+        invalidCredentials: "Email ou mot de passe incorrect.",
+        emailInUse: "Cette adresse email est déjà utilisée.",
+        fieldsRequired: "Veuillez remplir tous les champs obligatoires.",
+        passwordMismatch: "Les mots de passe ne correspondent pas.",
+        passwordTooShort: "Le mot de passe doit contenir au moins 8 caractères.",
+        general: "Une erreur est survenue lors de l'authentification.",
+      }
     },
+    errors: {
+      spam: "Spam détecté.",
+      tooFast: "Envoi trop rapide. Veuillez réessayer.",
+      invalidName: "Le nom ne doit pas contenir de chiffres ou de caractères spéciaux.",
+      invalidPhone: "Veuillez entrer un numéro de téléphone valide.",
+      invalidPlate: "Veuillez entrer un identifiant de véhicule valide.",
+      pastDate: "La date de réservation ne peut pas être dans le passé.",
+      alreadyHasBooking: "Vous avez déjà une réservation active. Veuillez attendre qu'elle soit terminée ou l'annuler avant d'en refaire une.",
+      rateLimit: "Veuillez attendre une minute avant de réserver à nouveau.",
+      unauthorized: "Action non autorisée.",
+      general: "Une erreur est survenue lors du traitement de votre réservation.",
+    }
   },
   en: {
     nav: {
@@ -193,6 +226,19 @@ export const translations = {
       myBookings: "My Bookings",
       login: "Login",
       signup: "Sign Up",
+      profile: "My Profile",
+      logout: "Logout",
+    },
+    profile: {
+      title: "My Profile",
+      personalInfo: "Personal Information",
+      myReservations: "My Reservations",
+      noReservations: "You don't have any reservations yet.",
+      name: "Name",
+      email: "Email",
+      phone: "Phone",
+      plate: "License Plate",
+      backHome: "Back to Home",
     },
     hero: {
       title: "WASH WHILE",
@@ -365,7 +411,27 @@ export const translations = {
       noAccount: "Don't have an account?",
       hasAccount: "Already have an account?",
       error: "Authentication error",
+      errors: {
+        invalidCredentials: "Invalid email or password.",
+        emailInUse: "Email address already in use.",
+        fieldsRequired: "Please fill in all required fields.",
+        passwordMismatch: "Passwords do not match.",
+        passwordTooShort: "Password must be at least 8 characters long.",
+        general: "An error occurred during authentication.",
+      }
     },
+    errors: {
+      spam: "Spam detected.",
+      tooFast: "Submission too fast. Please try again.",
+      invalidName: "Name must not contain numbers or special characters.",
+      invalidPhone: "Please enter a valid phone number.",
+      invalidPlate: "Please enter a valid vehicle identifier.",
+      pastDate: "Reservation date cannot be in the past.",
+      alreadyHasBooking: "You already have an active reservation. Please wait for it to be completed or cancel it before booking again.",
+      rateLimit: "Please wait a minute before booking again.",
+      unauthorized: "Unauthorized action.",
+      general: "An error occurred while processing your booking.",
+    }
   },
   ar: {
     nav: {
@@ -377,6 +443,19 @@ export const translations = {
       myBookings: "حجوزاتي",
       login: "تسجيل الدخول",
       signup: "إنشاء حساب",
+      profile: "ملفي الشخصي",
+      logout: "تسجيل الخروج",
+    },
+    profile: {
+      title: "ملفي الشخصي",
+      personalInfo: "المعلومات الشخصية",
+      myReservations: "حجوزاتي",
+      noReservations: "ليس لديك أي حجوزات بعد.",
+      name: "الاسم",
+      email: "البريد الإلكتروني",
+      phone: "الهاتف",
+      plate: "رقم اللوحة",
+      backHome: "العودة للرئيسية",
     },
     hero: {
       title: "اغسل سيارتك",
@@ -549,6 +628,26 @@ export const translations = {
       noAccount: "ليس لديك حساب؟",
       hasAccount: "لديك حساب بالفعل؟",
       error: "خطأ في المصادقة",
+      errors: {
+        invalidCredentials: "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+        emailInUse: "البريد الإلكتروني مستخدم بالفعل.",
+        fieldsRequired: "يرجى ملء جميع الحقول المطلوبة.",
+        passwordMismatch: "كلمات المرور غير متطابقة.",
+        passwordTooShort: "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.",
+        general: "حدث خطأ أثناء المصادقة.",
+      }
     },
+    errors: {
+      spam: "تم اكتشاف سبام.",
+      tooFast: "الإرسال سريع جداً. يرجى المحاولة مرة أخرى.",
+      invalidName: "يجب ألا يحتوي الاسم على أرقام أو رموز خاصة.",
+      invalidPhone: "يرجى إدخال رقم هاتف صحيح.",
+      invalidPlate: "يرجى إدخال معلومات المركبة بشكل صحيح.",
+      pastDate: "لا يمكن أن يكون تاريخ الحجز في الماضي.",
+      alreadyHasBooking: "لديك بالفعل حجز نشط. يرجى الانتظار حتى اكتماله أو إلغاؤه قبل الحجز مرة أخرى.",
+      rateLimit: "يرجى الانتظار دقيقة قبل الحجز مرة أخرى.",
+      unauthorized: "إجراء غير مصرح به.",
+      general: "حدث خطأ أثناء معالجة حجزك.",
+    }
   },
 };

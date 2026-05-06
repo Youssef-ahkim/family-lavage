@@ -374,7 +374,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`grid grid-cols-1 md:grid-cols-4 gap-12 mb-16 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
             <div className="md:col-span-2 reveal">
-              <span className={`text-3xl font-black tracking-tighter italic mb-6 block text-zinc-900`}>
+              <span className={`text-4xl font-black tracking-tighter italic mb-6 block text-zinc-900`}>
                 FAMILY <span className="text-brand-blue">LAVAGE</span>
               </span>
               <p className="text-zinc-500 max-w-sm mb-8">

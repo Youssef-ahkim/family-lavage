@@ -6,7 +6,6 @@ import Navbar from "@/components/Navbar";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import { getMyBookings, cancelBooking } from "@/app/actions/booking";
-import { getProfile } from "@/app/actions/auth";
 import {
   ChevronLeft,
   Calendar,
@@ -14,13 +13,15 @@ import {
   Car,
   CheckCircle2,
   XCircle,
-  AlertCircle,
   Loader2,
   Trash2,
-  ArrowRight
+  ArrowRight,
+  History
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const MyBookingsPage = () => {
+  const router = useRouter();
   const { language, dir } = useLanguage();
   const t = translations[language];
   const m = t.myBookings;
@@ -30,18 +31,25 @@ const MyBookingsPage = () => {
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchBookings = async () => {
+    // Check if user is logged in via cookie
+    const isLoggedIn = document.cookie.includes('pb_logged_in=true');
+    if (isLoggedIn) {
+      router.push("/profile");
+      return;
+    }
+
+    const fetchData = async () => {
       try {
-        const data = await getMyBookings();
-        setBookings(data);
+        const bookingsData = await getMyBookings();
+        setBookings(bookingsData);
       } catch (err: any) {
         console.error("Error fetching bookings:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchBookings();
-  }, []);
+    fetchData();
+  }, [router]);
 
   const handleCancel = async (id: string) => {
     if (!window.confirm(m.confirmCancel)) return;
@@ -53,9 +61,14 @@ const MyBookingsPage = () => {
         setBookings(bookings.map(b =>
           b.id === id ? { ...b, status: 'cancelled' } : b
         ));
+      } else {
+        const errorKey = result.error || "errors.general";
+        const errorMsg = errorKey.split('.').reduce((obj: any, key) => obj?.[key], t) || t.errors.general;
+        alert(errorMsg);
       }
     } catch (err) {
       console.error("Cancel error:", err);
+      alert(t.errors.general);
     } finally {
       setCancellingId(null);
     }
@@ -76,123 +89,138 @@ const MyBookingsPage = () => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
+        <Loader2 className="w-12 h-12 text-brand-blue animate-spin" />
+        <p className="font-black uppercase tracking-widest text-zinc-300 text-xs">
+          {language === 'fr' ? 'Chargement...' : (language === 'ar' ? 'جاري التحميل...' : 'Loading...')}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-white text-zinc-950 font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-zinc-50/50 text-zinc-950 font-sans overflow-x-hidden">
       <Navbar />
 
       <div className="max-w-4xl mx-auto pt-32 pb-24 px-4">
         {/* Header */}
         <div className={`mb-12 reveal ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
           <div className={`flex items-center gap-4 mb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-            <Link href="/" className="w-10 h-10 rounded-full border border-zinc-100 flex items-center justify-center hover:bg-zinc-50 transition-colors">
+            <Link href="/" className="w-10 h-10 rounded-full bg-white border border-zinc-100 flex items-center justify-center hover:bg-zinc-50 transition-colors shadow-sm">
               <ChevronLeft className={dir === 'rtl' ? 'rotate-180' : ''} size={20} />
             </Link>
             <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic">
               {m.title}
             </h1>
           </div>
-          <p className="text-zinc-500 text-lg">
-            {bookings.length > 0 ? (language === 'fr' ? 'Gérez vos réservations actives et passées.' : (language === 'ar' ? 'إدارة حجوزاتك الحالية والسابقة.' : 'Manage your active and past reservations.')) : ''}
+          <p className="text-zinc-500 font-medium max-w-lg">
+            {language === 'fr' 
+              ? "Consultez l'état de vos réservations passées en tant qu'invité." 
+              : (language === 'ar' 
+                ? "عرض حالة حجوزاتك السابقة كضيف." 
+                : "View the status of your past guest reservations.")}
           </p>
         </div>
 
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <Loader2 className="w-12 h-12 text-brand-blue animate-spin" />
-            <p className="font-black uppercase tracking-widest text-zinc-300 text-xs">
-              {language === 'fr' ? 'Chargement...' : (language === 'ar' ? 'جاري التحميل...' : 'Loading...')}
-            </p>
+        <div className="space-y-6">
+          <div className={`flex items-center gap-3 mb-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+            <History size={24} className="text-brand-blue" />
+            <h2 className="text-2xl font-black uppercase italic tracking-tight">{language === 'fr' ? 'Mes Réservations' : (language === 'ar' ? 'حجوزاتي' : 'My Reservations')}</h2>
           </div>
-        ) : bookings.length === 0 ? (
-          <div className="text-center py-24 bg-zinc-50 rounded-[3rem] border border-zinc-100 reveal">
-            <div className="w-20 h-20 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Calendar className="text-zinc-300 w-10 h-10" />
+
+          {bookings.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-[2.5rem] border border-zinc-100 shadow-sm reveal">
+              <div className="w-16 h-16 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="text-zinc-200 w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-black mb-2 uppercase italic text-zinc-400">
+                {m.noBookings}
+              </h3>
+              <Link href="/booking" className="text-brand-blue font-bold hover:underline flex items-center justify-center gap-2 mt-4">
+                {t.nav.book} <ArrowRight size={16} className={dir === 'rtl' ? 'rotate-180' : ''} />
+              </Link>
             </div>
-            <h2 className="text-2xl font-black mb-4 uppercase italic">
-              {m.noBookings}
-            </h2>
-            <Link href="/booking" className="btn-primary inline-flex mt-4">
-              {t.nav.book} <ArrowRight className={`ml-2 w-5 h-5 ${dir === 'rtl' ? 'rotate-180 mr-2 ml-0' : ''}`} />
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {bookings.map((booking) => (
-              <div
-                key={booking.id}
-                className={`bg-zinc-50 rounded-[2.5rem] border border-zinc-100 p-6 md:p-8 reveal transition-all hover:shadow-xl hover:shadow-zinc-100/50 ${booking.status === 'cancelled' ? 'opacity-70 grayscale' : ''}`}
-              >
-                <div className={`flex flex-col md:flex-row justify-between items-start md:items-center gap-6 ${dir === 'rtl' ? 'md:flex-row-reverse' : ''}`}>
-                  <div className={`flex-1 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                    <div className={`flex items-center gap-3 mb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                      <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${booking.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                          booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                            booking.status === 'cancelled' ? 'bg-zinc-200 text-zinc-500' :
-                              'bg-brand-blue/10 text-brand-blue'
-                        }`}>
-                        {booking.status}
-                      </span>
-                      <span className="text-zinc-300 text-xs font-medium">#{booking.id}</span>
-                    </div>
+          ) : (
+            <div className="space-y-4">
+              {bookings.map((booking) => (
+                <div
+                  key={booking.id}
+                  className={`bg-white rounded-[2rem] border border-zinc-100 p-6 reveal transition-all hover:shadow-md ${booking.status === 'cancelled' ? 'opacity-70 grayscale' : ''}`}
+                >
+                  <div className={`flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ${dir === 'rtl' ? 'md:flex-row-reverse' : ''}`}>
+                    <div className={`flex-1 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                      <div className={`flex items-center gap-3 mb-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                        <span className={`px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${booking.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                            booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                              booking.status === 'cancelled' ? 'bg-zinc-100 text-zinc-500' :
+                                'bg-brand-blue/10 text-brand-blue'
+                          }`}>
+                          {booking.status}
+                        </span>
+                        <span className="text-zinc-300 text-[10px] font-medium">#{booking.id}</span>
+                      </div>
 
-                    <h3 className="text-2xl font-black uppercase italic tracking-tight mb-4">
-                      {booking.service_type === 'VIP' ? t.pricing.plans.vip.name : (language === 'fr' ? 'Lavage Simple' : (language === 'ar' ? 'غسيل عادي' : 'Basic Wash'))}
-                    </h3>
+                      <h3 className="text-lg font-black uppercase italic tracking-tight mb-3">
+                        {booking.service_type === 'VIP' ? t.pricing.plans.vip.name : (language === 'fr' ? 'Lavage Simple' : (language === 'ar' ? 'غسيل عادي' : 'Basic Wash'))}
+                      </h3>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className={`flex items-center gap-3 text-zinc-500 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                        <Calendar size={18} className="text-brand-blue shrink-0" />
-                        <span className="text-sm font-bold">{formatDate(booking.date)}</span>
-                      </div>
-                      <div className={`flex items-center gap-3 text-zinc-500 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                        <Clock size={18} className="text-brand-blue shrink-0" />
-                        <span className="text-sm font-bold">{formatTime(booking.date)}</span>
-                      </div>
-                      <div className={`flex items-center gap-3 text-zinc-500 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                        <Car size={18} className="text-brand-blue shrink-0" />
-                        <span className="text-sm font-bold">{booking.plate_number}</span>
-                      </div>
-                      <div className={`flex items-center gap-3 text-zinc-500 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                        <div className="text-sm font-black text-zinc-950 bg-white px-3 py-1 rounded-lg border border-zinc-100">
-                          {booking.price} DH
+                      <div className={`grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 ${dir === 'rtl' ? 'text-right' : ''}`}>
+                        <div className={`flex items-center gap-2 text-zinc-500 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                          <Calendar size={14} className="text-brand-blue shrink-0" />
+                          <span className="text-xs font-bold">{formatDate(booking.date)}</span>
+                        </div>
+                        <div className={`flex items-center gap-2 text-zinc-500 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                          <Clock size={14} className="text-brand-blue shrink-0" />
+                          <span className="text-xs font-bold">{formatTime(booking.date)}</span>
+                        </div>
+                        <div className={`flex items-center gap-2 text-zinc-500 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                          <Car size={14} className="text-brand-blue shrink-0" />
+                          <span className="text-xs font-bold">{booking.plate_number}</span>
+                        </div>
+                        <div className={`flex items-center gap-2 text-zinc-950 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                          <span className="text-xs font-black px-2 py-0.5 bg-zinc-50 rounded border border-zinc-100">
+                            {booking.price} DH
+                          </span>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="shrink-0 w-full md:w-auto">
-                    {booking.status === 'pending' && (
-                      <button
-                        onClick={() => handleCancel(booking.id)}
-                        disabled={cancellingId === booking.id}
-                        className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-4 bg-white text-red-500 font-black uppercase text-xs tracking-widest rounded-2xl border border-red-50 hover:bg-red-50 transition-all group active:scale-95 disabled:opacity-50"
-                      >
-                        {cancellingId === booking.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4 transition-transform group-hover:scale-110" />
-                        )}
-                        {m.cancel}
-                      </button>
-                    )}
-                    {booking.status === 'cancelled' && (
-                      <div className="flex items-center gap-2 text-zinc-400 font-black uppercase text-[10px] tracking-widest px-6 py-4">
-                        <XCircle size={16} />
-                        {m.cancelled}
-                      </div>
-                    )}
-                    {booking.status === 'confirmed' && (
-                      <div className="flex items-center gap-2 text-green-500 font-black uppercase text-[10px] tracking-widest px-6 py-4">
-                        <CheckCircle2 size={16} />
-                        {language === 'fr' ? 'Confirmé' : 'Confirmed'}
-                      </div>
-                    )}
+                    <div className="shrink-0 w-full md:w-auto">
+                      {booking.status === 'pending' && (
+                        <button
+                          onClick={() => handleCancel(booking.id)}
+                          disabled={cancellingId === booking.id}
+                          className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-3 bg-zinc-50 text-red-500 font-black uppercase text-[10px] tracking-widest rounded-xl border border-red-50 hover:bg-red-50 transition-all group disabled:opacity-50"
+                        >
+                          {cancellingId === booking.id ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3 h-3" />
+                          )}
+                          {m.cancel}
+                        </button>
+                      )}
+                      {booking.status === 'cancelled' && (
+                        <div className="flex items-center gap-2 text-zinc-400 font-black uppercase text-[9px] tracking-widest px-4 py-3 justify-center">
+                          <XCircle size={14} />
+                          {m.cancelled}
+                        </div>
+                      )}
+                      {booking.status === 'confirmed' && (
+                        <div className="flex items-center gap-2 text-green-500 font-black uppercase text-[9px] tracking-widest px-4 py-3 justify-center">
+                          <CheckCircle2 size={14} />
+                          {language === 'fr' ? 'Confirmé' : 'Confirmed'}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="mt-16 text-center">
           <Link href="/" className="text-zinc-400 hover:text-brand-blue font-bold text-sm transition-colors flex items-center justify-center gap-2">

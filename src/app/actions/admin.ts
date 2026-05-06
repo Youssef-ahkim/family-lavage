@@ -1,22 +1,34 @@
 "use server";
 
-import PocketBase from 'pocketbase';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
+import { getAdminPB, getPublicPB } from '@/lib/pocketbase';
+import { cached, invalidateCache, CACHE_TTL } from '@/lib/cache';
 
-const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
-
+/**
+ * Verifies the current user is an admin by checking their cookie token
+ * and then fetching their role via the ADMIN PocketBase client.
+ */
 async function authenticateAdmin() {
   const cookieStore = await cookies();
   const pbAuth = cookieStore.get('pb_auth');
   if (!pbAuth) throw new Error("Not authenticated");
 
+  const pb = getPublicPB();
   pb.authStore.loadFromCookie(`pb_auth=${pbAuth.value}`);
   if (!pb.authStore.isValid || !pb.authStore.model) throw new Error("Invalid session");
 
-  const user = await pb.collection('users').getOne(pb.authStore.model.id);
-  if (user.role !== 'admin') throw new Error("Forbidden: Admin access required");
-  return user;
+  const userId = pb.authStore.model.id;
+
+  // Cache the admin role check (60s) — avoids a DB hit on every admin action
+  const isAdmin = await cached(`admin_check:${userId}`, CACHE_TTL.PROFILE, async () => {
+    const adminPb = await getAdminPB();
+    const user = await adminPb.collection('users').getOne(userId);
+    return user.role === 'admin';
+  });
+
+  if (!isAdmin) throw new Error("Forbidden: Admin access required");
+  return { id: userId };
 }
 
 export async function verifyAdmin() {
@@ -31,6 +43,8 @@ export async function verifyAdmin() {
 export async function getAllBookings(page = 1, perPage = 20, statusFilter = '', searchQuery = '') {
   try {
     await authenticateAdmin();
+    const adminPb = await getAdminPB();
+
     const filters: string[] = [];
     if (statusFilter && statusFilter !== 'all') filters.push(`status = "${statusFilter}"`);
     if (searchQuery) {
@@ -39,7 +53,7 @@ export async function getAllBookings(page = 1, perPage = 20, statusFilter = '', 
     }
     const filter = filters.join(' && ');
 
-    const records = await pb.collection('bookings').getList(page, perPage, { filter, sort: '-created' });
+    const records = await adminPb.collection('bookings').getList(page, perPage, { filter, sort: '-created' });
     return {
       success: true,
       items: JSON.parse(JSON.stringify(records.items)),
@@ -56,9 +70,15 @@ export async function getAllBookings(page = 1, perPage = 20, statusFilter = '', 
 export async function updateBookingStatus(bookingId: string, newStatus: string) {
   try {
     await authenticateAdmin();
-    await pb.collection('bookings').update(bookingId, { status: newStatus });
+    const adminPb = await getAdminPB();
+    await adminPb.collection('bookings').update(bookingId, { status: newStatus });
+    
+    // Invalidate all booking-related caches
+    invalidateCache('bookings:');
+    invalidateCache('admin_stats');
+    
     revalidatePath('/admin');
-    revalidatePath('/my-bookings');
+    revalidatePath('/profile');
     return { success: true };
   } catch (error: any) {
     console.error("Admin updateBookingStatus error:", error.response || error);
@@ -69,7 +89,13 @@ export async function updateBookingStatus(bookingId: string, newStatus: string) 
 export async function deleteBooking(bookingId: string) {
   try {
     await authenticateAdmin();
-    await pb.collection('bookings').delete(bookingId);
+    const adminPb = await getAdminPB();
+    await adminPb.collection('bookings').delete(bookingId);
+    
+    // Invalidate all booking-related caches
+    invalidateCache('bookings:');
+    invalidateCache('admin_stats');
+    
     revalidatePath('/admin');
     return { success: true };
   } catch (error: any) {
@@ -81,6 +107,8 @@ export async function deleteBooking(bookingId: string) {
 export async function getAllUsers(page = 1, perPage = 20, searchQuery = '') {
   try {
     await authenticateAdmin();
+    const adminPb = await getAdminPB();
+
     const filters: string[] = [];
     if (searchQuery) {
       const q = searchQuery.replace(/"/g, '\\"');
@@ -95,7 +123,7 @@ export async function getAllUsers(page = 1, perPage = 20, searchQuery = '') {
     };
     if (filter) options.filter = filter;
 
-    const records = await pb.collection('users').getList(page, perPage, options);
+    const records = await adminPb.collection('users').getList(page, perPage, options);
     return {
       success: true,
       items: JSON.parse(JSON.stringify(records.items)),
@@ -112,36 +140,46 @@ export async function getAllUsers(page = 1, perPage = 20, searchQuery = '') {
 export async function getStats() {
   try {
     await authenticateAdmin();
-    const allBookings = await pb.collection('bookings').getList(1, 1, {});
-    const pendingBookings = await pb.collection('bookings').getList(1, 1, { filter: 'status = "pending"' });
-    const confirmedBookings = await pb.collection('bookings').getList(1, 1, { filter: 'status = "confirmed"' });
-    const cancelledBookings = await pb.collection('bookings').getList(1, 1, { filter: 'status = "cancelled"' });
 
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayEnd = new Date();
-    todayEnd.setHours(23, 59, 59, 999);
-    const startPb = todayStart.toISOString().replace('T', ' ');
-    const endPb = todayEnd.toISOString().replace('T', ' ');
+    // Cache stats for 30s — dashboard doesn't need to be real-time
+    return await cached('admin_stats', CACHE_TTL.ADMIN_STATS, async () => {
+      const adminPb = await getAdminPB();
 
-    const todaysBookings = await pb.collection('bookings').getList(1, 1, {
-      filter: `date >= "${startPb}" && date <= "${endPb}" && status != "cancelled"`,
+      // Run all stat queries in parallel for maximum speed
+      const [allBookings, pendingBookings, confirmedBookings, cancelledBookings, todaysBookings, revenueBookings] =
+        await Promise.all([
+          adminPb.collection('bookings').getList(1, 1, {}),
+          adminPb.collection('bookings').getList(1, 1, { filter: 'status = "pending"' }),
+          adminPb.collection('bookings').getList(1, 1, { filter: 'status = "confirmed"' }),
+          adminPb.collection('bookings').getList(1, 1, { filter: 'status = "cancelled"' }),
+          (() => {
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+            const todayEnd = new Date();
+            todayEnd.setHours(23, 59, 59, 999);
+            const startPb = todayStart.toISOString().replace('T', ' ');
+            const endPb = todayEnd.toISOString().replace('T', ' ');
+            return adminPb.collection('bookings').getList(1, 1, {
+              filter: `date >= "${startPb}" && date <= "${endPb}" && status != "cancelled"`,
+            });
+          })(),
+          adminPb.collection('bookings').getList(1, 500, { filter: 'status != "cancelled"' }),
+        ]);
+
+      const totalRevenue = revenueBookings.items.reduce((sum: number, b: any) => sum + (b.price || 0), 0);
+
+      return {
+        success: true,
+        stats: {
+          total: allBookings.totalItems,
+          pending: pendingBookings.totalItems,
+          confirmed: confirmedBookings.totalItems,
+          cancelled: cancelledBookings.totalItems,
+          todayCount: todaysBookings.totalItems,
+          totalRevenue,
+        },
+      };
     });
-
-    const revenueBookings = await pb.collection('bookings').getList(1, 500, { filter: 'status != "cancelled"' });
-    const totalRevenue = revenueBookings.items.reduce((sum: number, b: any) => sum + (b.price || 0), 0);
-
-    return {
-      success: true,
-      stats: {
-        total: allBookings.totalItems,
-        pending: pendingBookings.totalItems,
-        confirmed: confirmedBookings.totalItems,
-        cancelled: cancelledBookings.totalItems,
-        todayCount: todaysBookings.totalItems,
-        totalRevenue,
-      },
-    };
   } catch (error: any) {
     console.error("Admin getStats error:", error);
     return { success: false, error: error.message, stats: null };

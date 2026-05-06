@@ -1,19 +1,21 @@
 "use server";
 
-import PocketBase from 'pocketbase';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getAdminPB, getPublicPB } from '@/lib/pocketbase';
+import { cached, invalidateCache, CACHE_TTL } from '@/lib/cache';
 
 export async function login(formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
 
   if (!email || !password) {
-    return { success: false, error: "Please provide both email and password." };
+    return { success: false, error: "auth.errors.fieldsRequired" };
   }
 
   try {
-    const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
+    // Login uses a public PB client — the user provides their own credentials
+    const pb = getPublicPB();
 
     await pb.collection('users').authWithPassword(email, password);
 
@@ -40,10 +42,15 @@ export async function login(formData: FormData) {
       maxAge: 60 * 60 * 24 * 7 // 1 week
     });
 
+    // Invalidate any stale profile cache for this user
+    if (pb.authStore.model) {
+      invalidateCache(`profile:${pb.authStore.model.id}`);
+    }
+
     return { success: true };
   } catch (error: any) {
     console.error("Login Error:", error);
-    return { success: false, error: "Invalid email or password." };
+    return { success: false, error: "auth.errors.invalidCredentials" };
   }
 }
 
@@ -56,19 +63,21 @@ export async function signup(formData: FormData) {
   const plate = formData.get('plate') as string;
 
   if (!email || !password || !passwordConfirm || !name) {
-    return { success: false, error: "All fields are required." };
+    return { success: false, error: "auth.errors.fieldsRequired" };
   }
 
   if (password !== passwordConfirm) {
-    return { success: false, error: "Passwords do not match." };
+    return { success: false, error: "auth.errors.passwordMismatch" };
   }
 
   if (password.length < 8) {
-    return { success: false, error: "Password must be at least 8 characters long." };
+    return { success: false, error: "auth.errors.passwordTooShort" };
   }
 
   try {
-    const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
+    // Use ADMIN client to create the user — this guarantees the role is set server-side
+    // and the user cannot inject fields like "role: admin"
+    const adminPb = await getAdminPB();
 
     const data = {
       email,
@@ -81,12 +90,14 @@ export async function signup(formData: FormData) {
       default_plate: plate,
       plate_number: plate,
       emailVisibility: true,
+      role: 'client', // FORCED server-side — users can never set their own role
       created: new Date().toISOString(),
     };
 
-    await pb.collection('users').create(data);
+    await adminPb.collection('users').create(data);
 
-    // Auto login
+    // Auto login with a PUBLIC client (user's own credentials)
+    const pb = getPublicPB();
     await pb.collection('users').authWithPassword(email, password);
 
     const cookieStore = await cookies();
@@ -114,12 +125,26 @@ export async function signup(formData: FormData) {
     return { success: true };
   } catch (error: any) {
     console.error("Signup Error:", error);
-    return { success: false, error: error.response?.message || "Failed to create account. Email might already be in use." };
+    return { success: false, error: "auth.errors.emailInUse" };
   }
 }
 
 export async function logout() {
   const cookieStore = await cookies();
+  
+  // Invalidate cached profile before clearing cookies
+  const pbAuth = cookieStore.get('pb_auth');
+  if (pbAuth) {
+    try {
+      const pb = getPublicPB();
+      pb.authStore.loadFromCookie(`pb_auth=${pbAuth.value}`);
+      if (pb.authStore.model) {
+        invalidateCache(`profile:${pb.authStore.model.id}`);
+        invalidateCache(`bookings:${pb.authStore.model.id}`);
+      }
+    } catch (_) {}
+  }
+
   cookieStore.delete('pb_auth');
   cookieStore.delete('pb_logged_in');
   redirect('/');
@@ -131,45 +156,51 @@ export async function getProfile() {
     const pbAuth = cookieStore.get('pb_auth');
     if (!pbAuth) return null;
 
-    const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
+    const pb = getPublicPB();
     pb.authStore.loadFromCookie(`pb_auth=${pbAuth.value}`);
 
     if (pb.authStore.isValid && pb.authStore.model) {
-      try {
-        // Fetch fresh data from PocketBase to ensure we get newly added fields that might not be in a stale cookie
-        const freshModel = await pb.collection('users').getOne(pb.authStore.model.id);
+      const userId = pb.authStore.model.id;
+      
+      // Use cached profile data (60s TTL) — avoids hitting PB on every navigation
+      return await cached(`profile:${userId}`, CACHE_TTL.PROFILE, async () => {
+        try {
+          // Use ADMIN client to fetch fresh user data — bypasses any restrictive view rules
+          const adminPb = await getAdminPB();
+          const freshModel = await adminPb.collection('users').getOne(userId);
 
-        let phoneStr = freshModel.phone?.toString() || pb.authStore.model.phone?.toString() || "";
-        if (phoneStr.length === 9 && !phoneStr.startsWith('0') && !phoneStr.startsWith('+')) {
-          phoneStr = '0' + phoneStr;
+          let phoneStr = freshModel.phone?.toString() || pb.authStore.model!.phone?.toString() || "";
+          if (phoneStr.length === 9 && !phoneStr.startsWith('0') && !phoneStr.startsWith('+')) {
+            phoneStr = '0' + phoneStr;
+          }
+
+          return {
+            id: freshModel.id,
+            name: freshModel.name || freshModel.full_name || freshModel.fullname || pb.authStore.model!.name || "",
+            email: freshModel.email,
+            phone: phoneStr,
+            plate: freshModel.plate || freshModel.default_plate || freshModel.plate_number || freshModel.carModel || pb.authStore.model!.plate || "",
+            role: freshModel.role || "",
+          };
+        } catch (e) {
+          // Fallback to cookie model if admin fetch fails
+          const model = pb.authStore.model!;
+
+          let phoneStr = model.phone?.toString() || "";
+          if (phoneStr.length === 9 && !phoneStr.startsWith('0') && !phoneStr.startsWith('+')) {
+            phoneStr = '0' + phoneStr;
+          }
+
+          return {
+            id: model.id,
+            name: model.name || model.full_name || model.fullname || "",
+            email: model.email,
+            phone: phoneStr,
+            plate: model.plate || model.default_plate || model.plate_number || model.carModel || "",
+            role: model.role || "",
+          };
         }
-
-        return {
-          id: freshModel.id,
-          name: freshModel.name || freshModel.full_name || freshModel.fullname || pb.authStore.model.name || "",
-          email: freshModel.email,
-          phone: phoneStr,
-          plate: freshModel.plate || freshModel.default_plate || freshModel.plate_number || freshModel.carModel || pb.authStore.model.plate || "",
-          role: freshModel.role || "",
-        };
-      } catch (e) {
-        // Fallback to cookie model if fetch fails
-        const model = pb.authStore.model;
-
-        let phoneStr = model.phone?.toString() || "";
-        if (phoneStr.length === 9 && !phoneStr.startsWith('0') && !phoneStr.startsWith('+')) {
-          phoneStr = '0' + phoneStr;
-        }
-
-        return {
-          id: model.id,
-          name: model.name || model.full_name || model.fullname || "",
-          email: model.email,
-          phone: phoneStr,
-          plate: model.plate || model.default_plate || model.plate_number || model.carModel || "",
-          role: model.role || "",
-        };
-      }
+      });
     }
   } catch (error) {
     console.error("Get Profile Error:", error);

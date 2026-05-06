@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { LanguageProvider } from "@/context/LanguageContext";
+import { ProfileProvider } from "@/context/ProfileContext";
 
 export const metadata: Metadata = {
   title: "Family Lavage Group | Lavage Auto Premium à Marjane Casablanca",
@@ -17,7 +18,9 @@ export default function RootLayout({
     <html className="scroll-smooth" data-scroll-behavior="smooth">
       <body className="antialiased font-sans">
         <LanguageProvider>
-          {children}
+          <ProfileProvider>
+            {children}
+          </ProfileProvider>
         </LanguageProvider>
       </body>
     </html>

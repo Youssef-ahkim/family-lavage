@@ -19,7 +19,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (document.cookie.includes('pb_logged_in=true')) {
-      router.push('/my-bookings');
+      router.push('/profile');
     }
   }, [router]);
 
@@ -32,10 +32,12 @@ export default function SignupPage() {
     const result = await signup(formData);
 
     if (result.success) {
-      router.push("/my-bookings");
+      router.push("/profile");
       router.refresh();
     } else {
-      setError(result.error || t.auth.error);
+      const errorKey = result.error || "auth.error";
+      const errorMsg = errorKey.split('.').reduce((obj: any, key) => obj?.[key], t) || t.auth.error;
+      setError(errorMsg);
       setLoading(false);
     }
   };

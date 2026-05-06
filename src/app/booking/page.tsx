@@ -4,14 +4,14 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useLanguage } from "@/context/LanguageContext";
+import { useProfile } from "@/context/ProfileContext";
 import { translations } from "@/lib/translations";
-import pb from "@/lib/pocketbase";
 import { submitBooking, getBookedTimes } from "@/app/actions/booking";
-import { getProfile } from "@/app/actions/auth";
 import { ChevronLeft, ChevronRight, CheckCircle2, Car, Sparkles, Droplets, Zap, ShieldCheck, Clock, Calendar, User, Phone, ClipboardCheck, AlertCircle, Loader2 } from "lucide-react";
 
 const BookingPage = () => {
   const { language, dir } = useLanguage();
+  const { fetchProfile, profile: cachedProfile } = useProfile();
   const t = translations[language];
   const b = t.booking;
 
@@ -29,6 +29,8 @@ const BookingPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasActiveBooking, setHasActiveBooking] = useState(false);
+  const [isCheckingActive, setIsCheckingActive] = useState(true);
 
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [isFetchingSlots, setIsFetchingSlots] = useState(false);
@@ -68,8 +70,8 @@ const BookingPage = () => {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const profile = await getProfile();
-        console.log("Loaded profile:", profile);
+        // Uses cached profile from context — no extra server call if Navbar already fetched
+        const profile = await fetchProfile();
         if (profile) {
           setFormData(prev => ({
             ...prev,
@@ -78,12 +80,20 @@ const BookingPage = () => {
             carModel: profile.plate || prev.carModel,
           }));
         }
+
+        // Check for active bookings
+        const { getMyBookings } = await import("@/app/actions/booking");
+        const bookings = await getMyBookings();
+        const active = bookings.some((b: any) => b.status === 'pending' || b.status === 'confirmed');
+        setHasActiveBooking(active);
       } catch (err) {
-        console.error("Error loading profile", err);
+        console.error("Error loading profile or bookings", err);
+      } finally {
+        setIsCheckingActive(false);
       }
     };
     loadProfile();
-  }, []);
+  }, [fetchProfile]);
 
   const services = [
     {
@@ -118,7 +128,8 @@ const BookingPage = () => {
     // Client-side rate limit check
     const lastSubmit = localStorage.getItem('last_booking');
     if (lastSubmit && Date.now() - parseInt(lastSubmit) < 60000) { // 1 minute limit
-      setError(language === 'fr' ? 'Veuillez attendre une minute avant de réserver à nouveau.' : (language === 'ar' ? 'يرجى الانتظار دقيقة قبل الحجز مرة أخرى.' : 'Please wait a minute before booking again.'));
+      setError(t.errors.rateLimit);
+      setLoading(false);
       return;
     }
 
@@ -127,6 +138,13 @@ const BookingPage = () => {
 
     try {
       const bookingDateTime = new Date(`${formData.date}T${formData.time}`);
+      const now = new Date();
+
+      if (bookingDateTime < now) {
+        setError(t.errors.pastDate);
+        setLoading(false);
+        return;
+      }
 
       const result = await submitBooking({
         full_name: formData.fullname,
@@ -145,8 +163,7 @@ const BookingPage = () => {
 
         // Only save booking ID in localStorage for GUEST users.
         // Logged-in users have their bookings linked in the DB via user ID.
-        const profile = await getProfile();
-        if (!profile) {
+        if (!cachedProfile) {
           const existing = localStorage.getItem('my_booking_ids') || "";
           const bookingId = result.id as string;
           const updated = existing ? `${existing},${bookingId}` : bookingId;
@@ -159,11 +176,50 @@ const BookingPage = () => {
       }
     } catch (err: any) {
       console.error("Booking error:", err);
-      setError(err.message || (language === 'fr' ? 'Erreur de connexion.' : 'Connection error.'));
+      const errorKey = err.message || "errors.general";
+      const errorMsg = errorKey.split('.').reduce((obj: any, key: string) => obj?.[key], t) || t.errors.general;
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
   };
+
+  if (isCheckingActive) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-brand-blue animate-spin" />
+      </div>
+    );
+  }
+
+  if (hasActiveBooking) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        <div className="max-w-3xl mx-auto pt-40 px-4 text-center">
+          <div className="reveal">
+            <div className="w-24 h-24 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-8">
+              <AlertCircle className="text-brand-gold w-12 h-12" />
+            </div>
+            <h1 className="text-4xl font-black mb-4 uppercase italic tracking-tighter">
+              {language === 'ar' ? 'لديك حجز نشط' : (language === 'en' ? 'Active Reservation' : 'Réservation en cours')}
+            </h1>
+            <p className="text-zinc-500 mb-12 text-lg">
+              {t.errors.alreadyHasBooking}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href={cachedProfile ? "/profile" : "/my-bookings"} className="btn-primary inline-flex">
+                {language === 'fr' ? 'Voir mes réservations' : (language === 'ar' ? 'عرض حجوزاتي' : 'View My Bookings')}
+              </Link>
+              <Link href="/" className="btn-outline inline-flex border-2 border-zinc-200 py-4 px-8 rounded-2xl font-bold">
+                {language === 'fr' ? "Retour à l'accueil" : (language === 'ar' ? 'العودة للرئيسية' : 'Back to Home')}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isSubmitted) {
     return (
@@ -361,9 +417,22 @@ const BookingPage = () => {
                         const minutes = totalMinutes % 60;
                         const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
                         const isOccupied = bookedSlots.includes(timeString);
+                        
+                        // Check if time is in the past if today is selected
+                        let isPast = false;
+                        if (formData.date === todayDate) {
+                          const [h, m] = timeString.split(':').map(Number);
+                          const now = new Date();
+                          const slotDate = new Date();
+                          slotDate.setHours(h, m, 0, 0);
+                          if (slotDate < now) isPast = true;
+                        }
+
+                        const isDisabled = isOccupied || isPast;
+
                         return (
-                          <option key={timeString} value={timeString} disabled={isOccupied} className={isOccupied ? "text-red-500 bg-red-50" : ""}>
-                            {timeString} {isOccupied ? (language === 'fr' ? '(Occupé)' : language === 'ar' ? '(محجوز)' : '(Occupied)') : ''}
+                          <option key={timeString} value={timeString} disabled={isDisabled} className={isDisabled ? "text-red-500 bg-red-50" : ""}>
+                            {timeString} {isOccupied ? (language === 'fr' ? '(Occupé)' : language === 'ar' ? '(محجوز)' : '(Occupied)') : isPast ? (language === 'fr' ? '(Passé)' : language === 'ar' ? '(فائت)' : '(Past)') : ''}
                           </option>
                         );
                       })}

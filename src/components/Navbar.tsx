@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, Car, Globe } from "lucide-react";
+import Image from "next/image";
+import { Menu, X, Car, Globe, User, LogOut } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useProfile } from "@/context/ProfileContext";
 import { translations } from "@/lib/translations";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
@@ -15,13 +17,23 @@ const Navbar = () => {
   const { language, setLanguage, dir } = useLanguage();
   const t = translations[language].nav;
 
+  const { profile: userProfile, isLoading: isLoadingProfile, fetchProfile, clearProfile } = useProfile();
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setIsAuthenticated(document.cookie.includes('pb_logged_in=true'));
+    setMounted(true);
+    const loggedIn = document.cookie.includes('pb_logged_in=true');
+    setIsAuthenticated(loggedIn);
     
+    // Use shared ProfileContext — cached across navigations
+    if (loggedIn) {
+      fetchProfile();
+    }
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
@@ -34,7 +46,7 @@ const Navbar = () => {
     { name: t.process, href: "/#process" },
     { name: t.pricing, href: "/#subscriptions" },
     { name: t.contact, href: "/#contact" },
-    { name: t.myBookings, href: "/my-bookings" },
+    ...(!isAuthenticated ? [{ name: t.myBookings, href: "/my-bookings" }] : []),
   ];
 
   useEffect(() => {
@@ -61,13 +73,15 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="p-2 bg-brand-blue rounded-lg transform group-hover:rotate-12 transition-transform">
-              <Car className="text-white w-6 h-6" />
-            </div>
-            <span className="text-2xl font-black tracking-tighter italic">
-              FAMILY <span className="text-brand-blue">LAVAGE</span>
-            </span>
+          <Link href="/" className="flex items-center group">
+            <Image 
+              src="/logo4.png" 
+              alt="Family Lavage" 
+              width={1481} 
+              height={720} 
+              className="h-12 md:h-16 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -112,17 +126,35 @@ const Navbar = () => {
 
             <div className="h-4 w-px bg-zinc-200" />
 
-            {isAuthenticated ? (
-              <button 
-                onClick={async () => {
-                  setIsAuthenticated(false);
-                  document.cookie = "pb_logged_in=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                  await logout();
-                }} 
-                className="text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
-              >
-                {language === 'fr' ? 'Déconnexion' : language === 'ar' ? 'تسجيل الخروج' : 'Logout'}
-              </button>
+            {!mounted ? (
+              <div className="h-9 w-24 bg-zinc-100 animate-pulse rounded-full" />
+            ) : isAuthenticated ? (
+              <div className="flex items-center gap-4">
+                <Link 
+                  href="/profile" 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-blue/5 text-brand-blue hover:bg-brand-blue/10 transition-all border border-brand-blue/10"
+                >
+                  <div className="w-7 h-7 rounded-full bg-brand-blue text-white flex items-center justify-center">
+                    <User size={16} />
+                  </div>
+                  <span className={`text-sm font-bold truncate max-w-[100px] ${isLoadingProfile ? 'w-12 h-3 bg-brand-blue/20 animate-pulse rounded' : ''}`}>
+                    {!isLoadingProfile ? (userProfile?.name?.split(' ')[0] || t.profile) : ''}
+                  </span>
+                </Link>
+
+                <button 
+                  onClick={async () => {
+                    setIsAuthenticated(false);
+                    clearProfile();
+                    document.cookie = "pb_logged_in=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                    await logout();
+                  }} 
+                  className="p-2 text-zinc-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
+                  title={t.logout}
+                >
+                  <LogOut size={20} />
+                </button>
+              </div>
             ) : (
               <div className="flex items-center gap-4">
                 <Link href="/login" className="text-sm font-medium text-zinc-600 hover:text-brand-blue transition-colors">
@@ -185,21 +217,37 @@ const Navbar = () => {
                 </Link>
               )}
               
-              {isAuthenticated ? (
-                <button 
-                  onClick={async () => {
-                    setIsAuthenticated(false);
-                    document.cookie = "pb_logged_in=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                    await logout();
-                  }} 
-                  className="text-xl font-bold text-red-500 hover:text-red-600 mt-4"
-                >
-                  {language === 'fr' ? 'Déconnexion' : language === 'ar' ? 'تسجيل الخروج' : 'Logout'}
-                </button>
+              {!mounted ? (
+                <div className="h-12 w-full max-w-xs bg-zinc-100 animate-pulse rounded-xl" />
+              ) : isAuthenticated ? (
+                <div className="flex flex-col gap-4 w-full items-center">
+                  <Link 
+                    href="/profile" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-6 py-3 rounded-xl bg-zinc-50 border border-zinc-100 w-full max-w-xs justify-center"
+                  >
+                    <User size={20} className="text-brand-blue" />
+                    <span className={`text-lg font-bold text-zinc-800 ${isLoadingProfile ? 'w-24 h-4 bg-zinc-200 animate-pulse rounded' : ''}`}>
+                      {!isLoadingProfile ? (userProfile?.name || t.profile) : ''}
+                    </span>
+                  </Link>
+                  <button 
+                    onClick={async () => {
+                      setIsAuthenticated(false);
+                      clearProfile();
+                      document.cookie = "pb_logged_in=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                      await logout();
+                    }} 
+                    className="flex items-center gap-2 text-xl font-bold text-red-500 hover:text-red-600 mt-2"
+                  >
+                    <LogOut size={22} />
+                    {t.logout}
+                  </button>
+                </div>
               ) : (
                 <div className="flex flex-col gap-4 mt-4 w-full max-w-xs">
                   <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                    <button className="w-full py-4 border-2 border-zinc-200 text-zinc-800 font-bold rounded-xl hover:border-brand-blue/30">
+                    <button className="w-full py-4 bg-zinc-50 text-zinc-800 font-bold rounded-xl hover:bg-zinc-100">
                       {t.login}
                     </button>
                   </Link>
