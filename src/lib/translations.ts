@@ -200,6 +200,7 @@ export const translations = {
         fieldsRequired: "Veuillez remplir tous les champs obligatoires.",
         passwordMismatch: "Les mots de passe ne correspondent pas.",
         passwordTooShort: "Le mot de passe doit contenir au moins 8 caractères.",
+        tooManyRequests: "Trop de tentatives. Veuillez réessayer dans une minute.",
         general: "Une erreur est survenue lors de l'authentification.",
       }
     },
@@ -417,6 +418,7 @@ export const translations = {
         fieldsRequired: "Please fill in all required fields.",
         passwordMismatch: "Passwords do not match.",
         passwordTooShort: "Password must be at least 8 characters long.",
+        tooManyRequests: "Too many attempts. Please try again in a minute.",
         general: "An error occurred during authentication.",
       }
     },
@@ -634,6 +636,7 @@ export const translations = {
         fieldsRequired: "يرجى ملء جميع الحقول المطلوبة.",
         passwordMismatch: "كلمات المرور غير متطابقة.",
         passwordTooShort: "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.",
+        tooManyRequests: "محاولات كثيرة جداً. يرجى المحاولة مرة أخرى بعد دقيقة.",
         general: "حدث خطأ أثناء المصادقة.",
       }
     },

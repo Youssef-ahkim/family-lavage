@@ -4,10 +4,17 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getAdminPB, getPublicPB } from '@/lib/pocketbase';
 import { cached, invalidateCache, CACHE_TTL } from '@/lib/cache';
+import { checkRateLimit } from '@/lib/ratelimit';
 
 export async function login(formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
+
+  // Rate Limiting
+  const { success: rateLimitOk } = await checkRateLimit('login');
+  if (!rateLimitOk) {
+    return { success: false, error: "auth.errors.tooManyRequests" };
+  }
 
   if (!email || !password) {
     return { success: false, error: "auth.errors.fieldsRequired" };
@@ -61,6 +68,12 @@ export async function signup(formData: FormData) {
   const name = formData.get('name') as string;
   const phone = formData.get('phone') as string;
   const plate = formData.get('plate') as string;
+
+  // Rate Limiting
+  const { success: rateLimitOk } = await checkRateLimit('signup');
+  if (!rateLimitOk) {
+    return { success: false, error: "auth.errors.tooManyRequests" };
+  }
 
   if (!email || !password || !passwordConfirm || !name) {
     return { success: false, error: "auth.errors.fieldsRequired" };
