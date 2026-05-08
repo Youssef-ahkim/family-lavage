@@ -8,6 +8,7 @@ import { useProfile } from "@/context/ProfileContext";
 import { translations } from "@/lib/translations";
 import { getMyBookings, cancelBooking } from "@/app/actions/booking";
 import { logout } from "@/app/actions/auth";
+import ConfirmModal from "@/components/ConfirmModal";
 import {
   ChevronLeft,
   Calendar,
@@ -38,6 +39,9 @@ const ProfilePage = () => {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,16 +63,23 @@ const ProfilePage = () => {
     fetchData();
   }, [router, fetchProfile]);
 
-  const handleCancel = async (id: string) => {
-    if (!window.confirm(m.confirmCancel)) return;
+  const handleCancelClick = (id: string) => {
+    setBookingToCancel(id);
+    setIsConfirmModalOpen(true);
+  };
 
-    setCancellingId(id);
+  const handleConfirmCancel = async () => {
+    if (!bookingToCancel) return;
+
+    setIsActionLoading(true);
+    setCancellingId(bookingToCancel);
     try {
-      const result = await cancelBooking(id);
+      const result = await cancelBooking(bookingToCancel);
       if (result.success) {
         setBookings(bookings.map(b =>
-          b.id === id ? { ...b, status: 'cancelled' } : b
+          b.id === bookingToCancel ? { ...b, status: 'cancelled' } : b
         ));
+        setIsConfirmModalOpen(false);
       } else {
         const errorKey = result.error || "errors.general";
         const errorMsg = errorKey.split('.').reduce((obj: any, key) => obj?.[key], t) || t.errors.general;
@@ -79,6 +90,7 @@ const ProfilePage = () => {
       alert(t.errors.general);
     } finally {
       setCancellingId(null);
+      setIsActionLoading(false);
     }
   };
 
@@ -245,7 +257,7 @@ const ProfilePage = () => {
                       <div className="shrink-0 w-full md:w-auto">
                         {booking.status === 'pending' && (
                           <button
-                            onClick={() => handleCancel(booking.id)}
+                            onClick={() => handleCancelClick(booking.id)}
                             disabled={cancellingId === booking.id}
                             className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-3 bg-zinc-50 text-red-500 font-black uppercase text-[10px] tracking-widest rounded-xl border border-red-50 hover:bg-red-50 transition-all group disabled:opacity-50"
                           >
@@ -284,6 +296,18 @@ const ProfilePage = () => {
           </Link>
         </div>
       </div>
+
+      <ConfirmModal 
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmCancel}
+        title={language === 'fr' ? 'Confirmation' : (language === 'ar' ? 'تأكيد' : 'Confirmation')}
+        message={m.confirmCancel}
+        confirmText={m.confirmBtn}
+        cancelText={m.keepBtn}
+        variant="warning"
+        isLoading={isActionLoading}
+      />
     </div>
   );
 };
