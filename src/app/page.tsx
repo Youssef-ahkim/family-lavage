@@ -129,7 +129,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
             <div className={`flex flex-col reveal delay-100 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-              <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[1] mb-6 uppercase">
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tighter leading-[1.1] md:leading-[1] mb-6 uppercase">
                 {t.hero.title} <br />
                 <span className="text-brand-blue italic">{t.hero.titleAccent}</span>
               </h1>

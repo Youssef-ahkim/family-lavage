@@ -79,19 +79,19 @@ const Navbar = () => {
               alt="Family Lavage" 
               width={1481} 
               height={720} 
-              className="h-12 md:h-16 w-auto max-w-[200px] md:max-w-[250px] object-contain"
+              className="h-10 sm:h-12 lg:h-14 xl:h-16 w-auto max-w-[180px] sm:max-w-[200px] lg:max-w-[220px] xl:max-w-[250px] object-contain"
               priority
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            <div className="flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+            <div className="flex items-center gap-4 xl:gap-6">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-sm font-medium text-zinc-600 hover:text-brand-blue transition-colors"
+                  className="text-xs xl:text-sm font-medium text-zinc-600 hover:text-brand-blue transition-colors whitespace-nowrap"
                 >
                   {link.name}
                 </Link>
@@ -178,7 +178,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="md:hidden flex items-center gap-4">
+          <div className="lg:hidden flex items-center gap-4">
             <div className="flex items-center gap-1 bg-zinc-100/50 p-1 rounded-lg border border-zinc-200/50">
               {languages.map((lang) => (
                 <button
@@ -207,7 +207,7 @@ const Navbar = () => {
       {isMobileMenuOpen && (
         <>
           {/* Backdrop Blur Overlay */}
-          <div className="md:hidden absolute top-full left-0 right-0 bg-white border-t border-zinc-200 animate-in slide-in-from-top duration-300">
+          <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-t border-zinc-200 animate-in slide-in-from-top duration-300">
             <div className="px-4 py-12 flex flex-col gap-6 items-center text-center">
               {navLinks.map((link) => (
                 <Link
