@@ -6,8 +6,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     '',
     '/booking',
-    '/login',
-    '/signup',
+    '/auth/login',
+    '/auth/signup',
     '/my-bookings',
   ].map((route) => ({
     url: `${baseUrl}${route}`,

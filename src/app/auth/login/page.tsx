@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import { login } from "@/app/actions/auth";
-import { Loader2, AlertCircle, Mail, Lock, LogIn } from "lucide-react";
+import { Loader2, AlertCircle, Mail, Lock, LogIn, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const { language, dir } = useLanguage();
@@ -16,6 +16,7 @@ export default function LoginPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (document.cookie.includes('pb_logged_in=true')) {
@@ -80,11 +81,20 @@ export default function LoginPage() {
                 <Lock className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
                 <input
                   required
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="••••••••"
-                  className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-zinc-50 transition-all`}
+                  className={`w-full ${dir === 'rtl' ? 'pr-12 pl-12 text-right' : 'pl-12 pr-12 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-zinc-50 transition-all`}
                 />
+                {!loading && (
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className={`absolute ${dir === 'rtl' ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-zinc-400 hover:text-brand-blue transition-colors p-1`}
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -106,7 +116,7 @@ export default function LoginPage() {
 
           <p className="text-center mt-8 text-sm text-zinc-500 font-medium">
             {t.auth.noAccount}{" "}
-            <Link href="/signup" className="text-brand-blue font-bold hover:underline">
+            <Link href="/auth/signup" className="text-brand-blue font-bold hover:underline">
               {t.auth.signupBtn}
             </Link>
           </p>

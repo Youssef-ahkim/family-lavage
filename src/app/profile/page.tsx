@@ -44,7 +44,7 @@ const ProfilePage = () => {
       try {
         const profile = await fetchProfile();
         if (!profile) {
-          router.push("/login");
+          router.push("/auth/login");
           return;
         }
 

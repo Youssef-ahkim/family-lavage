@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: "Connexion | Family Lavage Group",
   description: "Connectez-vous à votre compte Family Lavage pour gérer vos réservations et abonnements.",
   alternates: {
-    canonical: "/login",
+    canonical: "/auth/login",
   },
 };
 

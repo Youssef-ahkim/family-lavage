@@ -157,10 +157,10 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center gap-4">
-                <Link href="/login" className="text-sm font-medium text-zinc-600 hover:text-brand-blue transition-colors">
+                <Link href="/auth/login" className="text-sm font-medium text-zinc-600 hover:text-brand-blue transition-colors">
                   {t.login}
                 </Link>
-                <Link href="/signup" className="text-sm font-bold bg-zinc-100 hover:bg-zinc-200 text-zinc-900 px-4 py-2 rounded-lg transition-colors">
+                <Link href="/auth/signup" className="text-sm font-bold bg-zinc-100 hover:bg-zinc-200 text-zinc-900 px-4 py-2 rounded-lg transition-colors">
                   {t.signup}
                 </Link>
               </div>
@@ -246,12 +246,12 @@ const Navbar = () => {
                 </div>
               ) : (
                 <div className="flex flex-col gap-4 mt-4 w-full max-w-xs">
-                  <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)}>
                     <button className="w-full py-4 bg-zinc-50 text-zinc-800 font-bold rounded-xl hover:bg-zinc-100">
                       {t.login}
                     </button>
                   </Link>
-                  <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Link href="/auth/signup" onClick={() => setIsMobileMenuOpen(false)}>
                     <button className="w-full py-4 bg-zinc-100 text-zinc-900 font-bold rounded-xl hover:bg-zinc-200">
                       {t.signup}
                     </button>
