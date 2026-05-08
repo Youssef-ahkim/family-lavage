@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import { signup } from "@/app/actions/auth";
-import { Loader2, AlertCircle, Mail, Lock, User, UserPlus, Phone, Car } from "lucide-react";
+import { Loader2, AlertCircle, Mail, Lock, User, UserPlus, Phone, Car, Eye, EyeOff } from "lucide-react";
 
 export default function SignupPage() {
   const { language, dir } = useLanguage();
@@ -16,6 +16,8 @@ export default function SignupPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (document.cookie.includes('pb_logged_in=true')) {
@@ -43,121 +45,151 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 font-sans">
+    <div className="min-h-screen bg-white relative overflow-hidden font-sans">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-blue/5 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-blue/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+
       <Navbar />
-      <div className="max-w-md mx-auto pt-32 pb-12 px-4">
-        <div className="bg-white p-8 md:p-10 rounded-[3rem] border border-zinc-100 shadow-xl shadow-brand-blue/5 reveal">
-          <div className="w-16 h-16 bg-brand-blue/10 rounded-2xl flex items-center justify-center mb-8 mx-auto">
-            <UserPlus className="w-8 h-8 text-brand-blue" />
+      
+      <div className="relative z-10 max-w-xl mx-auto pt-32 pb-20 px-4">
+        <div className="bg-white/80 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] border border-zinc-200/50 shadow-[0_20px_50px_rgba(0,112,243,0.05)] reveal">
+          <div className="w-20 h-20 bg-gradient-to-br from-brand-blue to-brand-blue/60 rounded-3xl flex items-center justify-center mb-8 mx-auto shadow-lg shadow-brand-blue/20 transform rotate-3 hover:rotate-0 transition-transform duration-500">
+            <UserPlus className="w-10 h-10 text-white" />
           </div>
 
-          <h1 className="text-3xl font-black uppercase italic tracking-tighter text-center mb-8">
+          <h1 className="text-3xl font-black uppercase italic tracking-tighter text-center mb-2 text-zinc-900">
             {t.auth.signupTitle}
           </h1>
+          <p className="text-zinc-500 text-center mb-10 text-sm font-medium tracking-tight">
+            Rejoignez la famille Family Lavage dès aujourd'hui
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                {t.auth.name}
-              </label>
-              <div className="relative">
-                <User className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
-                <input
-                  required
-                  type="text"
-                  name="name"
-                  placeholder="Youssef Ahkim"
-                  className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-zinc-50 transition-all`}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className={`text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                  {t.auth.name}
+                </label>
+                <div className="group relative">
+                  <User className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-brand-blue transition-colors w-5 h-5`} />
+                  <input
+                    required
+                    type="text"
+                    name="name"
+                    placeholder="Youssef Ahkim"
+                    className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-2xl border border-zinc-200 focus:outline-none focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue bg-zinc-50/50 hover:bg-white transition-all duration-300`}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className={`text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                  {t.auth.email}
+                </label>
+                <div className="group relative">
+                  <Mail className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-brand-blue transition-colors w-5 h-5`} />
+                  <input
+                    required
+                    type="email"
+                    name="email"
+                    placeholder="nom@example.com"
+                    className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-2xl border border-zinc-200 focus:outline-none focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue bg-zinc-50/50 hover:bg-white transition-all duration-300`}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                {t.auth.email}
-              </label>
-              <div className="relative">
-                <Mail className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
-                <input
-                  required
-                  type="email"
-                  name="email"
-                  placeholder="nom@example.com"
-                  className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-zinc-50 transition-all`}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className={`text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                  {t.booking.form.phone}
+                </label>
+                <div className="group relative">
+                  <Phone className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-brand-blue transition-colors w-5 h-5`} />
+                  <input
+                    required
+                    type="tel"
+                    name="phone"
+                    pattern="\+?[0-9\s\-\(\)]{8,15}"
+                    title="Please enter a valid phone number"
+                    placeholder={t.booking.form.placeholderPhone}
+                    className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-2xl border border-zinc-200 focus:outline-none focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue bg-zinc-50/50 hover:bg-white transition-all duration-300`}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className={`text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                  {t.booking.form.carModel}
+                </label>
+                <div className="group relative">
+                  <Car className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-brand-blue transition-colors w-5 h-5`} />
+                  <input
+                    required
+                    type="text"
+                    name="plate"
+                    placeholder={t.booking.form.placeholderCar}
+                    className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-2xl border border-zinc-200 focus:outline-none focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue bg-zinc-50/50 hover:bg-white transition-all duration-300`}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                {t.booking.form.phone}
-              </label>
-              <div className="relative">
-                <Phone className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
-                <input
-                  required
-                  type="tel"
-                  name="phone"
-                  pattern="\+?[0-9\s\-\(\)]{8,15}"
-                  title="Please enter a valid phone number"
-                  placeholder={t.booking.form.placeholderPhone}
-                  className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-zinc-50 transition-all`}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className={`text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                  {t.auth.password}
+                </label>
+                <div className="group relative">
+                  <Lock className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-brand-blue transition-colors w-5 h-5`} />
+                  <input
+                    required
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    minLength={8}
+                    placeholder="••••••••"
+                    className={`w-full ${dir === 'rtl' ? 'pr-12 pl-12 text-right' : 'pl-12 pr-12 text-left'} py-4 rounded-2xl border border-zinc-200 focus:outline-none focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue bg-zinc-50/50 hover:bg-white transition-all duration-300`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className={`absolute ${dir === 'rtl' ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-zinc-400 hover:text-brand-blue transition-colors p-1`}
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                {t.booking.form.carModel}
-              </label>
-              <div className="relative">
-                <Car className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
-                <input
-                  required
-                  type="text"
-                  name="plate"
-                  placeholder={t.booking.form.placeholderCar}
-                  className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-zinc-50 transition-all`}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                {t.auth.password}
-              </label>
-              <div className="relative">
-                <Lock className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
-                <input
-                  required
-                  type="password"
-                  name="password"
-                  minLength={8}
-                  placeholder="••••••••"
-                  className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-zinc-50 transition-all`}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                {t.auth.passwordConfirm}
-              </label>
-              <div className="relative">
-                <Lock className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
-                <input
-                  required
-                  type="password"
-                  name="passwordConfirm"
-                  minLength={8}
-                  placeholder="••••••••"
-                  className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-zinc-50 transition-all`}
-                />
+              <div className="space-y-2">
+                <label className={`text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                  {t.auth.passwordConfirm}
+                </label>
+                <div className="group relative">
+                  <Lock className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-brand-blue transition-colors w-5 h-5`} />
+                  <input
+                    required
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="passwordConfirm"
+                    minLength={8}
+                    placeholder="••••••••"
+                    className={`w-full ${dir === 'rtl' ? 'pr-12 pl-12 text-right' : 'pl-12 pr-12 text-left'} py-4 rounded-2xl border border-zinc-200 focus:outline-none focus:ring-4 focus:ring-brand-blue/10 focus:border-brand-blue bg-zinc-50/50 hover:bg-white transition-all duration-300`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className={`absolute ${dir === 'rtl' ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-zinc-400 hover:text-brand-blue transition-colors p-1`}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
             </div>
 
             {error && (
-              <div className={`p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 font-medium ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+              <div className={`p-4 bg-red-50/50 backdrop-blur-sm border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 font-medium ${dir === 'rtl' ? 'flex-row-reverse' : ''} animate-shake`}>
                 <AlertCircle className="shrink-0 w-5 h-5" />
                 <p className="text-sm">{error}</p>
               </div>
@@ -166,18 +198,25 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-5 bg-brand-blue text-white font-black uppercase tracking-[0.2em] text-sm rounded-2xl hover:bg-brand-blue/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-brand-blue/20 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3"
+              className="w-full py-5 bg-brand-blue text-white font-black uppercase tracking-[0.2em] text-sm rounded-2xl hover:bg-brand-blue/90 hover:scale-[1.01] active:scale-[0.99] transition-all shadow-[0_15px_30px_rgba(0,112,243,0.3)] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.auth.signupBtn}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                <>
+                  {t.auth.signupBtn}
+                  <UserPlus className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
 
-          <p className="text-center mt-8 text-sm text-zinc-500 font-medium">
-            {t.auth.hasAccount}{" "}
-            <Link href="/auth/login" className="text-brand-blue font-bold hover:underline">
-              {t.auth.loginBtn}
-            </Link>
-          </p>
+          <div className="mt-10 pt-8 border-t border-zinc-100">
+            <p className="text-center text-sm text-zinc-500 font-medium">
+              {t.auth.hasAccount}{" "}
+              <Link href="/auth/login" className="text-brand-blue font-bold hover:underline ml-1">
+                {t.auth.loginBtn}
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
