@@ -28,11 +28,9 @@ export async function login(formData: FormData) {
 
     const cookieStore = await cookies();
     const cookieString = pb.authStore.exportToCookie({ httpOnly: false });
-    // Parse the cookie string to set it properly in Next.js
-    const cookieParts = cookieString.split(';');
-    const cookieValue = cookieParts[0].split('=')[1];
+    const token = cookieString.split(';')[0].replace('pb_auth=', '');
 
-    cookieStore.set('pb_auth', cookieValue, {
+    cookieStore.set('pb_auth', token, {
       path: '/',
       httpOnly: true,
       secure: process.env.DISABLE_SECURE_COOKIE === 'true' ? false : process.env.NODE_ENV === 'production',
@@ -115,10 +113,9 @@ export async function signup(formData: FormData) {
 
     const cookieStore = await cookies();
     const cookieString = pb.authStore.exportToCookie({ httpOnly: false });
-    const cookieParts = cookieString.split(';');
-    const cookieValue = cookieParts[0].split('=')[1];
+    const token = cookieString.split(';')[0].replace('pb_auth=', '');
 
-    cookieStore.set('pb_auth', cookieValue, {
+    cookieStore.set('pb_auth', token, {
       path: '/',
       httpOnly: true,
       secure: process.env.DISABLE_SECURE_COOKIE === 'true' ? false : process.env.NODE_ENV === 'production',

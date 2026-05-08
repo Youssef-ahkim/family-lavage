@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, Car, Globe, User, LogOut } from "lucide-react";
+import { Menu, X, Car, Globe, User, LogOut, Shield } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useProfile } from "@/context/ProfileContext";
 import { translations } from "@/lib/translations";
@@ -79,7 +79,7 @@ const Navbar = () => {
               alt="Family Lavage" 
               width={1481} 
               height={720} 
-              className="h-12 md:h-16 w-auto"
+              className="h-12 md:h-16 w-auto max-w-[200px] md:max-w-[250px] object-contain"
               priority
             />
           </Link>
@@ -130,6 +130,16 @@ const Navbar = () => {
               <div className="h-9 w-24 bg-zinc-100 animate-pulse rounded-full" />
             ) : isAuthenticated ? (
               <div className="flex items-center gap-4">
+                {userProfile?.role === 'admin' && (
+                  <Link 
+                    href="/admin" 
+                    className="p-2 text-zinc-400 hover:text-brand-blue transition-colors rounded-lg hover:bg-brand-blue/5"
+                    title="Admin Dashboard"
+                  >
+                    <Shield size={20} />
+                  </Link>
+                )}
+
                 <Link 
                   href="/profile" 
                   className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-blue/5 text-brand-blue hover:bg-brand-blue/10 transition-all border border-brand-blue/10"
@@ -231,6 +241,16 @@ const Navbar = () => {
                       {!isLoadingProfile ? (userProfile?.name || t.profile) : ''}
                     </span>
                   </Link>
+                  {userProfile?.role === 'admin' && (
+                    <Link 
+                      href="/admin" 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-6 py-3 rounded-xl bg-zinc-50 border border-zinc-100 w-full max-w-xs justify-center"
+                    >
+                      <Shield size={20} className="text-brand-blue" />
+                      <span className="text-lg font-bold text-zinc-800">Admin</span>
+                    </Link>
+                  )}
                   <button 
                     onClick={async () => {
                       setIsAuthenticated(false);

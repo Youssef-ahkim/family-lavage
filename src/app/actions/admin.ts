@@ -40,7 +40,7 @@ export async function verifyAdmin() {
   }
 }
 
-export async function getAllBookings(page = 1, perPage = 20, statusFilter = '', searchQuery = '') {
+export async function getAllBookings(page = 1, perPage = 20, statusFilter = '', searchQuery = '', dateFilter = '') {
   try {
     await authenticateAdmin();
     const adminPb = await getAdminPB();
@@ -50,6 +50,13 @@ export async function getAllBookings(page = 1, perPage = 20, statusFilter = '', 
     if (searchQuery) {
       const q = searchQuery.replace(/"/g, '\\"');
       filters.push(`(full_name ~ "${q}" || phone ~ "${q}" || plate_number ~ "${q}" || id ~ "${q}")`);
+    }
+    if (dateFilter === 'today') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      filters.push(`date >= "${today.toISOString().replace('T', ' ')}" && date < "${tomorrow.toISOString().replace('T', ' ')}"`);
     }
     const filter = filters.join(' && ');
 
