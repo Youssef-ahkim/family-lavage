@@ -174,8 +174,8 @@ export default function AdminBookingsPage() {
         </div>
 
         {/* Filters */}
-        <div className={`flex flex-col lg:flex-row gap-4 mb-8 ${dir === 'rtl' ? 'lg:flex-row-reverse' : ''}`}>
-          <form onSubmit={handleSearch} className="flex-1 relative">
+        <div className={`flex flex-col gap-4 mb-8`}>
+          <form onSubmit={handleSearch} className="relative">
             <Search className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500`} />
             <input
               type="text"
@@ -185,24 +185,28 @@ export default function AdminBookingsPage() {
               className={`w-full ${dir === 'rtl' ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4'} py-3.5 bg-zinc-900/50 border border-zinc-800/50 rounded-xl text-white placeholder-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 transition-all`}
             />
           </form>
-          <div className={`flex flex-wrap items-center gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-            <div className={`flex items-center gap-1 bg-zinc-900/50 p-1 rounded-xl border border-zinc-800/50 ${dir === 'rtl' ? 'ml-2' : 'mr-2'} ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-              {["all", "pending", "confirmed", "completed", "cancelled"].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => { setStatusFilter(s); setPage(1); }}
-                  className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === s
-                    ? "bg-brand-blue text-white shadow-lg shadow-brand-blue/20"
-                    : "text-zinc-500 hover:text-white"
-                    }`}
-                >
-                  {s === 'all' ? adm.all : statusText[s]}
-                </button>
-              ))}
+          
+          <div className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-3 ${dir === 'rtl' ? 'sm:flex-row-reverse' : ''}`}>
+            <div className={`flex-1 overflow-x-auto no-scrollbar`}>
+              <div className={`flex items-center gap-1 bg-zinc-900/50 p-1 rounded-xl border border-zinc-800/50 min-w-max ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                {["all", "pending", "confirmed", "completed", "cancelled"].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => { setStatusFilter(s); setPage(1); }}
+                    className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === s
+                      ? "bg-brand-blue text-white shadow-lg shadow-brand-blue/20"
+                      : "text-zinc-500 hover:text-white"
+                      }`}
+                  >
+                    {s === 'all' ? adm.all : statusText[s]}
+                  </button>
+                ))}
+              </div>
             </div>
+            
             <button
               onClick={() => { setDateFilter(dateFilter === 'today' ? '' : 'today'); setPage(1); }}
-              className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${dateFilter === 'today'
+              className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${dateFilter === 'today'
                 ? "bg-brand-gold text-black shadow-lg shadow-brand-gold/20"
                 : "bg-zinc-900/50 text-zinc-500 hover:text-white border border-zinc-800/50 hover:border-zinc-700"
                 }`}
@@ -219,109 +223,214 @@ export default function AdminBookingsPage() {
           </p>
         </div>
 
-        {/* Bookings Table */}
-        <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-2xl overflow-hidden mb-8">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className={`border-b border-zinc-800/50 bg-zinc-900/50 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                  {[adm.status, adm.customer, adm.phone, adm.vehicle, adm.service, adm.dateTime, adm.price, adm.actions].map(h => (
-                    <th key={h} className={`px-5 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest whitespace-nowrap ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="py-20 text-center">
-                      <Calendar className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-                      <p className="text-zinc-500 font-bold">{adm.noBookings}</p>
-                    </td>
+        {/* Bookings Table (Desktop) / Cards (Mobile) */}
+        <div className="space-y-4">
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-zinc-900/30 border border-zinc-800/50 rounded-2xl overflow-hidden mb-8">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className={`border-b border-zinc-800/50 bg-zinc-900/50 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                    {[adm.status, adm.customer, adm.phone, adm.vehicle, adm.service, adm.dateTime, adm.price, adm.actions].map(h => (
+                      <th key={h} className={`px-5 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest whitespace-nowrap ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{h}</th>
+                    ))}
                   </tr>
-                ) : (
-                  bookings.map((booking) => (
-                    <tr key={booking.id} className={`border-b border-zinc-800/30 hover:bg-zinc-800/20 transition-colors group ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                      <td className="px-5 py-4">
-                        <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusColors[booking.status] || statusColors.pending}`}>
-                          {statusText[booking.status]}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className={`flex items-center gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                          <div className="w-8 h-8 bg-zinc-800 rounded-full flex items-center justify-center text-zinc-400 shrink-0">
-                            <User className="w-4 h-4" />
-                          </div>
-                          <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
-                            <p className="font-bold text-white text-sm">{booking.full_name}</p>
-                            <p className="text-zinc-600 text-[10px] font-mono">#{booking.id.slice(0, 8)}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">{booking.phone}</td>
-                      <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">{booking.plate_number}</td>
-                      <td className="px-5 py-4">
-                        <span className={`text-xs font-black uppercase ${booking.service_type === 'VIP' ? 'text-brand-gold' : 'text-zinc-400'}`}>
-                          {booking.service_type === 'VIP' ? t.pricing.plans.vip.name : (language === 'fr' ? 'Simple' : (language === 'ar' ? 'عادي' : 'Basic'))}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <p className="text-zinc-300 font-medium text-xs">{formatDate(booking.date)}</p>
-                        <p className="text-zinc-500 text-xs">{formatTime(booking.date)}</p>
-                      </td>
-                      <td className="px-5 py-4 font-black text-white">{booking.price} DH</td>
-                      <td className="px-5 py-4">
-                        <div className={`flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                          {booking.status === 'pending' && (
-                            <button
-                              onClick={() => setConfirmConfirm({ isOpen: true, id: booking.id })}
-                              disabled={updatingId === booking.id}
-                              className="p-2 rounded-lg hover:bg-emerald-500/10 text-emerald-400 transition-all disabled:opacity-50"
-                              title="Confirm"
-                            >
-                              <CheckCircle2 className="w-4 h-4" />
-                            </button>
-                          )}
-                          {booking.status === 'confirmed' && (
-                            <button
-                              onClick={() => setConfirmComplete({ isOpen: true, id: booking.id })}
-                              disabled={updatingId === booking.id}
-                              className="p-2 rounded-lg hover:bg-blue-500/10 text-blue-400 transition-all disabled:opacity-50"
-                              title="Complete"
-                            >
-                              <CheckCircle2 className="w-4 h-4" />
-                            </button>
-                          )}
-                          {(booking.status !== 'cancelled' && booking.status !== 'completed') && (
-                            <button
-                              onClick={() => setConfirmCancel({ isOpen: true, id: booking.id })}
-                              disabled={updatingId === booking.id}
-                              className="p-2 rounded-lg hover:bg-amber-500/10 text-amber-400 transition-all disabled:opacity-50"
-                              title="Cancel"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => setSelectedBooking(booking)}
-                            className="p-2 rounded-lg hover:bg-blue-500/10 text-blue-400 transition-all"
-                            title="View Details"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => setConfirmDelete({ isOpen: true, id: booking.id })}
-                            className="p-2 rounded-lg hover:bg-red-500/10 text-red-400 transition-all disabled:opacity-50"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                </thead>
+                <tbody>
+                  {bookings.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-20 text-center">
+                        <Calendar className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
+                        <p className="text-zinc-500 font-bold">{adm.noBookings}</p>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    bookings.map((booking) => (
+                      <tr key={booking.id} className={`border-b border-zinc-800/30 hover:bg-zinc-800/20 transition-colors group ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                        <td className="px-5 py-4">
+                          <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusColors[booking.status] || statusColors.pending}`}>
+                            {statusText[booking.status]}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className={`flex items-center gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                            <div className="w-8 h-8 bg-zinc-800 rounded-full flex items-center justify-center text-zinc-400 shrink-0">
+                              <User className="w-4 h-4" />
+                            </div>
+                            <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
+                              <p className="font-bold text-white text-sm">{booking.full_name}</p>
+                              <p className="text-zinc-600 text-[10px] font-mono">#{booking.id.slice(0, 8)}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">{booking.phone}</td>
+                        <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">{booking.plate_number}</td>
+                        <td className="px-5 py-4">
+                          <span className={`text-xs font-black uppercase ${booking.service_type === 'VIP' ? 'text-brand-gold' : 'text-zinc-400'}`}>
+                            {booking.service_type === 'VIP' ? t.pricing.plans.vip.name : (language === 'fr' ? 'Simple' : (language === 'ar' ? 'عادي' : 'Basic'))}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <p className="text-zinc-300 font-medium text-xs">{formatDate(booking.date)}</p>
+                          <p className="text-zinc-500 text-xs">{formatTime(booking.date)}</p>
+                        </td>
+                        <td className="px-5 py-4 font-black text-white">{booking.price} DH</td>
+                        <td className="px-5 py-4">
+                          <div className={`flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                            {booking.status === 'pending' && (
+                              <button
+                                onClick={() => setConfirmConfirm({ isOpen: true, id: booking.id })}
+                                disabled={updatingId === booking.id}
+                                className="p-2 rounded-lg hover:bg-emerald-500/10 text-emerald-400 transition-all disabled:opacity-50"
+                                title="Confirm"
+                              >
+                                <CheckCircle2 className="w-4 h-4" />
+                              </button>
+                            )}
+                            {booking.status === 'confirmed' && (
+                              <button
+                                onClick={() => setConfirmComplete({ isOpen: true, id: booking.id })}
+                                disabled={updatingId === booking.id}
+                                className="p-2 rounded-lg hover:bg-blue-500/10 text-blue-400 transition-all disabled:opacity-50"
+                                title="Complete"
+                              >
+                                <CheckCircle2 className="w-4 h-4" />
+                              </button>
+                            )}
+                            {(booking.status !== 'cancelled' && booking.status !== 'completed') && (
+                              <button
+                                onClick={() => setConfirmCancel({ isOpen: true, id: booking.id })}
+                                disabled={updatingId === booking.id}
+                                className="p-2 rounded-lg hover:bg-amber-500/10 text-amber-400 transition-all disabled:opacity-50"
+                                title="Cancel"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setSelectedBooking(booking)}
+                              className="p-2 rounded-lg hover:bg-blue-500/10 text-blue-400 transition-all"
+                              title="View Details"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => setConfirmDelete({ isOpen: true, id: booking.id })}
+                              className="p-2 rounded-lg hover:bg-red-500/10 text-red-400 transition-all disabled:opacity-50"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-4 mb-8">
+            {bookings.length === 0 ? (
+              <div className="py-12 bg-zinc-900/30 border border-zinc-800/50 rounded-2xl text-center">
+                <Calendar className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
+                <p className="text-zinc-500 font-bold text-sm">{adm.noBookings}</p>
+              </div>
+            ) : (
+              bookings.map((booking) => (
+                <div key={booking.id} className="bg-zinc-900/50 border border-zinc-800/50 rounded-2xl p-5 space-y-4">
+                  <div className={`flex items-start justify-between ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`flex items-center gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                      <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-zinc-400 shrink-0">
+                        <User className="w-5 h-5" />
+                      </div>
+                      <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
+                        <p className="font-black text-white text-base leading-tight">{booking.full_name}</p>
+                        <p className="text-zinc-600 text-[10px] font-mono mt-0.5">#{booking.id.slice(0, 8)}</p>
+                      </div>
+                    </div>
+                    <span className={`inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${statusColors[booking.status] || statusColors.pending}`}>
+                      {statusText[booking.status]}
+                    </span>
+                  </div>
+
+                  <div className={`grid grid-cols-2 gap-4 py-4 border-y border-zinc-800/30 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                    <div>
+                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{adm.vehicle}</p>
+                      <p className="text-sm font-bold text-zinc-200 flex items-center gap-2">
+                        <Car className="w-3.5 h-3.5 text-brand-blue" />
+                        {booking.plate_number}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{adm.service}</p>
+                      <p className={`text-sm font-black uppercase ${booking.service_type === 'VIP' ? 'text-brand-gold' : 'text-zinc-300'}`}>
+                        {booking.service_type}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{adm.dateTime}</p>
+                      <p className="text-xs font-bold text-zinc-400">{formatDate(booking.date)}</p>
+                      <p className="text-[10px] text-zinc-600">{formatTime(booking.date)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{adm.price}</p>
+                      <p className="text-base font-black text-white">{booking.price} DH</p>
+                    </div>
+                  </div>
+
+                  <div className={`flex items-center justify-between gap-2 pt-1 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`flex items-center gap-1 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                      <button
+                        onClick={() => setSelectedBooking(booking)}
+                        className="flex items-center gap-2 px-4 py-2 bg-zinc-800 rounded-xl text-zinc-400 font-black uppercase text-[10px] tracking-widest hover:text-white transition-all"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        {language === 'fr' ? 'Détails' : (language === 'ar' ? 'تفاصيل' : 'Details')}
+                      </button>
+                    </div>
+
+                    <div className={`flex items-center gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                      {booking.status === 'pending' && (
+                        <button
+                          onClick={() => setConfirmConfirm({ isOpen: true, id: booking.id })}
+                          disabled={updatingId === booking.id}
+                          className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                        </button>
+                      )}
+                      {booking.status === 'confirmed' && (
+                        <button
+                          onClick={() => setConfirmComplete({ isOpen: true, id: booking.id })}
+                          disabled={updatingId === booking.id}
+                          className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                        </button>
+                      )}
+                      {(booking.status !== 'cancelled' && booking.status !== 'completed') && (
+                        <button
+                          onClick={() => setConfirmCancel({ isOpen: true, id: booking.id })}
+                          disabled={updatingId === booking.id}
+                          className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                        >
+                          <XCircle className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setConfirmDelete({ isOpen: true, id: booking.id })}
+                        className="p-2.5 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -357,17 +466,20 @@ export default function AdminBookingsPage() {
             <button onClick={() => setSelectedBooking(null)} className={`absolute top-4 ${dir === 'rtl' ? 'left-4' : 'right-4'} p-2 rounded-xl hover:bg-zinc-800 text-zinc-500 hover:text-white transition-all`}>
               <XCircle className="w-5 h-5" />
             </button>
-            <div className={`flex items-center gap-4 mb-8 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-              <div className="w-14 h-14 bg-brand-blue/10 rounded-2xl flex items-center justify-center">
-                <User className="w-7 h-7 text-brand-blue" />
+            <div className={`flex items-center gap-4 mb-10 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+              <div className="w-16 h-16 bg-brand-blue/10 rounded-2xl flex items-center justify-center border border-brand-blue/20">
+                <User className="w-8 h-8 text-brand-blue" />
               </div>
               <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
-                <h2 className="text-xl font-black uppercase tracking-tight">{selectedBooking.full_name}</h2>
-                <p className="text-zinc-500 text-xs font-mono">#{selectedBooking.id}</p>
+                <h2 className="text-2xl font-black uppercase tracking-tighter text-white leading-none">{selectedBooking.full_name}</h2>
+                <p className="text-zinc-500 text-[10px] font-mono mt-2 flex items-center gap-2">
+                  <span className="w-1 h-1 rounded-full bg-zinc-700" />
+                  #{selectedBooking.id}
+                </p>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-1">
               {[
                 { label: adm.status, value: statusText[selectedBooking.status], highlight: true },
                 { label: adm.phone, value: selectedBooking.phone },
@@ -378,14 +490,16 @@ export default function AdminBookingsPage() {
                 { label: language === 'fr' ? 'Heure' : 'Time', value: formatTime(selectedBooking.date) },
                 { label: adm.notes, value: selectedBooking.notes || "—" },
               ].map((row) => (
-                <div key={row.label} className={`flex justify-between items-center py-3 border-b border-zinc-800/50 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{row.label}</span>
+                <div key={row.label} className={`flex justify-between items-start gap-6 py-5 border-b border-zinc-800/50 last:border-0 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                  <span className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em] pt-1 shrink-0 w-24">{row.label}</span>
                   {row.highlight ? (
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusColors[selectedBooking.status] || ''}`}>
+                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-lg ${statusColors[selectedBooking.status] || ''}`}>
                       {row.value}
                     </span>
                   ) : (
-                    <span className="text-sm font-bold text-white">{row.value}</span>
+                    <span className={`text-[15px] font-bold text-white break-words flex-1 leading-relaxed ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>
+                      {row.value}
+                    </span>
                   )}
                 </div>
               ))}

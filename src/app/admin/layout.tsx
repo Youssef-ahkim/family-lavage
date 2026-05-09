@@ -72,9 +72,9 @@ export default function AdminLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans flex flex-col md:flex-row" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="h-screen bg-zinc-950 text-white font-sans flex flex-col md:flex-row overflow-hidden" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-zinc-900 border-b border-zinc-800">
+      <div className="md:hidden flex items-center justify-between p-4 bg-zinc-900 border-b border-zinc-800 shrink-0">
         <div className="flex items-center gap-3">
           <Shield className="w-6 h-6 text-brand-blue" />
           <span className="font-black uppercase tracking-tight">Admin</span>
@@ -84,12 +84,20 @@ export default function AdminLayout({
         </button>
       </div>
 
+      {/* Sidebar Overlay (Mobile) */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 ${language === 'ar' ? 'right-0' : 'left-0'} z-50 w-64 bg-zinc-900 border-r border-zinc-800 transition-transform duration-300 md:relative md:translate-x-0
+        fixed inset-y-0 ${language === 'ar' ? 'right-0' : 'left-0'} z-50 w-64 bg-zinc-900 border-r border-zinc-800 transition-transform duration-300 md:relative md:translate-x-0 md:h-full shrink-0
         ${isSidebarOpen ? "translate-x-0" : (language === 'ar' ? "translate-x-full" : "-translate-x-full")}
       `}>
-        <div className="p-8">
+        <div className="p-8 h-full flex flex-col">
           <div className="flex items-center gap-3 mb-10">
             <div className="p-2 bg-brand-blue rounded-lg">
               <Shield className="w-5 h-5 text-white" />
@@ -100,7 +108,7 @@ export default function AdminLayout({
             </div>
           </div>
 
-          <nav className="space-y-2">
+          <nav className="space-y-2 flex-1 overflow-y-auto no-scrollbar">
             {navItems.map((item) => (
               <Link
                 key={item.name}
@@ -119,7 +127,7 @@ export default function AdminLayout({
             ))}
           </nav>
 
-          <div className="mt-10 pt-10 border-t border-zinc-800">
+          <div className="mt-auto pt-10 border-t border-zinc-800 shrink-0">
             <Link 
               href="/"
               className="flex items-center gap-4 px-4 py-3 rounded-xl font-bold text-zinc-500 hover:text-white transition-all"
@@ -132,7 +140,7 @@ export default function AdminLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0 overflow-y-auto">
+      <main className="flex-1 h-full overflow-y-auto custom-scrollbar">
         <div className="max-w-7xl mx-auto p-6 md:p-10">
           {children}
         </div>
