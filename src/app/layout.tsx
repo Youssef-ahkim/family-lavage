@@ -62,6 +62,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  other: {
+    google: "notranslate",
+  },
 };
 
 export default function RootLayout({
@@ -70,7 +73,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html className="scroll-smooth" data-scroll-behavior="smooth">
+    <html className="scroll-smooth" data-scroll-behavior="smooth" translate="no">
       <body className="antialiased font-sans">
         <LanguageProvider>
           <ProfileProvider>
