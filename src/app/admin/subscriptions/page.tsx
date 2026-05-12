@@ -162,15 +162,23 @@ export default function AdminSubscriptionsPage() {
       {/* Filters & Search */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
         <div className="lg:col-span-2">
-          <form onSubmit={handleSearch} className="relative">
-            <Search className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500`} />
-            <input
-              type="text"
-              placeholder={language === 'fr' ? "Rechercher un client..." : "Search client..."}
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className={`w-full ${dir === 'rtl' ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4'} py-3.5 bg-zinc-900/50 border border-zinc-800/50 rounded-xl text-white placeholder-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 transition-all`}
-            />
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <div className="relative flex-grow">
+              <Search className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500`} />
+              <input
+                type="text"
+                placeholder={language === 'fr' ? "Rechercher un client..." : (language === 'ar' ? "البحث عن زبون..." : "Search client...")}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className={`w-full ${dir === 'rtl' ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4'} py-3.5 bg-zinc-900/50 border border-zinc-800/50 rounded-xl text-white placeholder-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 transition-all`}
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-6 py-3.5 bg-brand-blue text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-brand-blue/80 transition-all shadow-lg shadow-brand-blue/20 shrink-0"
+            >
+              {language === 'fr' ? 'Rechercher' : (language === 'ar' ? 'بحث' : 'Search')}
+            </button>
           </form>
         </div>
         <div className="flex gap-2">
