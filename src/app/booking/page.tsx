@@ -448,7 +448,7 @@ const BookingPage = () => {
                         const minutes = totalMinutes % 60;
                         const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
                         const isOccupied = bookedSlots.includes(timeString);
-                        
+
                         // Check if time is in the past if today is selected
                         let isPast = false;
                         if (formData.date === todayDate) {

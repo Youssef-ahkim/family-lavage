@@ -8,7 +8,7 @@ import { getCached, setCache, CACHE_TTL } from './cache';
 // re-authenticate on every single server action call.
 // ─────────────────────────────────────────────────────────
 
-const POCKETBASE_URL = process.env.POCKETBASE_URL || process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090/';
+const POCKETBASE_URL = (process.env.POCKETBASE_URL || process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090').replace(/\/$/, '');
 
 // ─── Cached Admin Singleton ───
 // We store the admin auth token (not the PB instance) so we can
@@ -47,6 +47,7 @@ export async function getAdminPB(): Promise<PocketBase> {
 
   try {
     // PocketBase v0.23+ uses _superusers collection for admin auth
+    console.log(`Authenticating with PocketBase at: ${POCKETBASE_URL}`);
     await pb.collection('_superusers').authWithPassword(email, password);
     
     // Cache the token for 10 minutes

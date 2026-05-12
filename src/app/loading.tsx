@@ -8,7 +8,7 @@ export default function Loading() {
         
         {/* Inner static branding or pulse */}
         <div className="w-16 h-16 bg-brand-blue/5 rounded-full flex items-center justify-center animate-pulse">
-          <span className="font-black italic text-brand-blue text-sm">FL</span>
+          <span className="font-black italic text-brand-blue text-sm">F<span className="text-blue-900">M</span>L</span>
         </div>
       </div>
       <p className="mt-8 text-zinc-400 font-bold text-[10px] tracking-[0.3em] uppercase animate-pulse">

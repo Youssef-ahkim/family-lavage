@@ -81,12 +81,12 @@ export async function updateBookingStatus(bookingId: string, newStatus: string) 
   try {
     await authenticateAdmin();
     const adminPb = await getAdminPB();
-    
+
     // Fetch the booking to check its properties before updating
     const booking = await adminPb.collection('bookings').getOne(bookingId);
-    
+
     await adminPb.collection('bookings').update(bookingId, { status: newStatus });
-    
+
     // If the booking is completed and used a subscription wash, deduct from user's balance
     if (newStatus === 'completed' && booking.price === 0 && booking.user) {
       try {
@@ -101,13 +101,13 @@ export async function updateBookingStatus(bookingId: string, newStatus: string) 
             if (sub.washes_remaining > 0) {
               const newWashes = sub.washes_remaining - 1;
               const subUpdate: any = { washes_remaining: newWashes };
-              
+
               if (newWashes === 0) {
-                 subUpdate.status = 'expired';
-                 subUpdate.notes = (sub.notes || "") + `\nSubscription expired on ${new Date().toISOString()} because all washes were used.`;
-                 await adminPb.collection('users').update(user.id, { is_subscriber: false });
+                subUpdate.status = 'expired';
+                subUpdate.notes = (sub.notes || "") + `\nSubscription expired on ${new Date().toISOString()} because all washes were used.`;
+                await adminPb.collection('users').update(user.id, { is_subscriber: false });
               }
-              
+
               await adminPb.collection('subscriptions').update(sub.id, subUpdate);
               invalidateCache(`profile:${user.id}`);
             }
@@ -117,11 +117,11 @@ export async function updateBookingStatus(bookingId: string, newStatus: string) 
         console.error("Error updating subscription wash balance:", err);
       }
     }
-    
+
     // Invalidate all booking-related caches
     invalidateCache('bookings:');
     invalidateCache('admin_stats');
-    
+
     revalidatePath('/admin');
     revalidatePath('/admin/reservations');
     revalidatePath('/profile');
@@ -138,11 +138,11 @@ export async function deleteBooking(bookingId: string) {
     await authenticateAdmin();
     const adminPb = await getAdminPB();
     await adminPb.collection('bookings').delete(bookingId);
-    
+
     // Invalidate all booking-related caches
     invalidateCache('bookings:');
     invalidateCache('admin_stats');
-    
+
     revalidatePath('/admin');
     revalidatePath('/admin/reservations');
     revalidatePath('/profile');
@@ -166,7 +166,7 @@ export async function getAllUsers(page = 1, perPage = 20, searchQuery = '') {
     }
     const filter = filters.join(' && ');
 
-    const options: any = { 
+    const options: any = {
       sort: '-created',
       requestKey: null,
       fetch: (url: string, config: any) => fetch(url, { ...config, cache: 'no-store' })
@@ -259,8 +259,8 @@ export async function getAllSubscriptions(page = 1, perPage = 20, statusFilter =
 
     const cacheKey = `subscriptions:admin:${page}:${perPage}:${statusFilter}:${searchQuery}`;
     const records = await cached(cacheKey, 15 * 1000, async () => {
-      return await adminPb.collection('subscriptions').getList(page, perPage, { 
-        filter, 
+      return await adminPb.collection('subscriptions').getList(page, perPage, {
+        filter,
         sort: '-created',
         expand: 'user'
       });
@@ -303,7 +303,7 @@ export async function approveSubscription(subscriptionId: string) {
     // 3. Update both Subscription and User in parallel
     await Promise.all([
       // Update the ledger (the subscription record)
-      adminPb.collection('subscriptions').update(subscriptionId, { 
+      adminPb.collection('subscriptions').update(subscriptionId, {
         status: 'active',
         expiry_date: expiryDate.toISOString(),
         washes_remaining: planDetails.washes,
@@ -322,7 +322,7 @@ export async function approveSubscription(subscriptionId: string) {
     invalidateCache(`profile:${subRequest.user}`);
     invalidateCache('users:admin:');
     invalidateCache('subscriptions:admin:');
-    
+
     revalidatePath('/admin');
     revalidatePath('/admin/subscriptions');
     revalidatePath('/admin/clients');
@@ -341,7 +341,7 @@ export async function rejectSubscription(subscriptionId: string, reason: string)
     await authenticateAdmin();
     const adminPb = await getAdminPB();
 
-    await adminPb.collection('subscriptions').update(subscriptionId, { 
+    await adminPb.collection('subscriptions').update(subscriptionId, {
       status: 'rejected',
       notes: "Rejected: " + reason,
       updated: new Date().toISOString()
@@ -353,7 +353,7 @@ export async function rejectSubscription(subscriptionId: string, reason: string)
     revalidatePath('/admin/subscriptions');
     revalidatePath('/subscribe');
     revalidatePath('/profile');
-    
+
     return { success: true };
   } catch (error: any) {
     console.error("Admin rejectSubscription error:", error);
