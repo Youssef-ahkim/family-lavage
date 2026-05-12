@@ -65,6 +65,10 @@ export const metadata: Metadata = {
   other: {
     google: "notranslate",
   },
+  icons: {
+    icon: "/favicon.ico?v=2",
+    apple: "/apple-icon.png?v=2",
+  },
 };
 
 export default function RootLayout({
