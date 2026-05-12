@@ -65,9 +65,6 @@ export const metadata: Metadata = {
   other: {
     google: "notranslate",
   },
-  icons: {
-    icon: "/favicon.png?v=2",
-  },
 };
 
 export default function RootLayout({
