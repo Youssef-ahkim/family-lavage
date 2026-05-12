@@ -184,6 +184,25 @@ export async function getProfile() {
             phoneStr = '0' + phoneStr;
           }
 
+          let washes_remaining = 0;
+          let subscription_expiry = "";
+          let subscription_status = "none";
+          
+          if (freshModel.is_subscriber) {
+             try {
+                const subs = await adminPb.collection('subscriptions').getList(1, 1, { filter: `user = "${userId}" && status = "active"`, sort: '-created' });
+                if (subs.items.length > 0) {
+                   washes_remaining = subs.items[0].washes_remaining || 0;
+                   subscription_expiry = subs.items[0].expiry_date || "";
+                   subscription_status = "active";
+                } else {
+                   await adminPb.collection('users').update(userId, { is_subscriber: false });
+                }
+             } catch(e) {
+                console.error("Error fetching active sub for profile:", e);
+             }
+          }
+
           return {
             id: freshModel.id,
             name: freshModel.name || freshModel.full_name || freshModel.fullname || pb.authStore.model!.name || "",
@@ -191,6 +210,9 @@ export async function getProfile() {
             phone: phoneStr,
             plate: freshModel.plate || freshModel.default_plate || freshModel.plate_number || freshModel.carModel || pb.authStore.model!.plate || "",
             role: freshModel.role || "",
+            subscription_status,
+            subscription_expiry,
+            washes_remaining,
           };
         } catch (e) {
           // Fallback to cookie model if admin fetch fails
@@ -208,6 +230,9 @@ export async function getProfile() {
             phone: phoneStr,
             plate: model.plate || model.default_plate || model.plate_number || model.carModel || "",
             role: model.role || "",
+            subscription_status: model.is_subscriber ? "active" : "none",
+            subscription_expiry: "",
+            washes_remaining: 0,
           };
         }
       });

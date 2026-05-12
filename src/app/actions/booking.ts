@@ -143,9 +143,14 @@ export async function submitBooking(formData: any) {
     const dateKey = formData.date?.split('T')[0];
     if (dateKey) invalidateCache(`slots:${dateKey}`);
 
+    invalidateCache('bookings:admin:');
+    invalidateCache('admin_stats');
+
     // Force refresh of the bookings page
     revalidatePath('/profile');
     revalidatePath('/my-bookings');
+    revalidatePath('/admin');
+    revalidatePath('/admin/reservations');
 
     return { success: true, id: record.id };
   } catch (error: any) {
@@ -170,15 +175,13 @@ export async function getMyBookings(fallbackIds?: string) {
         if (pb.authStore.isValid && pb.authStore.model) {
           const userId = pb.authStore.model.id;
           
-          // Cached bookings for authenticated user (30s TTL)
-          return await cached(`bookings:${userId}`, CACHE_TTL.BOOKINGS, async () => {
-            const adminPb = await getAdminPB();
-            const records = await adminPb.collection('bookings').getList(1, 50, {
-              filter: `user = "${userId}"`,
-              sort: '-created',
-            });
-            return JSON.parse(JSON.stringify(records.items));
+          // No caching for user bookings as requested
+          const adminPb = await getAdminPB();
+          const records = await adminPb.collection('bookings').getList(1, 50, {
+            filter: `user = "${userId}"`,
+            sort: '-created',
           });
+          return JSON.parse(JSON.stringify(records.items));
         }
       } catch (e) {
         console.error("Error fetching bookings for authenticated user:", e);
@@ -196,16 +199,13 @@ export async function getMyBookings(fallbackIds?: string) {
     const idsArray = bookingIds.split(',').filter(id => id.length > 0);
     if (idsArray.length === 0) return [];
 
-    // Cache guest bookings by their ID set (30s TTL)
-    const cacheKey = `bookings:guest:${idsArray.sort().join(',')}`;
-    return await cached(cacheKey, CACHE_TTL.BOOKINGS, async () => {
-      const adminPb = await getAdminPB();
-      const records = await adminPb.collection('bookings').getList(1, 50, {
-        filter: idsArray.map(id => `id = "${id}"`).join(' || '),
-        sort: '-created',
-      });
-      return JSON.parse(JSON.stringify(records.items));
+    // No caching for guest bookings
+    const adminPb = await getAdminPB();
+    const records = await adminPb.collection('bookings').getList(1, 50, {
+      filter: idsArray.map(id => `id = "${id}"`).join(' || '),
+      sort: '-created',
     });
+    return JSON.parse(JSON.stringify(records.items));
   } catch (error: any) {
     if (error.status === 403 || error.status === 400) {
       console.warn("PocketBase Permission Error — this should not happen with Admin Proxy. Check PB_ADMIN credentials.");
@@ -262,6 +262,14 @@ export async function cancelBooking(bookingId: string) {
     // Invalidate bookings cache so the UI reflects the cancellation
     if (userId) invalidateCache(`bookings:${userId}`);
     invalidateCache('bookings:guest');
+    
+    invalidateCache('bookings:admin:');
+    invalidateCache('admin_stats');
+
+    revalidatePath('/profile');
+    revalidatePath('/my-bookings');
+    revalidatePath('/admin');
+    revalidatePath('/admin/reservations');
 
     return { success: true };
   } catch (error: any) {
@@ -272,27 +280,19 @@ export async function cancelBooking(bookingId: string) {
 
 export async function getBookedTimes(dateStr: string) {
   try {
-    // Cached booked slots for this date (30s TTL)
-    return await cached(`slots:${dateStr}`, CACHE_TTL.BOOKED_SLOTS, async () => {
-      // We fetch bookings for the given date.
-      // Date string from client is YYYY-MM-DD.
-      // We construct local start and end of day.
-      const start = new Date(`${dateStr}T00:00:00`).toISOString();
-      const end = new Date(`${dateStr}T23:59:59`).toISOString();
+    // No caching for booked times as requested
+    const start = new Date(`${dateStr}T00:00:00`).toISOString();
+    const end = new Date(`${dateStr}T23:59:59`).toISOString();
 
-      // PocketBase filters use the format YYYY-MM-DD HH:mm:ss.SSSZ
-      const startPb = start.replace('T', ' ');
-      const endPb = end.replace('T', ' ');
+    const startPb = start.replace('T', ' ');
+    const endPb = end.replace('T', ' ');
 
-      // Use ADMIN client
-      const adminPb = await getAdminPB();
-      const records = await adminPb.collection('bookings').getList(1, 100, {
-        filter: `date >= "${startPb}" && date <= "${endPb}" && status != "cancelled"`,
-      });
-
-      // Return the raw date strings so the client can parse them accurately
-      return records.items.map(record => record.date);
+    const adminPb = await getAdminPB();
+    const records = await adminPb.collection('bookings').getList(1, 100, {
+      filter: `date >= "${startPb}" && date <= "${endPb}" && status != "cancelled"`,
     });
+
+    return records.items.map(record => record.date);
   } catch (error: any) {
     console.error("Error fetching booked times:", error);
     return [];

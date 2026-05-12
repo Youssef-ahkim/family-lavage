@@ -3,7 +3,7 @@ export const translations = {
     nav: {
       services: "Services",
       process: "Processus",
-      pricing: "Tarifs",
+      pricing: "Abonnements",
       contact: "Contact",
       book: "Réserver",
       myBookings: "Mes Réservations",
@@ -166,6 +166,7 @@ export const translations = {
         title: "Résumé de Réservation",
         total: "Total à payer",
         atLocation: "Paiement sur place au parking",
+        deductNotice: "1 lavage sera déduit de votre abonnement.",
       },
       recommended: "Recommandé",
       vehicle: "Véhicule",
@@ -221,6 +222,7 @@ export const translations = {
     admin: {
       title: "Tableau de Bord",
       bookings: "Réservations",
+      subscriptions: "Abonnements",
       clients: "Clients",
       services: "Services",
       stats: "Statistiques",
@@ -252,13 +254,28 @@ export const translations = {
       deleteBtn: "Supprimer",
       updateSuccess: "Mise à jour réussie",
       updateError: "Échec de la mise à jour",
+    },
+    subscription: {
+      title: "CHOISISSEZ VOTRE",
+      titleAccent: "ABONNEMENT.",
+      subtitle: "Économisez sur vos lavages avec nos forfaits mensuels et annuels.",
+      pendingTitle: "Demande en cours",
+      pendingDesc: "Nous avons bien reçu votre demande d'abonnement. Un conseiller vous contactera pour finaliser le paiement (Espèces ou Virement).",
+      successTitle: "Demande envoyée !",
+      successDesc: "Votre demande est en attente d'approbation par un administrateur.",
+      requestBtn: "Demander l'abonnement",
+      backHome: "Retour à l'accueil",
+      errors: {
+        alreadyPending: "Vous avez déjà une demande d'abonnement en attente.",
+        alreadyActive: "Vous avez déjà un abonnement actif.",
+      }
     }
   },
   en: {
     nav: {
       services: "Services",
       process: "Process",
-      pricing: "Pricing",
+      pricing: "Subscriptions",
       contact: "Contact",
       book: "Book Now",
       myBookings: "My Bookings",
@@ -421,6 +438,7 @@ export const translations = {
         title: "Booking Summary",
         total: "Total to pay",
         atLocation: "Payment on site at the parking",
+        deductNotice: "1 wash will be deducted from your subscription.",
       },
       recommended: "Recommended",
       vehicle: "Vehicle",
@@ -476,6 +494,7 @@ export const translations = {
     admin: {
       title: "Admin Dashboard",
       bookings: "Bookings",
+      subscriptions: "Subscriptions",
       clients: "Clients",
       services: "Services",
       stats: "Statistics",
@@ -507,13 +526,28 @@ export const translations = {
       deleteBtn: "Delete",
       updateSuccess: "Update successful",
       updateError: "Update failed",
+    },
+    subscription: {
+      title: "CHOOSE YOUR",
+      titleAccent: "PLAN.",
+      subtitle: "Save on your washes with our monthly and annual plans.",
+      pendingTitle: "Request Pending",
+      pendingDesc: "We have received your subscription request. An advisor will contact you to finalize the payment (Cash or Transfer).",
+      successTitle: "Request Sent!",
+      successDesc: "Your request is waiting for admin approval.",
+      requestBtn: "Request Subscription",
+      backHome: "Back to Home",
+      errors: {
+        alreadyPending: "You already have a pending subscription request.",
+        alreadyActive: "You already have an active subscription.",
+      }
     }
   },
   ar: {
     nav: {
       services: "خدماتنا",
       process: "كيف نعمل",
-      pricing: "الأسعار",
+      pricing: "الاشتراكات",
       contact: "اتصل بنا",
       book: "احجز الآن",
       myBookings: "حجوزاتي",
@@ -676,6 +710,7 @@ export const translations = {
         title: "ملخص الحجز",
         total: "المجموع للأداء",
         atLocation: "الأداء في عين المكان بموقف السيارات",
+        deductNotice: "سيتم خصم غسلة واحدة من اشتراكك.",
       },
       recommended: "موصى به",
       vehicle: "المركبة",
@@ -731,6 +766,7 @@ export const translations = {
     admin: {
       title: "لوحة التحكم",
       bookings: "الحجوزات",
+      subscriptions: "الاشتراكات",
       clients: "الزبناء",
       services: "الخدمات",
       stats: "الإحصائيات",
@@ -762,6 +798,21 @@ export const translations = {
       deleteBtn: "حذف",
       updateSuccess: "تم التحديث بنجاح",
       updateError: "فشل التحديث",
+    },
+    subscription: {
+      title: "اختر",
+      titleAccent: "اشتراكك.",
+      subtitle: "وفر في غسيل سيارتك مع خططنا الشهرية والسنوية.",
+      pendingTitle: "الطلب قيد الانتظار",
+      pendingDesc: "لقد تلقينا طلب الاشتراك الخاص بك. سيتصل بك أحد مستشارينا لإنهاء عملية الدفع (نقداً أو تحويل بنكي).",
+      successTitle: "تم إرسال الطلب!",
+      successDesc: "طلبك قيد انتظار موافقة المسؤول.",
+      requestBtn: "طلب الاشتراك",
+      backHome: "العودة للرئيسية",
+      errors: {
+        alreadyPending: "لديك بالفعل طلب اشتراك قيد الانتظار.",
+        alreadyActive: "لديك بالفعل اشتراك نشط.",
+      }
     }
   },
 };

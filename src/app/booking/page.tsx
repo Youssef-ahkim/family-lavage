@@ -99,7 +99,7 @@ const BookingPage = () => {
     {
       id: "simple",
       title: t.pricing.plans.once.name,
-      price: "100",
+      price: cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0 ? "0" : "100",
       icon: <Zap className="w-6 h-6" />,
       features: t.pricing.plans.once.features,
     },
@@ -151,9 +151,9 @@ const BookingPage = () => {
         phone: formData.phone,
         plate_number: formData.carModel,
         service_type: selectedService === "vip" ? "VIP" : "Simple",
-        price: selectedService === "vip" ? 600 : 100,
+        price: (selectedService === "simple" && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) ? 0 : (selectedService === "vip" ? 600 : 100),
         date: bookingDateTime.toISOString(),
-        notes: `Selected service: ${selectedService}. Language: ${language}.`,
+        notes: `Selected service: ${selectedService}. Language: ${language}. ${selectedService === "simple" && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0 ? '(Used Subscription Wash)' : ''}`,
         hp: hp, // Honeypot field
         ts: startTime.toString(), // Time when page was opened
       });
@@ -260,6 +260,30 @@ const BookingPage = () => {
           </p>
         </div>
 
+        {/* Subscription Balance Indicator */}
+        {cachedProfile?.subscription_status === 'active' && (
+          <div className="mb-10 reveal">
+            <div className={`p-5 rounded-[2rem] bg-brand-gold/10 border border-brand-gold/20 flex items-center justify-between ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-center gap-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                <div className="w-12 h-12 bg-brand-gold rounded-2xl shadow-lg shadow-brand-gold/20 flex items-center justify-center">
+                  <Droplets className="w-6 h-6 text-black" />
+                </div>
+                <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-brand-gold mb-1">
+                    {language === 'fr' ? 'Abonnement Actif' : (language === 'ar' ? 'اشتراك نشط' : 'Active Subscription')}
+                  </p>
+                  <p className="text-xl font-black uppercase italic tracking-tighter">
+                    {language === 'fr' ? 'Lavages Restants' : (language === 'ar' ? 'الغسلات المتبقية' : 'Remaining Washes')}
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white w-14 h-14 rounded-2xl border-2 border-brand-gold/30 flex items-center justify-center shadow-sm">
+                <span className="text-3xl font-black text-brand-gold">{cachedProfile.washes_remaining || 0}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Progress Steps */}
         <div className="flex items-center justify-between mb-16 relative">
           <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-zinc-100 -translate-y-1/2 z-0" />
@@ -296,9 +320,16 @@ const BookingPage = () => {
                   <div className="text-brand-blue">{service.icon}</div>
                 </div>
                 <h3 className="text-2xl font-black uppercase italic tracking-tight mb-2">{service.title}</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-3xl font-black">{service.price}</span>
-                  <span className="text-xs font-bold text-zinc-400 uppercase">DH</span>
+                <div className="flex flex-col mb-6">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-black">{service.price}</span>
+                    <span className="text-xs font-bold text-zinc-400 uppercase">DH</span>
+                  </div>
+                  {service.price === "0" && (
+                    <p className="text-[9px] font-black text-brand-blue uppercase tracking-widest mt-1">
+                      {b.summary.deductNotice}
+                    </p>
+                  )}
                 </div>
                 <ul className="space-y-3">
                   {service.features.map((f, i) => (
@@ -505,9 +536,14 @@ const BookingPage = () => {
                 <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
                   <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">{b.summary.total}</p>
                   <div className={`flex items-baseline gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-5xl font-black tracking-tighter text-zinc-950">{selectedService === 'vip' ? '600' : '100'}</span>
+                    <span className="text-5xl font-black tracking-tighter text-zinc-950">{(selectedService === 'simple' && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) ? '0' : (selectedService === 'vip' ? '600' : '100')}</span>
                     <span className="text-sm font-black text-zinc-400 uppercase">DH</span>
                   </div>
+                  {(selectedService === 'simple' && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) && (
+                    <p className="text-[10px] font-bold text-brand-blue uppercase tracking-wider mt-1">
+                      {b.summary.deductNotice}
+                    </p>
+                  )}
                 </div>
                 <div className={`text-center ${dir === 'rtl' ? 'md:text-left' : 'md:text-right'}`}>
                   <p className="text-zinc-500 text-sm italic mb-2">{b.summary.atLocation}</p>

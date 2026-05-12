@@ -68,6 +68,7 @@ export default function AdminLayout({
     { name: adm.title, href: "/admin", icon: <LayoutDashboard size={20} /> },
     { name: adm.bookings, href: "/admin/bookings", icon: <Calendar size={20} /> },
     { name: adm.clients, href: "/admin/clients", icon: <Users size={20} /> },
+    { name: adm.subscriptions, href: "/admin/subscriptions", icon: <Briefcase size={20} /> },
     { name: adm.services, href: "/admin/services", icon: <Briefcase size={20} /> },
   ];
 

@@ -17,6 +17,9 @@ interface ProfileData {
   phone: string;
   plate: string;
   role: string;
+  subscription_status?: string;
+  subscription_expiry?: string;
+  washes_remaining?: number;
 }
 
 interface ProfileContextType {

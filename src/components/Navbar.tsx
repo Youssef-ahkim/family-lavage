@@ -43,8 +43,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: t.services, href: "/#services" },
-    { name: t.process, href: "/#process" },
-    { name: t.pricing, href: "/#subscriptions" },
+    { name: t.pricing, href: "/subscribe" },
     { name: t.contact, href: "/#contact" },
     ...(!isAuthenticated ? [{ name: t.myBookings, href: "/my-bookings" }] : []),
   ];
@@ -117,11 +116,13 @@ const Navbar = () => {
             </div>
 
             {!isBookingPage && (
-              <Link href="/booking">
-                <button className="px-6 py-2.5 bg-brand-blue text-white text-sm font-bold rounded-lg hover:bg-brand-blue/90 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
-                  {t.book}
-                </button>
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link href="/booking">
+                  <button className="px-6 py-2.5 bg-brand-blue text-white text-xs xl:text-sm font-bold rounded-lg hover:bg-brand-blue/90 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
+                    {t.book}
+                  </button>
+                </Link>
+              </div>
             )}
 
             <div className="h-4 w-px bg-zinc-200" />
@@ -220,11 +221,13 @@ const Navbar = () => {
                 </Link>
               ))}
               {!isBookingPage && (
-                <Link href="/booking" className="w-full max-w-xs" onClick={() => setIsMobileMenuOpen(false)}>
-                  <button className="w-full py-4 bg-brand-blue text-white font-bold rounded-xl shadow-lg shadow-brand-blue/20">
-                    {t.book}
-                  </button>
-                </Link>
+                <div className="flex flex-col gap-3 w-full max-w-xs">
+                  <Link href="/booking" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                    <button className="w-full py-4 bg-brand-blue text-white font-bold rounded-xl shadow-lg shadow-brand-blue/20">
+                      {t.book}
+                    </button>
+                  </Link>
+                </div>
               )}
               
               {!mounted ? (

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
-import { Key, Car, Sparkles, MapPin, Clock, Droplets, ShieldCheck, Zap, Star, MessageCircle, Phone, ArrowRight } from "lucide-react";
+import { Car, Sparkles, MapPin, Clock, Droplets, ShieldCheck, Zap, Star, MessageCircle, Phone, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 
@@ -31,33 +31,6 @@ export default function Home() {
       title: t.services.items[3].title,
       desc: t.services.items[3].desc,
       icon: <ShieldCheck className="w-6 h-6 text-brand-blue" />,
-    },
-  ];
-
-  const processSteps = [
-    {
-      number: "01",
-      title: t.process.steps[0].title,
-      desc: t.process.steps[0].desc,
-      icon: <Key className="w-8 h-8 text-brand-blue" />,
-    },
-    {
-      number: "02",
-      title: t.process.steps[1].title,
-      desc: t.process.steps[1].desc,
-      icon: <Car className="w-8 h-8 text-brand-blue" />,
-    },
-    {
-      number: "03",
-      title: t.process.steps[2].title,
-      desc: t.process.steps[2].desc,
-      icon: <Star className="w-8 h-8 text-brand-blue" />,
-    },
-    {
-      number: "04",
-      title: t.process.steps[3].title,
-      desc: t.process.steps[3].desc,
-      icon: <MapPin className="w-8 h-8 text-brand-blue" />,
     },
   ];
 
@@ -232,33 +205,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Flow/Process Section */}
-      <section id="process" className="py-32 bg-white relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-24 reveal">
-            <h2 className="text-sm font-black text-brand-gold uppercase tracking-[0.3em] mb-4">{t.process.badge}</h2>
-            <p className="section-heading italic">{t.process.title} <span className="text-brand-blue">{t.process.titleAccent}</span></p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-            {processSteps.map((step, idx) => (
-              <div key={idx} className="relative reveal" style={{ animationDelay: `${idx * 200}ms` }}>
-                {idx < processSteps.length - 1 && (
-                  <div className={`hidden lg:block absolute top-12 ${dir === 'rtl' ? 'right-1/2 left-auto' : 'left-1/2 right-auto'} w-full h-px bg-gradient-to-r from-brand-blue/30 to-transparent ${dir === 'rtl' ? 'rotate-180' : ''}`} />
-                )}
-                <div className="relative z-10 flex flex-col items-center text-center">
-                  <div className="w-24 h-24 rounded-full bg-zinc-50 border border-zinc-200 flex items-center justify-center mb-8 group hover:border-brand-blue transition-colors shadow-sm">
-                    <span className={`absolute -top-2 ${dir === 'rtl' ? 'right-0' : 'left-0'} text-6xl font-black text-zinc-100 group-hover:text-brand-blue/10 transition-colors uppercase`}>{step.number}</span>
-                    <div className="group-hover:scale-110 transition-transform">{step.icon}</div>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 uppercase tracking-tight italic text-zinc-900">{step.title}</h3>
-                  <p className="text-zinc-500 text-sm max-w-[170px] mx-auto">{step.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Pricing Section */}
       <section id="subscriptions" className="py-32 bg-zinc-50">
@@ -311,7 +257,7 @@ export default function Home() {
                   ))}
                 </ul>
 
-                <Link href="/booking" className="w-full">
+                <Link href={plan.name.includes('VIP') ? "/booking" : "/subscribe"} className="w-full">
                   <button className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${plan.gold
                     ? 'bg-brand-gold text-black hover:bg-white hover:scale-105 active:scale-95'
                     : plan.name.includes('Mois') || plan.name.includes('Month') || plan.name.includes('شهري')
@@ -394,7 +340,6 @@ export default function Home() {
               <h4 className="font-black uppercase tracking-widest text-xs mb-8 text-zinc-900">{t.footer.menu}</h4>
               <ul className="space-y-4 text-sm text-zinc-500 font-medium">
                 <li><Link href="#services" className="hover:text-brand-blue transition-colors">{t.nav.services}</Link></li>
-                <li><Link href="#process" className="hover:text-brand-blue transition-colors">{t.nav.process}</Link></li>
                 <li><Link href="#subscriptions" className="hover:text-brand-blue transition-colors">{t.nav.pricing}</Link></li>
               </ul>
             </div>

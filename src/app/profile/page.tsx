@@ -180,6 +180,24 @@ const ProfilePage = () => {
                 </div>
               </div>
 
+              {user?.subscription_status === 'active' && (
+                <div className={`mt-6 p-5 rounded-2xl bg-brand-gold/10 border border-brand-gold/20 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                  <div className={`flex items-center gap-3 mb-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                    <div className="p-2 bg-brand-gold rounded-lg">
+                      <CheckCircle2 size={16} className="text-black" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-brand-gold">Abonnement Actif</p>
+                      <p className="text-xs font-bold text-zinc-600">Expire le {new Date(user.subscription_expiry || '').toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className={`flex items-center justify-between bg-white p-3 rounded-xl border border-brand-gold/20 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Lavages Restants</span>
+                    <span className="text-lg font-black text-brand-gold">{user.washes_remaining || 0}</span>
+                  </div>
+                </div>
+              )}
+
               <button 
                 onClick={handleLogout}
                 className="w-full mt-8 flex items-center justify-center gap-2 px-6 py-4 bg-red-50 text-red-500 font-black uppercase text-xs tracking-widest rounded-2xl border border-red-100 hover:bg-red-100 transition-all active:scale-95"

@@ -34,7 +34,9 @@ export default function SignupPage() {
     const result = await signup(formData);
 
     if (result.success) {
-      router.push("/profile");
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectTo = searchParams.get('redirect') || "/profile";
+      router.push(redirectTo);
       router.refresh();
     } else {
       const errorKey = result.error || "auth.error";
@@ -212,7 +214,10 @@ export default function SignupPage() {
           <div className="mt-10 pt-8 border-t border-zinc-100">
             <p className="text-center text-sm text-zinc-500 font-medium">
               {t.auth.hasAccount}{" "}
-              <Link href="/auth/login" className="text-brand-blue font-bold hover:underline ml-1">
+              <Link 
+                href={`/auth/login${typeof window !== 'undefined' ? window.location.search : ''}`} 
+                className="text-brand-blue font-bold hover:underline ml-1"
+              >
                 {t.auth.loginBtn}
               </Link>
             </p>
