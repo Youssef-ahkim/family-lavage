@@ -6,10 +6,19 @@ import Navbar from "@/components/Navbar";
 import { Car, Sparkles, MapPin, Clock, Droplets, ShieldCheck, Zap, Star, MessageCircle, Phone, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
+import { getServices } from "./admin/services/service-actions";
+import { ServiceRecord } from "./admin/services/service-types";
+import { PLANS } from "@/lib/plans";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const { language, dir } = useLanguage();
   const t = translations[language];
+  const [dbServices, setDbServices] = useState<ServiceRecord[]>([]);
+
+  useEffect(() => {
+    getServices().then(setDbServices).catch(console.error);
+  }, []);
 
   const services = [
     {
@@ -34,47 +43,52 @@ export default function Home() {
     },
   ];
 
-  const plans = [
-    {
-      name: t.pricing.plans.once.name,
-      price: "100",
+  // Map DB services to plan format
+  const dynamicServices = dbServices
+    .filter(s => s.active)
+    .map(s => ({
+      name: language === 'fr' ? s.title_fr : (language === 'ar' ? s.title_ar : s.title_en),
+      price: s.price.toString(),
       period: t.pricing.perWash,
-      features: t.pricing.plans.once.features,
-      subPrice: (t.pricing.plans.once as any).subPrice,
+      features: language === 'fr' ? s.features_fr : (language === 'ar' ? s.features_ar : s.features_en),
       cta: t.pricing.ctas.book,
-      accent: "border-white/10",
-    },
+      accent: s.price >= 500 ? "border-brand-gold ring-2 ring-brand-gold/50" : "border-zinc-200",
+      badge: s.price >= 500 ? t.pricing.badges.luxe : undefined,
+      gold: s.price >= 500,
+      subPrice: undefined as string | undefined,
+      link: "/booking"
+    }));
+
+  // Add subscriptions from PLANS
+  const subscriptionPlans = [
     {
-      name: t.pricing.plans.month.name,
-      price: "350",
+      name: PLANS.monthly.name[language],
+      price: PLANS.monthly.price.toString(),
       period: t.pricing.perMonth,
-      features: t.pricing.plans.month.features,
-      subPrice: (t.pricing.plans.month as any).subPrice,
+      features: PLANS.monthly.features[language],
+      subPrice: t.pricing.plans.month.subPrice as string | undefined,
       cta: t.pricing.ctas.subscribe,
       accent: "border-brand-blue/50 ring-1 ring-brand-blue/30",
       badge: t.pricing.badges.mostChosen,
+      gold: false,
+      link: "/subscribe"
     },
     {
-      name: t.pricing.plans.year.name,
-      price: "3700",
+      name: PLANS.yearly.name[language],
+      price: PLANS.yearly.price.toString(),
       period: t.pricing.perYear,
-      features: t.pricing.plans.year.features,
-      subPrice: (t.pricing.plans.year as any).subPrice,
+      features: PLANS.yearly.features[language],
+      subPrice: t.pricing.plans.year.subPrice as string | undefined,
       cta: t.pricing.ctas.takeYear,
-      accent: "border-white/20",
-    },
-    {
-      name: t.pricing.plans.vip.name,
-      price: "600",
-      period: t.pricing.perWash,
-      features: t.pricing.plans.vip.features,
-      subPrice: (t.pricing.plans.vip as any).subPrice,
-      cta: t.pricing.ctas.takeVip,
-      accent: "border-brand-gold ring-2 ring-brand-gold/50",
-      badge: t.pricing.badges.luxe,
-      gold: true,
-    },
+      accent: "border-zinc-200",
+      badge: undefined as string | undefined,
+      gold: false,
+      link: "/subscribe"
+    }
   ];
+
+  // Combine them: Services first, then subscriptions
+  const allPlans = [...dynamicServices, ...subscriptionPlans];
 
   return (
     <div className="min-h-screen bg-white text-zinc-950 font-sans overflow-x-hidden">
@@ -217,7 +231,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {plans.map((plan, idx) => (
+            {allPlans.map((plan, idx) => (
               <div
                 key={idx}
                 className={`relative flex flex-col p-8 rounded-[2rem] bg-white border ${plan.accent === 'border-white/10' ? 'border-zinc-200' : plan.accent} transition-all duration-500 hover:-translate-y-4 hover:shadow-2xl hover:shadow-brand-blue/10 ${plan.gold ? 'hover:border-brand-gold' : 'hover:border-brand-blue'} reveal`}
@@ -257,10 +271,10 @@ export default function Home() {
                   ))}
                 </ul>
 
-                <Link href={plan.name.includes('VIP') ? "/booking" : "/subscribe"} className="w-full">
+                <Link href={plan.link || "/booking"} className="w-full">
                   <button className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${plan.gold
                     ? 'bg-brand-gold text-black hover:bg-white hover:scale-105 active:scale-95'
-                    : plan.name.includes('Mois') || plan.name.includes('Month') || plan.name.includes('شهري')
+                    : plan.name.includes('Mois') || plan.name.includes('Month') || plan.name.includes('شهري') || plan.name.includes('Abonnement') || plan.name.includes('Subscription')
                       ? 'bg-brand-blue text-white hover:bg-brand-blue/80 hover:scale-105 active:scale-95'
                       : 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200 hover:scale-105 active:scale-95'
                     }`}>
