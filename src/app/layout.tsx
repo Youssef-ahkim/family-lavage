@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     google: "notranslate",
   },
   icons: {
-    icon: "/favicon.ico?v=2",
+    icon: "/favicon.png?v=2",
     apple: "/apple-icon.png?v=2",
   },
 };
