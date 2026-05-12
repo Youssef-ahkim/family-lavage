@@ -1,0 +1,11 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="256" cy="256" r="256" fill="white"/>
+  <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-style="italic" font-size="140" letter-spacing="-10">
+    <tspan fill="#2563eb">F</tspan><tspan fill="#0f172a">ML</tspan>
+  </text>
+  <circle cx="380" cy="180" r="25" stroke="#2563eb" stroke-width="8" fill="white"/>
+  <circle cx="410" cy="140" r="15" stroke="#2563eb" stroke-width="6" fill="white"/>
+  <circle cx="340" cy="160" r="10" stroke="#2563eb" stroke-width="4" fill="white"/>
+  <path d="M100 380C150 340 300 340 450 420" stroke="#2563eb" stroke-width="20" stroke-linecap="round"/>
+  <path d="M120 410C170 370 320 370 470 450" stroke="#0f172a" stroke-width="20" stroke-linecap="round"/>
+</svg>

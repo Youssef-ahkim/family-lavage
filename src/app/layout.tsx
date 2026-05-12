@@ -8,6 +8,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  themeColor: "#2563eb",
 };
 
 export const metadata: Metadata = {
@@ -17,6 +18,20 @@ export const metadata: Metadata = {
     template: "%s | Family Lavage Group",
   },
   description: "Services de lavage auto professionnels pendant vos courses. Lavage en 15 minutes, technologie écologique et detailing premium à Casablanca.",
+  appleWebApp: {
+    title: "Family Lavage",
+    statusBarStyle: "default",
+    capable: true,
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   keywords: ["lavage auto", "Casablanca", "Marjane", "nettoyage voiture", "detailing auto", "lavage écologique", "Family Lavage"],
   authors: [{ name: "Family Lavage Group" }],
   creator: "Family Lavage Group",
