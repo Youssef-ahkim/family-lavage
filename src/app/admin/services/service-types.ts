@@ -4,11 +4,11 @@ export const serviceSchema = z.object({
   title_fr: z.string().min(1, "Required"),
   title_ar: z.string().min(1, "Required"),
   title_en: z.string().min(1, "Required"),
-  price: z.coerce.number().min(0, "Price must be positive"),
-  active: z.boolean().default(true),
-  features_fr: z.array(z.string()).default([]),
-  features_ar: z.array(z.string()).default([]),
-  features_en: z.array(z.string()).default([]),
+  price: z.number().min(0, "Price must be positive"),
+  active: z.boolean(),
+  features_fr: z.array(z.string()),
+  features_ar: z.array(z.string()),
+  features_en: z.array(z.string()),
   photo: z.any().optional(), // Handled separately for upload
 });
 

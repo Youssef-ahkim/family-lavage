@@ -187,7 +187,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
             <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Price (DH)</label>
             <input
               type="number"
-              {...register("price")}
+              {...register("price", { valueAsNumber: true })}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
             />
             {errors.price && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-widest">{errors.price.message}</p>}
