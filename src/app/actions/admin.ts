@@ -279,7 +279,7 @@ export async function getAllSubscriptions(page = 1, perPage = 20, statusFilter =
   }
 }
 
-import { PLANS, PlanId } from '@/lib/plans';
+
 
 export async function approveSubscription(subscriptionId: string) {
   try {
@@ -290,23 +290,29 @@ export async function approveSubscription(subscriptionId: string) {
     const subRequest = await adminPb.collection('subscriptions').getOne(subscriptionId);
     if (subRequest.status !== 'pending') throw new Error("Subscription is not in pending state.");
 
-    const planId = subRequest.plan as PlanId;
-    const planDetails = PLANS[planId];
-    if (!planDetails) throw new Error("Invalid plan type.");
+    // 2. Find the dynamic plan details from the 'services' collection
+    // We look for an active 'subscription' service with matching plan_type
+    const filter = `category = "subscription" && plan_type = "${subRequest.plan}" && active = true`;
+    
+    const plans = await adminPb.collection('services').getList(1, 1, { filter });
+    const planDetails = plans.items[0];
 
-    // 2. Calculate Dates
+    if (!planDetails) {
+      throw new Error(`No active ${subRequest.plan} plan found in services collection.`);
+    }
+
+    // 3. Calculate Dates
     const startDate = new Date();
-    // end_date is relative to approval date (not creation date)
+    const durationDays = subRequest.plan === 'yearly' ? 365 : 30;
     const expiryDate = new Date(startDate);
-    expiryDate.setDate(expiryDate.getDate() + planDetails.durationDays);
+    expiryDate.setDate(expiryDate.getDate() + durationDays);
 
-    // 3. Update both Subscription and User in parallel
+    // 4. Update both Subscription and User in parallel
     await Promise.all([
-      // Update the ledger (the subscription record)
       adminPb.collection('subscriptions').update(subscriptionId, {
         status: 'active',
         expiry_date: expiryDate.toISOString(),
-        washes_remaining: planDetails.washes,
+        washes_remaining: planDetails.washes_count || 0,
         updated: startDate.toISOString(),
         notes: (subRequest.notes || "") + "\nApproved by Admin on " + startDate.toISOString()
       }),

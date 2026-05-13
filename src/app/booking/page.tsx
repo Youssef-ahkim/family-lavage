@@ -105,7 +105,7 @@ const BookingPage = () => {
     const fetchServicesData = async () => {
       try {
         const data = await getServices();
-        setDbServices(data.filter(s => s.active));
+        setDbServices(data.filter(s => s.active && s.category === 'once'));
       } catch (err) {
         console.error("Error fetching services:", err);
       } finally {

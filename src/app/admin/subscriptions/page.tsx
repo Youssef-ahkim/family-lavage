@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { getAllSubscriptions, approveSubscription, rejectSubscription } from "@/app/actions/admin";
-import { PLANS, PlanId } from "@/lib/plans";
 import {
   Loader2, 
   Search, 
@@ -32,7 +31,7 @@ type SubscriptionItem = {
     }
   };
   expiry_date?: string;
-  plan: PlanId;
+  plan: 'monthly' | 'yearly';
   status: 'pending' | 'active' | 'rejected' | 'expired';
   amount: number;
   notes: string;
@@ -236,10 +235,10 @@ export default function AdminSubscriptionsPage() {
                       <td className="px-5 py-4">
                         <div className="flex flex-col">
                           <span className="font-black text-white uppercase italic text-xs">
-                            {PLANS[item.plan]?.name[language as keyof typeof PLANS['monthly']['name']] || item.plan}
+                            {item.plan === 'yearly' ? t.pricing.plans.year.name : t.pricing.plans.month.name}
                           </span>
                           <span className="text-[10px] text-zinc-500 font-bold">
-                            {PLANS[item.plan]?.washes} washes included
+                            {item.notes?.includes("Service ID") ? "Custom Plan" : t.pricing.plans[item.plan === 'yearly' ? 'year' : 'month'].subPrice}
                           </span>
                         </div>
                       </td>
@@ -352,7 +351,7 @@ export default function AdminSubscriptionsPage() {
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Plan</span>
                     <span className="text-xs font-black text-white uppercase italic">
-                      {PLANS[item.plan]?.name[language as keyof typeof PLANS['monthly']['name']] || item.plan}
+                      {item.plan === 'yearly' ? t.pricing.plans.year.name : t.pricing.plans.month.name}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">

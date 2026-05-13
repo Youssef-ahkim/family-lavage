@@ -8,7 +8,6 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useProfile } from "@/context/ProfileContext";
 import { translations } from "@/lib/translations";
 import { requestSubscription, getMySubscriptionRequests } from "@/app/actions/subscription";
-import { PLANS, PlanId } from "@/lib/plans";
 import { 
   CheckCircle2, 
   ChevronRight, 
@@ -33,6 +32,8 @@ export default function SubscribePage() {
   const [error, setError] = useState<string | null>(null);
   const [requests, setRequests] = useState<any[]>([]);
   const [isFetchingRequests, setIsFetchingRequests] = useState(true);
+  const [dbPlans, setDbPlans] = useState<any[]>([]);
+  const [isFetchingPlans, setIsFetchingPlans] = useState(true);
 
   // Only redirect if they try to subscribe without being logged in
   // Handled in handleSubscribe now
@@ -42,7 +43,20 @@ export default function SubscribePage() {
     if (profile) {
       fetchRequests();
     }
+    fetchPlans();
   }, [profile]);
+
+  const fetchPlans = async () => {
+    try {
+      const { getServices } = await import("../admin/services/service-actions");
+      const data = await getServices();
+      setDbPlans(data.filter(s => s.active && s.category === 'subscription'));
+    } catch (err) {
+      console.error("Error fetching plans:", err);
+    } finally {
+      setIsFetchingPlans(false);
+    }
+  };
 
   const fetchRequests = async () => {
     const data = await getMySubscriptionRequests();
@@ -55,7 +69,7 @@ export default function SubscribePage() {
     }
   };
 
-  const handleSubscribe = async (planId: PlanId) => {
+  const handleSubscribe = async (planId: string) => {
     if (!profile) {
       router.push(`/auth/login?redirect=/subscribe&plan=${planId}`);
       return;
@@ -105,9 +119,9 @@ export default function SubscribePage() {
             </h1>
             <p className="text-zinc-500 mb-12 text-lg">
               {activeSub 
-                ? (language === 'fr' ? `Vous êtes actuellement abonné au plan ${PLANS[activeSub.plan as PlanId].name.fr}.` : 
-                   language === 'ar' ? `أنت مشترك حالياً في خطة ${PLANS[activeSub.plan as PlanId].name.ar}.` : 
-                   `You are currently subscribed to the ${PLANS[activeSub.plan as PlanId].name.en} plan.`)
+                ? (language === 'fr' ? `Vous êtes actuellement abonné.` : 
+                   language === 'ar' ? `أنت مشترك حالياً.` : 
+                   `You are currently subscribed.`)
                 : (
                   <>
                     {s.successDesc} <br />
@@ -154,23 +168,30 @@ export default function SubscribePage() {
 
         {/* Plans Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
-          {(Object.keys(PLANS) as PlanId[]).map((planId) => {
-            const plan = PLANS[planId];
+          {isFetchingPlans ? (
+            <div className="col-span-full flex flex-col items-center justify-center py-20">
+              <Loader2 className="w-10 h-10 text-brand-blue animate-spin mb-4" />
+              <p className="text-zinc-400 font-bold uppercase tracking-widest">{language === 'fr' ? 'Chargement des plans...' : (language === 'ar' ? 'جاري تحميل الخطط...' : 'Loading plans...')}</p>
+            </div>
+          ) : dbPlans.map((plan) => {
+            const name = language === 'fr' ? plan.title_fr : (language === 'ar' ? plan.title_ar : plan.title_en);
+            const features = language === 'fr' ? plan.features_fr : (language === 'ar' ? plan.features_ar : plan.features_en);
+            const isMonthly = plan.plan_type === 'monthly';
+            
             return (
               <div 
-                key={planId}
+                key={plan.id}
                 className={`relative flex flex-col p-10 rounded-[3rem] border-2 transition-all duration-500 hover:-translate-y-4 hover:shadow-2xl hover:shadow-brand-blue/10 bg-zinc-50 border-zinc-100 hover:border-brand-blue reveal`}
               >
                 <h3 className="text-2xl font-black mb-6 uppercase tracking-tight italic text-zinc-900">
-                  {plan.name[language as keyof typeof plan.name]}
+                  {name}
                 </h3>
-
                 <div className="flex items-baseline gap-1 mb-10">
                   <span className="text-6xl font-black tracking-tighter text-zinc-900">{plan.price}</span>
                   <div className="flex flex-col items-start leading-none">
                     <span className="text-xs font-bold text-zinc-400 uppercase">DH</span>
                     <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">
-                      {planId === 'monthly' ? t.pricing.perMonth : t.pricing.perYear}
+                      {isMonthly ? t.pricing.perMonth : t.pricing.perYear}
                     </span>
                   </div>
                 </div>
@@ -178,7 +199,7 @@ export default function SubscribePage() {
                 <div className="h-px w-full bg-zinc-200 mb-10" />
 
                 <ul className="space-y-5 mb-12 flex-grow">
-                  {plan.features[language as keyof typeof plan.features].map((feature, fIdx) => (
+                  {features.map((feature: string, fIdx: number) => (
                     <li key={fIdx} className={`flex items-center gap-3 text-base text-zinc-600 font-medium ${dir === 'rtl' ? 'flex-row-reverse text-right' : ''}`}>
                       <CheckCircle2 size={18} className="text-brand-blue shrink-0" />
                       <span>{feature}</span>
@@ -187,7 +208,7 @@ export default function SubscribePage() {
                 </ul>
 
                 <button
-                  onClick={() => handleSubscribe(planId)}
+                  onClick={() => handleSubscribe(plan.id)}
                   disabled={loading}
                   className="w-full py-5 bg-brand-blue text-white font-black uppercase tracking-[0.2em] text-sm rounded-2xl hover:bg-brand-blue/80 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-brand-blue/20 disabled:opacity-50 flex items-center justify-center gap-3"
                 >
@@ -223,7 +244,7 @@ export default function SubscribePage() {
                       <tr key={req.id} className="border-b border-zinc-100 hover:bg-white transition-colors">
                         <td className="px-6 py-4">
                           <span className="font-bold text-zinc-900 uppercase italic">
-                            {PLANS[req.plan as PlanId]?.name[language as keyof typeof PLANS['monthly']['name']] || req.plan}
+                            {req.plan}
                           </span>
                         </td>
                         <td className="px-6 py-4">

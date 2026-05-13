@@ -27,17 +27,22 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
     formState: { errors },
   } = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),
-    defaultValues: initialData || {
-      title_fr: "",
-      title_ar: "",
-      title_en: "",
-      price: 0,
-      active: true,
-      features_fr: [],
-      features_ar: [],
-      features_en: [],
+    defaultValues: {
+      title_fr: initialData?.title_fr || "",
+      title_ar: initialData?.title_ar || "",
+      title_en: initialData?.title_en || "",
+      price: initialData?.price || 0,
+      category: initialData?.category || "once",
+      plan_type: initialData?.plan_type || "monthly",
+      washes_count: initialData?.washes_count || 0,
+      active: initialData?.active ?? true,
+      features_fr: initialData?.features_fr || [],
+      features_ar: initialData?.features_ar || [],
+      features_en: initialData?.features_en || [],
     },
   });
+
+  const isSub = watch("category") === "subscription";
 
   const featuresFr = useFieldArray({ control, name: "features_fr" as any });
   const featuresAr = useFieldArray({ control, name: "features_ar" as any });
@@ -61,6 +66,11 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
       formData.append("title_ar", data.title_ar);
       formData.append("title_en", data.title_en);
       formData.append("price", data.price.toString());
+      formData.append("category", data.category);
+      if (data.category === "subscription") {
+        formData.append("plan_type", data.plan_type || "monthly");
+      }
+      formData.append("washes_count", (data.washes_count || 0).toString());
       formData.append("active", data.active.toString());
       formData.append("features_fr", JSON.stringify(data.features_fr));
       formData.append("features_ar", JSON.stringify(data.features_ar));
@@ -181,24 +191,62 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
           {errors.title_ar && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-widest text-right">{errors.title_ar.message}</p>}
         </div>
 
-        {/* Price and Status */}
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Price (DH)</label>
-            <input
+        {/* Price & Category */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-xs font-black uppercase tracking-widest text-zinc-500">Price (DH)</label>
+            <input 
               type="number"
               {...register("price", { valueAsNumber: true })}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
             />
-            {errors.price && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-widest">{errors.price.message}</p>}
+            {errors.price && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.price.message}</p>}
           </div>
-          <div className="flex items-center gap-4 h-full pt-6">
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" {...register("active")} className="sr-only peer" />
-              <div className="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue"></div>
-              <span className="ml-3 text-[10px] font-black uppercase tracking-widest text-zinc-400">Active</span>
-            </label>
+
+          <div className="space-y-2">
+            <label className="text-xs font-black uppercase tracking-widest text-zinc-500">Category</label>
+            <select 
+              {...register("category")}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all appearance-none"
+            >
+              <option value="once">One-time Service</option>
+              <option value="subscription">Subscription Plan</option>
+            </select>
           </div>
+        </div>
+
+        {/* Subscription Specifics */}
+        {isSub && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-brand-blue/5 border border-brand-blue/20 rounded-[2rem]">
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-brand-blue">Plan Type</label>
+              <select 
+                {...register("plan_type")}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all appearance-none"
+              >
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-brand-blue">Washes Included</label>
+              <input 
+                type="number"
+                {...register("washes_count", { valueAsNumber: true })}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
+                placeholder="e.g. 4 for monthly"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Active Status */}
+        <div className="flex items-center gap-4">
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" {...register("active")} className="sr-only peer" />
+            <div className="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue"></div>
+            <span className="ml-3 text-[10px] font-black uppercase tracking-widest text-zinc-400">Active</span>
+          </label>
         </div>
 
         {/* Photo Upload */}

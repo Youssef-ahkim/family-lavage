@@ -8,7 +8,6 @@ import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import { getServices } from "./admin/services/service-actions";
 import { ServiceRecord } from "./admin/services/service-types";
-import { PLANS } from "@/lib/plans";
 import { useState, useEffect } from "react";
 
 export default function Home() {
@@ -43,52 +42,50 @@ export default function Home() {
     },
   ];
 
-  // Map DB services to plan format
-  const dynamicServices = dbServices
+  // Map all DB services to the pricing grid format
+  const allPlans = dbServices
     .filter(s => s.active)
-    .map(s => ({
-      name: language === 'fr' ? s.title_fr : (language === 'ar' ? s.title_ar : s.title_en),
-      price: s.price.toString(),
-      period: t.pricing.perWash,
-      features: language === 'fr' ? s.features_fr : (language === 'ar' ? s.features_ar : s.features_en),
-      cta: t.pricing.ctas.book,
-      accent: s.price >= 500 ? "border-brand-gold ring-2 ring-brand-gold/50" : "border-zinc-200",
-      badge: s.price >= 500 ? t.pricing.badges.luxe : undefined,
-      gold: s.price >= 500,
-      subPrice: undefined as string | undefined,
-      link: `/booking?serviceId=${s.id}`
-    }));
+    .sort((a, b) => {
+      // Show one-time services first, then subscriptions
+      if (a.category === b.category) return a.price - b.price;
+      return a.category === 'once' ? -1 : 1;
+    })
+    .map(s => {
+      const name = language === 'fr' ? s.title_fr : (language === 'ar' ? s.title_ar : s.title_en);
+      const isSub = s.category === 'subscription';
+      const isMonthly = s.plan_type === 'monthly';
+      const features = language === 'fr' ? s.features_fr : (language === 'ar' ? s.features_ar : s.features_en);
 
-  // Add subscriptions from PLANS
-  const subscriptionPlans = [
-    {
-      name: PLANS.monthly.name[language],
-      price: PLANS.monthly.price.toString(),
-      period: t.pricing.perMonth,
-      features: PLANS.monthly.features[language],
-      subPrice: t.pricing.plans.month.subPrice as string | undefined,
-      cta: t.pricing.ctas.subscribe,
-      accent: "border-brand-blue/50 ring-1 ring-brand-blue/30",
-      badge: t.pricing.badges.mostChosen,
-      gold: false,
-      link: "/subscribe"
-    },
-    {
-      name: PLANS.yearly.name[language],
-      price: PLANS.yearly.price.toString(),
-      period: t.pricing.perYear,
-      features: PLANS.yearly.features[language],
-      subPrice: t.pricing.plans.year.subPrice as string | undefined,
-      cta: t.pricing.ctas.takeYear,
-      accent: "border-zinc-200",
-      badge: undefined as string | undefined,
-      gold: false,
-      link: "/subscribe"
-    }
-  ];
+      if (isSub) {
+        return {
+          name,
+          price: s.price.toString(),
+          period: isMonthly ? t.pricing.perMonth : t.pricing.perYear,
+          features,
+          subPrice: isMonthly ? t.pricing.plans.month.subPrice : t.pricing.plans.year.subPrice,
+          cta: t.pricing.ctas.subscribe,
+          accent: isMonthly ? "border-brand-blue/50 ring-1 ring-brand-blue/30" : "border-zinc-200",
+          badge: isMonthly ? t.pricing.badges.mostChosen : undefined,
+          gold: false,
+          link: "/subscribe"
+        };
+      }
 
-  // Combine them: Services first, then subscriptions
-  const allPlans = [...dynamicServices, ...subscriptionPlans];
+      // Standard One-time Service
+      return {
+        name,
+        price: s.price.toString(),
+        period: t.pricing.perWash,
+        features,
+        cta: t.pricing.ctas.book,
+        accent: s.price >= 500 ? "border-brand-gold ring-2 ring-brand-gold/50" : "border-zinc-200",
+        badge: s.price >= 500 ? t.pricing.badges.luxe : undefined,
+        gold: s.price >= 500,
+        subPrice: undefined as string | undefined,
+        link: `/booking?serviceId=${s.id}`
+      };
+    })
+    .slice(0, 4);
 
   return (
     <div className="min-h-screen bg-white text-zinc-950 font-sans overflow-x-hidden">

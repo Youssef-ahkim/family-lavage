@@ -3,13 +3,13 @@
 import { getAdminPB, getPublicPB } from '@/lib/pocketbase';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import { PLANS, PlanId } from '@/lib/plans';
+
 
 /**
  * Handles a user's request to subscribe to a plan.
  * Creates a pending record in the 'subscriptions' collection.
  */
-export async function requestSubscription(planId: PlanId) {
+export async function requestSubscription(planId: string) {
   try {
     const cookieStore = await cookies();
     const pbAuth = cookieStore.get('pb_auth');
@@ -26,10 +26,15 @@ export async function requestSubscription(planId: PlanId) {
     }
 
     const userId = pb.authStore.model.id;
-    const plan = PLANS[planId];
-
-    // Use ADMIN client to interact with 'subscriptions' (Superuser Only)
+    
+    // Use ADMIN client to interact with 'subscriptions' and 'services'
     const adminPb = await getAdminPB();
+
+    // Fetch plan details from the DB
+    const plan = await adminPb.collection('services').getOne(planId);
+    if (!plan || plan.category !== 'subscription') {
+      throw new Error("Invalid plan selection");
+    }
 
     // Check if there's already a pending or active subscription for this user
     const existing = await adminPb.collection('subscriptions').getList(1, 1, {
@@ -44,13 +49,16 @@ export async function requestSubscription(planId: PlanId) {
       };
     }
 
+    // Determine the plan type for the 'Select' field in PB
+    const planType = plan.plan_type || 'monthly';
+
     // Create the pending subscription record
     await adminPb.collection('subscriptions').create({
       user: userId,
-      plan: planId,
+      plan: planType, // "monthly" or "yearly" from your new dropdown
       status: 'pending',
       amount: plan.price,
-      notes: `User requested ${plan.name.en} via website.`,
+      notes: `User requested ${plan.title_en} via website.`,
       created: new Date().toISOString(),
     });
 
