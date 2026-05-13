@@ -16,6 +16,8 @@ export type ServiceFormData = z.infer<typeof serviceSchema>;
 
 export interface ServiceRecord extends ServiceFormData {
   id: string;
+  collectionId: string;
+  collectionName: string;
   created: string;
   updated: string;
   photo?: string; // URL string from PB

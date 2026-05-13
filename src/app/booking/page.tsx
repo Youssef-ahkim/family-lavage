@@ -2,16 +2,21 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { useLanguage } from "@/context/LanguageContext";
 import { useProfile } from "@/context/ProfileContext";
 import { translations } from "@/lib/translations";
 import { submitBooking, getBookedTimes } from "@/app/actions/booking";
+import { getServices } from "../admin/services/service-actions";
+import { ServiceRecord } from "../admin/services/service-types";
 import { ChevronLeft, ChevronRight, CheckCircle2, Car, Sparkles, Droplets, Zap, ShieldCheck, Clock, Calendar, User, Phone, ClipboardCheck, AlertCircle, Loader2 } from "lucide-react";
 
 const BookingPage = () => {
   const { language, dir } = useLanguage();
   const { fetchProfile, profile: cachedProfile } = useProfile();
+  const searchParams = useSearchParams();
+  const serviceIdParam = searchParams.get('serviceId');
   const t = translations[language];
   const b = t.booking;
 
@@ -24,6 +29,8 @@ const BookingPage = () => {
     date: "",
     time: "",
   });
+  const [dbServices, setDbServices] = useState<ServiceRecord[]>([]);
+  const [isFetchingServices, setIsFetchingServices] = useState(true);
   const [hp, setHp] = useState(""); // Honeypot
   const [startTime] = useState(Date.now()); // Load time for anti-spam
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -93,25 +100,43 @@ const BookingPage = () => {
       }
     };
     loadProfile();
+
+    // Fetch dynamic services
+    const fetchServicesData = async () => {
+      try {
+        const data = await getServices();
+        setDbServices(data.filter(s => s.active));
+      } catch (err) {
+        console.error("Error fetching services:", err);
+      } finally {
+        setIsFetchingServices(false);
+      }
+    };
+    fetchServicesData();
   }, [fetchProfile]);
 
-  const services = [
-    {
-      id: "simple",
-      title: t.pricing.plans.once.name,
-      price: cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0 ? "0" : "100",
-      icon: <Zap className="w-6 h-6" />,
-      features: t.pricing.plans.once.features,
-    },
-    {
-      id: "vip",
-      title: t.pricing.plans.vip.name,
-      price: "600",
-      icon: <Sparkles className="w-6 h-6" />,
-      features: t.pricing.plans.vip.features,
-      recommended: true,
-    },
-  ];
+  // Handle pre-selected service from URL
+  useEffect(() => {
+    if (serviceIdParam && dbServices.length > 0) {
+      const exists = dbServices.find(s => s.id === serviceIdParam);
+      if (exists) {
+        setSelectedService(serviceIdParam);
+        setStep(2);
+      }
+    }
+  }, [serviceIdParam, dbServices]);
+
+  const services = dbServices.map(s => ({
+    id: s.id,
+    title: language === 'fr' ? s.title_fr : (language === 'ar' ? s.title_ar : s.title_en),
+    price: (s.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) ? "0" : s.price.toString(),
+    icon: s.price >= 500 ? <Sparkles className="w-6 h-6" /> : <Droplets className="w-6 h-6" />,
+    features: language === 'fr' ? s.features_fr : (language === 'ar' ? s.features_ar : s.features_en),
+    recommended: s.price >= 500,
+    originalPrice: s.price
+  }));
+
+  const selectedServiceData = services.find(s => s.id === selectedService);
 
   const handleServiceSelect = (id: string) => {
     setSelectedService(id);
@@ -150,10 +175,10 @@ const BookingPage = () => {
         full_name: formData.fullname,
         phone: formData.phone,
         plate_number: formData.carModel,
-        service_type: selectedService === "vip" ? "VIP" : "Simple",
-        price: (selectedService === "simple" && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) ? 0 : (selectedService === "vip" ? 600 : 100),
+        service_type: selectedServiceData?.title || "Unknown",
+        price: selectedServiceData ? parseInt(selectedServiceData.price) : 0,
         date: bookingDateTime.toISOString(),
-        notes: `Selected service: ${selectedService}. Language: ${language}. ${selectedService === "simple" && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0 ? '(Used Subscription Wash)' : ''}`,
+        notes: `Selected service: ${selectedServiceData?.title}. Language: ${language}. ${selectedServiceData?.price === "0" ? '(Used Subscription Wash)' : ''}`,
         hp: hp, // Honeypot field
         ts: startTime.toString(), // Time when page was opened
       });
@@ -304,7 +329,12 @@ const BookingPage = () => {
         {/* Step 1: Service Selection */}
         {step === 1 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 reveal">
-            {services.map((service) => (
+            {isFetchingServices ? (
+              <div className="col-span-full py-20 flex flex-col items-center">
+                <Loader2 className="w-10 h-10 text-brand-blue animate-spin mb-4" />
+                <p className="text-zinc-400 font-bold uppercase tracking-widest">{language === 'fr' ? 'Chargement des services...' : (language === 'ar' ? 'جاري تحميل الخدمات...' : 'Loading services...')}</p>
+              </div>
+            ) : services.map((service) => (
               <button
                 key={service.id}
                 onClick={() => handleServiceSelect(service.id)}
@@ -527,7 +557,7 @@ const BookingPage = () => {
                   </div>
                   <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                     <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{b.steps.service}</span>
-                    <span className="font-black text-sm uppercase text-brand-blue">{selectedService === 'vip' ? t.pricing.plans.vip.name : (language === 'fr' ? 'Lavage Simple' : (language === 'ar' ? 'غسيل عادي' : 'Basic Wash'))}</span>
+                    <span className="font-black text-sm uppercase text-brand-blue">{selectedServiceData?.title || 'Unknown'}</span>
                   </div>
                 </div>
               </div>
@@ -536,7 +566,7 @@ const BookingPage = () => {
                 <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
                   <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">{b.summary.total}</p>
                   <div className={`flex items-baseline gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-5xl font-black tracking-tighter text-zinc-950">{(selectedService === 'simple' && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) ? '0' : (selectedService === 'vip' ? '600' : '100')}</span>
+                    <span className="text-5xl font-black tracking-tighter text-zinc-950">{selectedServiceData?.price || '0'}</span>
                     <span className="text-sm font-black text-zinc-400 uppercase">DH</span>
                   </div>
                   {(selectedService === 'simple' && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) && (

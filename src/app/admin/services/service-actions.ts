@@ -14,7 +14,7 @@ export async function getServices() {
       sort: "-created",
     });
     
-    // Map records using the official SDK helper to avoid base URL / trailing slash issues
+    // Map records using the official SDK helper
     return records.map(record => ({
       ...record,
       photo: record.photo ? pb.files.getUrl(record, record.photo) : undefined

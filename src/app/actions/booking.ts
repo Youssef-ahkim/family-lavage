@@ -150,7 +150,7 @@ export async function submitBooking(formData: any) {
     revalidatePath('/profile');
     revalidatePath('/my-bookings');
     revalidatePath('/admin');
-    revalidatePath('/admin/reservations');
+    revalidatePath('/admin/bookings');
 
     return { success: true, id: record.id };
   } catch (error: any) {
@@ -269,7 +269,7 @@ export async function cancelBooking(bookingId: string) {
     revalidatePath('/profile');
     revalidatePath('/my-bookings');
     revalidatePath('/admin');
-    revalidatePath('/admin/reservations');
+    revalidatePath('/admin/bookings');
 
     return { success: true };
   } catch (error: any) {

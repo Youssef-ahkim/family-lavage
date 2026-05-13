@@ -42,7 +42,7 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { name: t.services, href: "/#services" },
+    { name: t.services, href: "/services" },
     { name: t.pricing, href: "/subscribe" },
     { name: t.contact, href: "/#contact" },
     ...(!isAuthenticated ? [{ name: t.myBookings, href: "/my-bookings" }] : []),

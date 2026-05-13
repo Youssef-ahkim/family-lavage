@@ -56,7 +56,7 @@ export default function Home() {
       badge: s.price >= 500 ? t.pricing.badges.luxe : undefined,
       gold: s.price >= 500,
       subPrice: undefined as string | undefined,
-      link: "/booking"
+      link: `/booking?serviceId=${s.id}`
     }));
 
   // Add subscriptions from PLANS
@@ -126,14 +126,14 @@ export default function Home() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-5 mb-16">
-                <Link href="/booking">
+                <Link href={dbServices.find(s => s.price === 100)?.id ? `/booking?serviceId=${dbServices.find(s => s.price === 100)?.id}` : "/booking"}>
                   <button className="btn-primary group w-full sm:w-auto">
                     {t.hero.btnSimple}
                     <div className="w-1.5 h-1.5 rounded-full bg-white ml-3 opacity-50 group-hover:scale-150 transition-transform" />
                     <span className="text-xs font-medium ml-2">(100DH)</span>
                   </button>
                 </Link>
-                <Link href="/booking">
+                <Link href={dbServices.find(s => s.price >= 500)?.id ? `/booking?serviceId=${dbServices.find(s => s.price >= 500)?.id}` : "/booking"}>
                   <button className="btn-outline-gold group gap-3 w-full sm:w-auto">
                     {t.hero.btnVip}
                     <ArrowRight size={18} className={`${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'} transition-transform`} />
@@ -200,7 +200,7 @@ export default function Home() {
                 {t.services.desc}
               </p>
             </div>
-            <Link href="#subscriptions" className={`text-brand-blue font-bold flex items-center gap-2 transition-transform ${dir === 'rtl' ? 'hover:-translate-x-1' : 'hover:translate-x-1'}`}>
+            <Link href="/services" className={`text-brand-blue font-bold flex items-center gap-2 transition-transform ${dir === 'rtl' ? 'hover:-translate-x-1' : 'hover:translate-x-1'}`}>
               {t.services.viewPricing} <Zap size={18} className={dir === 'rtl' ? 'rotate-180' : ''} />
             </Link>
           </div>

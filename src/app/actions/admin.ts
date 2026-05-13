@@ -123,7 +123,7 @@ export async function updateBookingStatus(bookingId: string, newStatus: string) 
     invalidateCache('admin_stats');
 
     revalidatePath('/admin');
-    revalidatePath('/admin/reservations');
+    revalidatePath('/admin/bookings');
     revalidatePath('/profile');
     revalidatePath('/my-bookings');
     return { success: true };
@@ -144,7 +144,7 @@ export async function deleteBooking(bookingId: string) {
     invalidateCache('admin_stats');
 
     revalidatePath('/admin');
-    revalidatePath('/admin/reservations');
+    revalidatePath('/admin/bookings');
     revalidatePath('/profile');
     revalidatePath('/my-bookings');
     return { success: true };
