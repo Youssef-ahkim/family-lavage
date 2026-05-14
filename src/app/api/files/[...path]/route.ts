@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const path = params.path.join('/');
+  const { path: pathSegments } = await params;
+  const path = pathSegments.join('/');
   const pbUrl = process.env.POCKETBASE_URL || 'http://127.0.0.1:8090';
   
   // Construct the internal PocketBase file URL
