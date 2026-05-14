@@ -6,6 +6,7 @@ import {
   Loader2, User, Search, RefreshCw, ChevronLeft, ChevronRight, Mail, Phone, Hash
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { translations } from "@/lib/translations";
 
 type UserItem = {
   id: string;
@@ -20,6 +21,9 @@ type UserItem = {
 
 export default function AdminClientsPage() {
   const { language, dir } = useLanguage();
+  const t = translations[language];
+  const adm = t.admin;
+  const cTrans = adm.clients;
   const [users, setUsers] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -60,7 +64,9 @@ export default function AdminClientsPage() {
     if (!dateStr) return "—";
     try {
       const d = new Date(dateStr);
-      return d.toLocaleDateString('fr-FR', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+      return d.toLocaleDateString(language === 'ar' ? 'ar-MA' : (language === 'fr' ? 'fr-FR' : 'en-US'), { 
+        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' 
+      });
     } catch { return "—"; }
   };
 
@@ -74,10 +80,10 @@ export default function AdminClientsPage() {
 
   return (
     <div className="reveal">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-black uppercase italic tracking-tighter">Clients</h1>
-          <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest mt-1">Manage registered users and subscribers</p>
+      <div className={`flex items-center justify-between mb-8 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+        <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
+          <h1 className="text-3xl font-black uppercase italic tracking-tighter">{cTrans.title}</h1>
+          <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest mt-1">{cTrans.desc}</p>
         </div>
         <button 
           onClick={fetchData} 
@@ -95,7 +101,7 @@ export default function AdminClientsPage() {
             <Search className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500`} />
             <input
               type="text"
-              placeholder={language === 'fr' ? "Rechercher par nom, email, téléphone ou plaque..." : (language === 'ar' ? "البحث بالاسم ، البريد الإلكتروني ، الهاتف أو اللوحة..." : "Search by name, email, phone, or plate...")}
+              placeholder={cTrans.searchPlaceholder}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className={`w-full ${dir === 'rtl' ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4'} py-3.5 bg-zinc-900/50 border border-zinc-800/50 rounded-xl text-white placeholder-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 transition-all`}
@@ -111,9 +117,9 @@ export default function AdminClientsPage() {
       </div>
 
       {/* Results Count */}
-      <div className="flex items-center justify-between mb-4">
+      <div className={`flex items-center justify-between mb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
         <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
-          {totalItems} client{totalItems !== 1 ? 's' : ''} found
+          {totalItems} {cTrans.title} {language === 'fr' ? 'trouvé(s)' : ''}
         </p>
       </div>
 
@@ -125,7 +131,7 @@ export default function AdminClientsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className={`border-b border-zinc-800/50 bg-zinc-900/50 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                  {["Client", "Contact Info", "Default Vehicle", "Role", "Joined Date"].map(h => (
+                  {[adm.customer, "Contact Info", adm.vehicle, cTrans.tableRole, cTrans.tableJoined].map(h => (
                     <th key={h} className={`px-5 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest whitespace-nowrap ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
@@ -135,7 +141,7 @@ export default function AdminClientsPage() {
                   <tr>
                     <td colSpan={5} className="py-20 text-center">
                       <User className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-                      <p className="text-zinc-500 font-bold">No clients found</p>
+                      <p className="text-zinc-500 font-bold">{cTrans.noClients}</p>
                     </td>
                   </tr>
                 ) : (
@@ -195,7 +201,7 @@ export default function AdminClientsPage() {
           {users.length === 0 ? (
             <div className="py-12 bg-zinc-900/30 border border-zinc-800/50 rounded-2xl text-center">
               <User className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
-              <p className="text-zinc-500 font-bold text-sm">No clients found</p>
+              <p className="text-zinc-500 font-bold text-sm">{cTrans.noClients}</p>
             </div>
           ) : (
             users.map((user) => (
@@ -221,15 +227,15 @@ export default function AdminClientsPage() {
                     <span className="text-xs font-bold text-zinc-300">{user.email}</span>
                   </div>
                   <div className={`flex items-center justify-between ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Phone</span>
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{adm.phone}</span>
                     <span className="text-xs font-bold text-zinc-300">{user.phone || "—"}</span>
                   </div>
                   <div className={`flex items-center justify-between ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Vehicle</span>
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{adm.vehicle}</span>
                     <span className="text-xs font-black text-brand-blue uppercase">{user.plate || "—"}</span>
                   </div>
                   <div className={`flex items-center justify-between ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Joined</span>
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{language === 'fr' ? 'Inscrit' : (language === 'ar' ? 'انضم' : 'Joined')}</span>
                     <span className="text-xs font-bold text-zinc-500">{formatDate(user.created)}</span>
                   </div>
                 </div>
@@ -241,23 +247,23 @@ export default function AdminClientsPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
+        <div className={`flex items-center justify-center gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
           <button
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={page <= 1}
             className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-all disabled:opacity-30"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
           </button>
           <span className="px-6 py-2 text-xs font-black uppercase tracking-widest text-zinc-500">
-            Page {page} / {totalPages}
+            {language === 'fr' ? 'Page' : (language === 'ar' ? 'صفحة' : 'Page')} {page} / {totalPages}
           </span>
           <button
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
             className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-all disabled:opacity-30"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
           </button>
         </div>
       )}

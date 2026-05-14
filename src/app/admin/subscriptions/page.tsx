@@ -82,7 +82,7 @@ export default function AdminSubscriptionsPage() {
   };
 
   const handleApprove = async (id: string) => {
-    if (!confirm(language === 'fr' ? "Approuver cet abonnement ?" : "Approve this subscription?")) return;
+    if (!confirm(t.admin.approveConfirm)) return;
     setProcessingId(id);
     try {
       const res = await approveSubscription(id);
@@ -99,7 +99,7 @@ export default function AdminSubscriptionsPage() {
   };
 
   const handleReject = async (id: string) => {
-    const reason = prompt(language === 'fr' ? "Raison du refus :" : "Reason for rejection:");
+    const reason = prompt(t.admin.rejectPrompt);
     if (reason === null) return;
     setProcessingId(id);
     try {
@@ -120,7 +120,7 @@ export default function AdminSubscriptionsPage() {
     if (!dateStr) return "—";
     try {
       const d = new Date(dateStr);
-      return d.toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { 
+      return d.toLocaleDateString(language === 'ar' ? 'ar-MA' : (language === 'fr' ? 'fr-FR' : 'en-US'), { 
         year: 'numeric', 
         month: 'short', 
         day: 'numeric',
@@ -140,13 +140,13 @@ export default function AdminSubscriptionsPage() {
 
   return (
     <div className="reveal">
-      <div className="flex items-center justify-between mb-8">
-        <div>
+      <div className={`flex items-center justify-between mb-8 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+        <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
           <h1 className="text-3xl font-black uppercase italic tracking-tighter">
             {language === 'fr' ? 'Abonnements' : (language === 'ar' ? 'الاشتراكات' : 'Subscriptions')}
           </h1>
           <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest mt-1">
-            Manage payment verification and plan activation
+            {language === 'fr' ? 'Gérer la vérification des paiements et l\'activation des plans' : (language === 'ar' ? 'إدارة التحقق من الدفع وتفعيل الخطط' : 'Manage payment verification and plan activation')}
           </p>
         </div>
         <button 
@@ -180,7 +180,7 @@ export default function AdminSubscriptionsPage() {
             </button>
           </form>
         </div>
-        <div className="flex gap-2">
+        <div className={`flex gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
           {['pending', 'active', 'all'].map((status) => (
             <button
               key={status}
@@ -205,7 +205,7 @@ export default function AdminSubscriptionsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className={`border-b border-zinc-800/50 bg-zinc-900/50 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                  {["Client", "Plan Requested", "Amount", "Status", "Date", "Actions"].map(h => (
+                  {[t.admin.customer, "Plan Requested", t.admin.services.tablePrice, t.admin.status, "Date", t.admin.actions].map(h => (
                     <th key={h} className={`px-5 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest whitespace-nowrap ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
@@ -215,7 +215,7 @@ export default function AdminSubscriptionsPage() {
                   <tr>
                     <td colSpan={6} className="py-20 text-center">
                       <CreditCard className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-                      <p className="text-zinc-500 font-bold">No subscription requests found</p>
+                      <p className="text-zinc-500 font-bold">{language === 'fr' ? 'Aucune demande d\'abonnement trouvée' : (language === 'ar' ? 'لم يتم العثور على طلبات اشتراك' : 'No subscription requests found')}</p>
                     </td>
                   </tr>
                 ) : (
@@ -304,7 +304,7 @@ export default function AdminSubscriptionsPage() {
                             </>
                           )}
                           {item.status !== 'pending' && (
-                            <span className="text-zinc-600 text-xs italic">Processed</span>
+                            <span className="text-zinc-600 text-xs italic">{language === 'fr' ? 'Traité' : (language === 'ar' ? 'معالج' : 'Processed')}</span>
                           )}
                         </div>
                       </td>
@@ -321,7 +321,7 @@ export default function AdminSubscriptionsPage() {
           {items.length === 0 ? (
             <div className="py-12 bg-zinc-900/30 border border-zinc-800/50 rounded-2xl text-center">
               <CreditCard className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
-              <p className="text-zinc-500 font-bold text-sm">No requests found</p>
+              <p className="text-zinc-500 font-bold text-sm">{language === 'fr' ? 'Aucune demande trouvée' : (language === 'ar' ? 'لم يتم العثور على طلبات' : 'No requests found')}</p>
             </div>
           ) : (
             items.map((item) => (
@@ -347,18 +347,18 @@ export default function AdminSubscriptionsPage() {
                   </span>
                 </div>
 
-                <div className="bg-zinc-950/50 rounded-xl p-4 border border-zinc-800/30">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Plan</span>
-                    <span className="text-xs font-black text-white uppercase italic">
-                      {item.plan === 'yearly' ? t.pricing.plans.year.name : t.pricing.plans.month.name}
-                    </span>
+                  <div className={`bg-zinc-950/50 rounded-xl p-4 border border-zinc-800/30 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                    <div className={`flex justify-between items-center mb-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{language === 'fr' ? 'Plan' : (language === 'ar' ? 'الخطة' : 'Plan')}</span>
+                      <span className="text-xs font-black text-white uppercase italic">
+                        {item.plan === 'yearly' ? t.pricing.plans.year.name : t.pricing.plans.month.name}
+                      </span>
+                    </div>
+                    <div className={`flex justify-between items-center ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t.admin.services.tablePrice}</span>
+                      <span className="text-sm font-black text-brand-blue">{item.amount} DH</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Amount</span>
-                    <span className="text-sm font-black text-brand-blue">{item.amount} DH</span>
-                  </div>
-                </div>
 
                 <div className="space-y-3 pt-3 border-t border-zinc-800/30">
                   <div className="flex flex-col gap-2">
@@ -377,14 +377,14 @@ export default function AdminSubscriptionsPage() {
                   </div>
 
                   {item.status === 'pending' && (
-                    <div className="flex gap-2 pt-2">
+                    <div className={`flex gap-2 pt-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                       <button
                         onClick={() => handleApprove(item.id)}
                         disabled={!!processingId}
                         className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-500 text-white rounded-xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 disabled:opacity-50"
                       >
                         {processingId === item.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                        Approve
+                        {t.admin.confirmBtn}
                       </button>
                       <button
                         onClick={() => handleReject(item.id)}
@@ -392,7 +392,7 @@ export default function AdminSubscriptionsPage() {
                         className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 disabled:opacity-50"
                       >
                         <X size={14} />
-                        Reject
+                        {language === 'fr' ? 'Refuser' : (language === 'ar' ? 'رفض' : 'Reject')}
                       </button>
                     </div>
                   )}
@@ -405,23 +405,23 @@ export default function AdminSubscriptionsPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
+        <div className={`flex items-center justify-center gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
           <button
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={page <= 1}
             className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-all disabled:opacity-30"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
           </button>
           <span className="px-6 py-2 text-xs font-black uppercase tracking-widest text-zinc-500">
-            Page {page} / {totalPages}
+            {language === 'fr' ? 'Page' : (language === 'ar' ? 'صفحة' : 'Page')} {page} / {totalPages}
           </span>
           <button
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
             className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-all disabled:opacity-30"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
           </button>
         </div>
       )}

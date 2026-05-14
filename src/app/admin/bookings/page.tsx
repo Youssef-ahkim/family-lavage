@@ -275,7 +275,7 @@ export default function AdminBookingsPage() {
                         <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">{booking.plate_number}</td>
                         <td className="px-5 py-4">
                           <span className={`text-xs font-black uppercase ${booking.service_type === 'VIP' ? 'text-brand-gold' : 'text-zinc-400'}`}>
-                            {booking.service_type === 'VIP' ? t.pricing.plans.vip.name : (language === 'fr' ? 'Simple' : (language === 'ar' ? 'عادي' : 'Basic'))}
+                            {booking.service_type}
                           </span>
                         </td>
                         <td className="px-5 py-4 whitespace-nowrap">
@@ -494,8 +494,8 @@ export default function AdminBookingsPage() {
                 { label: adm.vehicle, value: selectedBooking.plate_number },
                 { label: adm.service, value: selectedBooking.service_type },
                 { label: adm.price, value: `${selectedBooking.price} DH` },
-                { label: language === 'fr' ? 'Date' : 'Date', value: formatDate(selectedBooking.date) },
-                { label: language === 'fr' ? 'Heure' : 'Time', value: formatTime(selectedBooking.date) },
+                { label: t.booking.form.date, value: formatDate(selectedBooking.date) },
+                { label: t.booking.form.time, value: formatTime(selectedBooking.date) },
                 { label: adm.notes, value: selectedBooking.notes || "—" },
               ].map((row) => (
                 <div key={row.label} className={`flex justify-between items-start gap-6 py-5 border-b border-zinc-800/50 last:border-0 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
@@ -534,7 +534,7 @@ export default function AdminBookingsPage() {
         isOpen={confirmCancel.isOpen}
         onClose={() => setConfirmCancel({ isOpen: false, id: null })}
         onConfirm={() => confirmCancel.id && handleStatusChange(confirmCancel.id, 'cancelled')}
-        title={language === 'fr' ? 'Confirmation' : (language === 'ar' ? 'تأكيد' : 'Confirmation')}
+        title={adm.confirmBtn}
         message={adm.cancelConfirm}
         confirmText={language === 'fr' ? "Confirmer l'annulation" : (language === 'ar' ? 'تأكيد الإلغاء' : 'Confirm Cancellation')}
         cancelText={adm.cancelBtn}
@@ -546,7 +546,7 @@ export default function AdminBookingsPage() {
         isOpen={confirmConfirm.isOpen}
         onClose={() => setConfirmConfirm({ isOpen: false, id: null })}
         onConfirm={() => confirmConfirm.id && handleStatusChange(confirmConfirm.id, 'confirmed')}
-        title={language === 'fr' ? 'Confirmation' : (language === 'ar' ? 'تأكيد' : 'Confirmation')}
+        title={adm.confirmBtn}
         message={(adm as any).confirmConfirm}
         confirmText={adm.confirmBtn}
         cancelText={adm.cancelBtn}
@@ -558,7 +558,7 @@ export default function AdminBookingsPage() {
         isOpen={confirmComplete.isOpen}
         onClose={() => setConfirmComplete({ isOpen: false, id: null })}
         onConfirm={() => confirmComplete.id && handleStatusChange(confirmComplete.id, 'completed')}
-        title={language === 'fr' ? 'Terminer' : (language === 'ar' ? 'إتمام' : 'Complete')}
+        title={adm.confirmBtn}
         message={(adm as any).completeConfirm}
         confirmText={adm.confirmBtn}
         cancelText={adm.cancelBtn}

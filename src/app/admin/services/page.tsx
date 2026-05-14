@@ -9,6 +9,8 @@ import {
 import { getServices, deleteService } from "./service-actions";
 import { ServiceRecord } from "./service-types";
 import ServiceForm from "./service-form";
+import { useLanguage } from "@/context/LanguageContext";
+import { translations } from "@/lib/translations";
 
 export default function AdminServicesPage() {
   const [services, setServices] = useState<ServiceRecord[]>([]);
@@ -17,6 +19,9 @@ export default function AdminServicesPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingService, setEditingService] = useState<ServiceRecord | undefined>(undefined);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const { language, dir } = useLanguage();
+  const t = translations[language];
+  const sTrans = t.admin.services;
 
   const fetchServices = async () => {
     setLoading(true);
@@ -35,7 +40,7 @@ export default function AdminServicesPage() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this service?")) return;
+    if (!confirm(sTrans.deleteConfirm)) return;
     setIsDeleting(id);
     try {
       await deleteService(id);
@@ -76,7 +81,7 @@ export default function AdminServicesPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black uppercase italic tracking-tighter text-white">Services Management</h1>
+          <h1 className="text-3xl font-black uppercase italic tracking-tighter text-white">{sTrans.title}</h1>
           <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest mt-1">
             Dynamic PocketBase-driven Service Catalog
           </p>
@@ -89,7 +94,7 @@ export default function AdminServicesPage() {
           className="bg-brand-blue text-white px-6 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-brand-blue/20"
         >
           <Plus size={18} />
-          Add New Service
+          {sTrans.add}
         </button>
       </div>
 
@@ -129,13 +134,13 @@ export default function AdminServicesPage() {
         {/* Table Controls */}
         <div className="p-6 border-b border-zinc-800/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
+            <Search className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-zinc-600`} size={18} />
             <input 
               type="text"
-              placeholder="Search services..."
+              placeholder={t.admin.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl pl-12 pr-4 py-3 text-sm text-white focus:outline-none focus:border-brand-blue transition-all"
+              className={`w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4'} py-3 text-sm text-white focus:outline-none focus:border-brand-blue transition-all`}
             />
           </div>
           <div className="flex items-center gap-2">
@@ -149,11 +154,11 @@ export default function AdminServicesPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-zinc-800/50">
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">Service Info</th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">Price</th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">Status</th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-right">Actions</th>
+              <tr className={`border-b border-zinc-800/50 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">{sTrans.tableTitle}</th>
+                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">{sTrans.tablePrice}</th>
+                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">{sTrans.tableStatus}</th>
+                <th className={`px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>{t.admin.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/30">
@@ -167,7 +172,7 @@ export default function AdminServicesPage() {
               ) : filteredServices.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-8 py-20 text-center text-zinc-500 uppercase text-[10px] font-black tracking-widest">
-                    No services found matching your search.
+                    {sTrans.noServices}
                   </td>
                 </tr>
               ) : (
@@ -175,7 +180,7 @@ export default function AdminServicesPage() {
                   <tr key={service.id} className="group hover:bg-zinc-800/20 transition-colors">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-zinc-800 overflow-hidden border border-zinc-700 group-hover:border-brand-blue/30 transition-all">
+                        <div className={`w-12 h-12 rounded-xl bg-zinc-800 overflow-hidden border border-zinc-700 group-hover:border-brand-blue/30 transition-all ${dir === 'rtl' ? 'order-2' : ''}`}>
                           {service.photo ? (
                             <img src={service.photo} alt={service.title_en} className="w-full h-full object-cover" />
                           ) : (
@@ -199,24 +204,24 @@ export default function AdminServicesPage() {
                       {service.active ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
                           <CheckCircle2 size={12} />
-                          Active
+                          {t.admin.confirmed}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/20">
                           <XCircle size={12} />
-                          Inactive
+                          {t.admin.cancelled}
                         </span>
                       )}
                     </td>
-                    <td className="px-8 py-6 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className={`px-8 py-6 ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>
+                      <div className={`flex items-center ${dir === 'rtl' ? 'justify-start' : 'justify-end'} gap-2`}>
                         <button 
                           onClick={() => {
                             setEditingService(service);
                             setIsFormOpen(true);
                           }}
                           className="p-2.5 rounded-xl bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all"
-                          title="Edit Service"
+                          title={t.admin.actions}
                         >
                           <Edit2 size={16} />
                         </button>
@@ -224,7 +229,7 @@ export default function AdminServicesPage() {
                           disabled={isDeleting === service.id}
                           onClick={() => handleDelete(service.id)}
                           className="p-2.5 rounded-xl bg-zinc-800 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 transition-all disabled:opacity-50"
-                          title="Delete Service"
+                          title={sTrans.delete}
                         >
                           {isDeleting === service.id ? (
                             <Loader2 className="animate-spin" size={16} />

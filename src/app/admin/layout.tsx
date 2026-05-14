@@ -49,15 +49,15 @@ export default function AdminLayout({
             <ShieldAlert className="w-12 h-12 text-red-500" />
           </div>
           <h1 className="text-4xl font-black text-white uppercase italic tracking-tighter mb-4">
-            {language === 'fr' ? 'Accès Refusé' : 'Access Denied'}
+            {language === 'fr' ? 'Accès Refusé' : (language === 'ar' ? 'تم رفض الوصول' : 'Access Denied')}
           </h1>
           <p className="text-zinc-500 mb-8">
             {language === 'fr' 
               ? "Vous n'avez pas la permission d'accéder à cette zone." 
-              : "You don't have permission to access this area."}
+              : (language === 'ar' ? "ليس لديك صلاحية للوصول إلى هذه المنطقة." : "You don't have permission to access this area.")}
           </p>
           <Link href="/" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-zinc-950 font-black uppercase text-sm tracking-widest rounded-2xl hover:bg-zinc-100 transition-all">
-            <ArrowRight className="w-4 h-4 rotate-180" /> {language === 'fr' ? "Retour à l'accueil" : "Back to Home"}
+            <ArrowRight className={`w-4 h-4 ${language === 'ar' ? '' : 'rotate-180'}`} /> {language === 'fr' ? "Retour à l'accueil" : (language === 'ar' ? "العودة للرئيسية" : "Back to Home")}
           </Link>
         </div>
       </div>
@@ -67,9 +67,9 @@ export default function AdminLayout({
   const navItems = [
     { name: adm.title, href: "/admin", icon: <LayoutDashboard size={20} /> },
     { name: adm.bookings, href: "/admin/bookings", icon: <Calendar size={20} /> },
-    { name: adm.clients, href: "/admin/clients", icon: <Users size={20} /> },
+    { name: adm.navClients, href: "/admin/clients", icon: <Users size={20} /> },
     { name: adm.subscriptions, href: "/admin/subscriptions", icon: <Briefcase size={20} /> },
-    { name: adm.services, href: "/admin/services", icon: <Briefcase size={20} /> },
+    { name: adm.navServices, href: "/admin/services", icon: <Briefcase size={20} /> },
   ];
 
   return (

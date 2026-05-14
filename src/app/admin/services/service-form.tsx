@@ -6,6 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, Upload, X, Globe, Save, Loader2 } from "lucide-react";
 import { serviceSchema, ServiceFormData, ServiceRecord } from "./service-types";
 import { createService, updateService } from "./service-actions";
+import { useLanguage } from "@/context/LanguageContext";
+import { translations } from "@/lib/translations";
 
 interface ServiceFormProps {
   initialData?: ServiceRecord;
@@ -17,6 +19,9 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
   const [activeTab, setActiveTab] = useState<"fr" | "ar" | "en">("en");
   const [preview, setPreview] = useState<string | null>(initialData?.photo || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { language, dir } = useLanguage();
+  const t = translations[language];
+  const sTrans = t.admin.services;
 
   const {
     register,
@@ -97,7 +102,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <label className="text-xs font-black uppercase tracking-widest text-zinc-500">
-          Features ({lang.toUpperCase()})
+          {lang === 'fr' ? sTrans.formFeaturesFr : lang === 'ar' ? sTrans.formFeaturesAr : sTrans.formFeaturesEn}
         </label>
         <button
           type="button"
@@ -112,8 +117,9 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
           <div key={field.id} className="flex gap-2">
             <input
               {...register(`features_${lang}.${index}` as any)}
-              className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-brand-blue transition-all"
-              placeholder={`Feature in ${lang}...`}
+              dir={lang === 'ar' ? 'rtl' : 'ltr'}
+              className={`flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-brand-blue transition-all ${lang === 'ar' ? 'text-right' : 'text-left'}`}
+              placeholder={sTrans.formAddFeature}
             />
             <button
               type="button"
@@ -125,7 +131,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
           </div>
         ))}
         {fieldArray.fields.length === 0 && (
-          <p className="text-[10px] text-zinc-600 italic font-bold uppercase">No features added yet</p>
+          <p className="text-[10px] text-zinc-600 italic font-bold uppercase">{sTrans.noServices}</p>
         )}
       </div>
     </div>
@@ -133,9 +139,9 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-2xl mx-auto bg-zinc-950 p-8 rounded-[2.5rem] border border-zinc-900 shadow-2xl">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">
-          {initialData ? "Edit Service" : "Add New Service"}
+      <div className={`flex items-center justify-between mb-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+        <h2 className={`text-2xl font-black uppercase italic tracking-tighter text-white ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+          {initialData ? sTrans.edit : sTrans.add}
         </h2>
         <button type="button" onClick={onCancel} className="p-2 text-zinc-500 hover:text-white transition-colors">
           <X size={20} />
@@ -153,7 +159,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
               activeTab === lang ? "bg-zinc-800 text-white shadow-lg" : "text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            {lang === "en" ? "English" : lang === "fr" ? "French" : "Arabic"}
+            {lang === "en" ? "English" : lang === "fr" ? "Français" : "العربية"}
           </button>
         ))}
       </div>
@@ -161,7 +167,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
       <div className="grid grid-cols-1 gap-6">
         {/* Multilingual Title */}
         <div className={activeTab === "en" ? "block" : "hidden"}>
-          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Title (English)</label>
+          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">{sTrans.formTitleEn}</label>
           <input
             {...register("title_en")}
             className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
@@ -171,7 +177,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
         </div>
 
         <div className={activeTab === "fr" ? "block" : "hidden"}>
-          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Title (French)</label>
+          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">{sTrans.formTitleFr}</label>
           <input
             {...register("title_fr")}
             className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
@@ -181,7 +187,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
         </div>
 
         <div className={activeTab === "ar" ? "block" : "hidden"}>
-          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Title (Arabic)</label>
+          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 text-right">{sTrans.formTitleAr}</label>
           <input
             {...register("title_ar")}
             dir="rtl"
@@ -193,47 +199,49 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
 
         {/* Price & Category */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-zinc-500">Price (DH)</label>
+          <div className={`space-y-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+            <label className="text-xs font-black uppercase tracking-widest text-zinc-500">{sTrans.formPrice}</label>
             <input 
               type="number"
               {...register("price", { valueAsNumber: true })}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
+              dir="ltr"
+              className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
             />
             {errors.price && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.price.message}</p>}
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-zinc-500">Category</label>
+          <div className={`space-y-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+            <label className="text-xs font-black uppercase tracking-widest text-zinc-500">{sTrans.formCategory}</label>
             <select 
               {...register("category")}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all appearance-none"
+              className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all appearance-none ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
             >
-              <option value="once">One-time Service</option>
-              <option value="subscription">Subscription Plan</option>
+              <option value="once">{sTrans.formCategoryOnce}</option>
+              <option value="subscription">{sTrans.formCategorySub}</option>
             </select>
           </div>
         </div>
 
         {/* Subscription Specifics */}
         {isSub && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-brand-blue/5 border border-brand-blue/20 rounded-[2rem]">
+          <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-brand-blue/5 border border-brand-blue/20 rounded-[2rem] ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-brand-blue">Plan Type</label>
+              <label className="text-xs font-black uppercase tracking-widest text-brand-blue">{sTrans.formPlanType}</label>
               <select 
                 {...register("plan_type")}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all appearance-none"
+                className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all appearance-none ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
               >
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
+                <option value="monthly">{sTrans.formPlanMonthly}</option>
+                <option value="yearly">{sTrans.formPlanYearly}</option>
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-brand-blue">Washes Included</label>
+              <label className="text-xs font-black uppercase tracking-widest text-brand-blue">{sTrans.formWashes}</label>
               <input 
                 type="number"
                 {...register("washes_count", { valueAsNumber: true })}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
+                dir="ltr"
+                className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
                 placeholder="e.g. 4 for monthly"
               />
             </div>
@@ -241,18 +249,23 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
         )}
 
         {/* Active Status */}
-        <div className="flex items-center gap-4">
-          <label className="relative inline-flex items-center cursor-pointer">
+        <div className={`flex items-center gap-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+          <label className="relative inline-flex items-center cursor-pointer group">
             <input type="checkbox" {...register("active")} className="sr-only peer" />
-            <div className="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue"></div>
-            <span className="ml-3 text-[10px] font-black uppercase tracking-widest text-zinc-400">Active</span>
+            <div className={`w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer 
+              ${dir === 'rtl' 
+                ? 'peer-checked:after:-translate-x-full peer-checked:after:border-white after:right-[2px]' 
+                : 'peer-checked:after:translate-x-full peer-checked:after:border-white after:left-[2px]'
+              } 
+              after:content-[''] after:absolute after:top-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue`}></div>
+            <span className={`text-[10px] font-black uppercase tracking-widest text-zinc-400 ${dir === 'rtl' ? 'mr-3' : 'ml-3'}`}>{sTrans.formActive}</span>
           </label>
         </div>
 
         {/* Photo Upload */}
         <div>
-          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Service Photo</label>
-          <div className="flex items-center gap-6">
+          <label className={`block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{sTrans.formPhoto}</label>
+          <div className={`flex items-center gap-6 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
             <div className="w-24 h-24 rounded-3xl bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden group relative">
               {preview ? (
                 <img src={preview} alt="Preview" className="w-full h-full object-cover" />
@@ -267,8 +280,8 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
               />
             </div>
             <div className="flex-1">
-              <p className="text-[10px] text-zinc-500 font-bold uppercase leading-relaxed">
-                Upload a representative image for this service.<br/>
+              <p className={`text-[10px] text-zinc-500 font-bold uppercase leading-relaxed ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                {language === 'fr' ? "Téléchargez une image représentative de ce service." : language === 'ar' ? "قم بتحميل صورة تمثل هذه الخدمة." : "Upload a representative image for this service."}<br/>
                 Max size: 5MB. Formats: WebP, PNG, JPG.
               </p>
             </div>
@@ -290,13 +303,13 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
       </div>
 
       {/* Form Actions */}
-      <div className="flex gap-4 pt-4 border-t border-zinc-900">
+      <div className={`flex gap-4 pt-4 border-t border-zinc-900 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
         <button
           type="button"
           onClick={onCancel}
           className="flex-1 py-4 px-6 rounded-2xl bg-zinc-900 text-zinc-400 font-black uppercase text-[10px] tracking-widest hover:bg-zinc-800 hover:text-white transition-all"
         >
-          Cancel
+          {sTrans.cancel}
         </button>
         <button
           type="submit"
@@ -308,7 +321,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
           ) : (
             <Save size={16} />
           )}
-          {initialData ? "Update Service" : "Create Service"}
+          {initialData ? sTrans.save : sTrans.save}
         </button>
       </div>
     </form>

@@ -77,7 +77,7 @@ export default function AdminDashboardPage() {
         <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
           <h1 className="text-4xl font-black uppercase italic tracking-tighter">{adm.title}</h1>
           <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest mt-1">
-            {language === 'fr' ? "Aperçu des opérations de Family Lavage" : (language === 'ar' ? "نظرة عامة على عمليات Family Lavage" : "Overview of Family Lavage operations")}
+            {adm.dashboard?.overview || "Overview"}
           </p>
         </div>
         <button 
@@ -98,7 +98,7 @@ export default function AdminDashboardPage() {
             { label: adm.confirmed, value: stats.confirmed, icon: <CheckCircle2 size={20} />, color: "text-emerald-400", bg: "bg-emerald-500/5 border-emerald-500/10", href: "/admin/bookings?status=confirmed" },
             { label: adm.cancelled, value: stats.cancelled, icon: <XCircle size={20} />, color: "text-zinc-500", bg: "bg-zinc-900", href: "/admin/bookings?status=cancelled" },
             { label: adm.today, value: stats.todayCount, icon: <CalendarDays size={20} />, color: "text-blue-400", bg: "bg-blue-500/5 border-blue-500/10", href: "/admin/bookings?date=today" },
-            { label: language === 'fr' ? 'Revenu' : (language === 'ar' ? 'الأرباح' : 'Revenue'), value: `${stats.totalRevenue} DH`, icon: <TrendingUp size={20} />, color: "text-brand-gold", bg: "bg-brand-gold/5 border-brand-gold/10" },
+            { label: adm.dashboard.revenue, value: `${stats.totalRevenue} DH`, icon: <TrendingUp size={20} />, color: "text-brand-gold", bg: "bg-brand-gold/5 border-brand-gold/10" },
           ].map((stat) => (
             <Link 
               key={stat.label} 
@@ -119,17 +119,17 @@ export default function AdminDashboardPage() {
           <div className={`flex items-center justify-between ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
             <h2 className={`text-xl font-black uppercase italic tracking-tight flex items-center gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
               <Clock size={20} className="text-brand-blue" />
-              {language === 'fr' ? 'Réservations Récentes' : (language === 'ar' ? 'الحجوزات الأخيرة' : 'Recent Bookings')}
+              {adm.dashboard?.recentBookings}
             </h2>
             <Link href="/admin/bookings" className={`text-xs font-black uppercase tracking-widest text-zinc-500 hover:text-brand-blue transition-colors flex items-center gap-1 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-              {language === 'fr' ? 'Voir Tout' : (language === 'ar' ? 'عرض الكل' : 'View All')} <ArrowRight size={14} className={dir === 'rtl' ? 'rotate-180' : ''} />
+              {adm.dashboard?.viewAll} <ArrowRight size={14} className={dir === 'rtl' ? 'rotate-180' : ''} />
             </Link>
           </div>
 
           <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-3xl overflow-hidden">
             {recentBookings.length === 0 ? (
               <div className="p-12 text-center text-zinc-500 italic">
-                {language === 'fr' ? 'Aucune activité récente' : (language === 'ar' ? 'لا يوجد نشاط أخير' : 'No recent activity')}
+                {adm.dashboard?.noActivity}
               </div>
             ) : (
               <div className="divide-y divide-zinc-800/50">
@@ -167,28 +167,28 @@ export default function AdminDashboardPage() {
         <div className="space-y-6">
           <h2 className={`text-xl font-black uppercase italic tracking-tight flex items-center gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
             <Zap size={20} className="text-brand-gold" />
-            {language === 'fr' ? 'Actions Rapides' : (language === 'ar' ? 'إجراءات سريعة' : 'Quick Actions')}
+            {adm.dashboard?.quickActions}
           </h2>
 
           <div className="grid grid-cols-1 gap-3">
             {[
               { 
-                name: language === 'fr' ? 'Gérer les Réservations' : (language === 'ar' ? 'إدارة الحجوزات' : 'Manage Bookings'), 
+                name: adm.dashboard?.manageBookings, 
                 href: "/admin/bookings", 
                 icon: <Calendar size={18} />, 
-                desc: language === 'fr' ? "Confirmer ou annuler les sessions" : (language === 'ar' ? "تأكيد أو إلغاء الحجز" : "Confirm or cancel sessions")
+                desc: adm.dashboard?.manageBookingsDesc
               },
               { 
-                name: language === 'fr' ? 'Voir les Clients' : (language === 'ar' ? 'عرض الزبناء' : 'View Clients'), 
+                name: adm.dashboard?.viewClients, 
                 href: "/admin/clients", 
                 icon: <Users size={18} />, 
-                desc: language === 'fr' ? "Liste des utilisateurs enregistrés" : (language === 'ar' ? "قائمة المستخدمين" : "List all registered users")
+                desc: adm.dashboard?.viewClientsDesc
               },
               { 
-                name: language === 'fr' ? 'Paramètres des Prix' : (language === 'ar' ? 'إعدادات الأسعار' : 'Price Settings'), 
+                name: adm.dashboard?.priceSettings, 
                 href: "/admin/services", 
                 icon: <Briefcase size={18} />, 
-                desc: language === 'fr' ? "Mettre à jour les catégories de lavage" : (language === 'ar' ? "تحديث الفئات" : "Update wash categories")
+                desc: adm.dashboard?.priceSettingsDesc
               },
             ].map((link) => (
               <Link 
