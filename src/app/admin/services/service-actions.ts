@@ -14,10 +14,10 @@ export async function getServices() {
       sort: "-created",
     });
     
-    // Map records using the official SDK helper
+    // Map records to use our local proxy for images to ensure they are served securely
     return records.map(record => ({
       ...record,
-      photo: record.photo ? pb.files.getUrl(record, record.photo) : undefined
+      photo: record.photo ? `/api/files/${record.collectionId}/${record.id}/${record.photo}` : undefined
     }));
   });
 }
