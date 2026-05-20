@@ -38,7 +38,6 @@ export default function ServicesPage() {
       <Navbar />
 
       {/* Hero Section */}
-      {/* Reduced pt-40 to pt-32 to bring content slightly higher up */}
       <section className="relative pt-32 pb-8 overflow-hidden bg-white border-b border-zinc-100">
         {/* Subtle Grid Background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]" />
@@ -48,13 +47,8 @@ export default function ServicesPage() {
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-teal-400/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* Increased max-w-4xl to max-w-5xl to allow text to spread wider */}
           <div className={`max-w-5xl mx-auto text-center reveal`}>
-            <span className="inline-block py-1.5 px-4 rounded-full bg-brand-blue/10 text-brand-blue text-xs font-black tracking-widest uppercase mb-4 border border-brand-blue/20">
-              {language === 'fr' ? 'L\'Excellence Automobile' : (language === 'ar' ? 'التميز في السيارات' : 'Automotive Excellence')}
-            </span>
             
-            {/* Removed the <br/> tag so the title stays on one line. Added a space before the span. */}
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic mb-4 leading-[1.1]">
               {t.services.title}{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-teal-500">
@@ -87,7 +81,9 @@ export default function ServicesPage() {
             ) : dbServices.length > 0 ? (
               dbServices.map((service, idx) => {
                 const title = language === 'fr' ? service.title_fr : (language === 'ar' ? service.title_ar : service.title_en);
-                const isGold = service.price >= 500;
+                
+                // Check if the title contains the word "VIP" (case-insensitive)
+                const isGold = title?.toLowerCase().includes('vip');
 
                 return (
                   <div 
@@ -108,7 +104,7 @@ export default function ServicesPage() {
                         <div className="absolute top-0 right-0 w-64 h-64 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
                       )}
 
-                      {/* Image Area - Changed from aspect-[4/3] to aspect-video (16:9) to make the image wider and less tall */}
+                      {/* Image Area */}
                       <div className="relative aspect-video rounded-[1.5rem] overflow-hidden mb-6 bg-zinc-100">
                         {service.photo ? (
                           <>
