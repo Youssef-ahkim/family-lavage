@@ -8,8 +8,8 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useProfile } from "@/context/ProfileContext";
 import { translations } from "@/lib/translations";
 import { submitBooking, getBookedTimes } from "@/app/actions/booking";
-import { getServices } from "../admin/services/service-actions";
-import { ServiceRecord } from "../admin/services/service-types";
+import { getServices, getServiceOffers } from "../admin/services/service-actions";
+import { ServiceRecord, ServiceOfferRecord } from "../admin/services/service-types";
 import { ChevronLeft, ChevronRight, CheckCircle2, Car, Sparkles, Droplets, Zap, ShieldCheck, Clock, Calendar, User, Phone, ClipboardCheck, AlertCircle, Loader2 } from "lucide-react";
 
 const BookingPage = () => {
@@ -21,7 +21,9 @@ const BookingPage = () => {
   const b = t.booking;
 
   const [step, setStep] = useState(1);
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedService, setSelectedService] = useState<ServiceRecord | null>(null);
+  const [selectedOffer, setSelectedOffer] = useState<ServiceOfferRecord | null>(null);
+  
   const [formData, setFormData] = useState({
     fullname: "",
     phone: "",
@@ -29,8 +31,13 @@ const BookingPage = () => {
     date: "",
     time: "",
   });
+  
   const [dbServices, setDbServices] = useState<ServiceRecord[]>([]);
+  const [dbOffers, setDbOffers] = useState<ServiceOfferRecord[]>([]);
+  
   const [isFetchingServices, setIsFetchingServices] = useState(true);
+  const [isFetchingOffers, setIsFetchingOffers] = useState(false);
+  
   const [hp, setHp] = useState(""); // Honeypot
   const [startTime] = useState(Date.now()); // Load time for anti-spam
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -77,7 +84,6 @@ const BookingPage = () => {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        // Uses cached profile from context — no extra server call if Navbar already fetched
         const profile = await fetchProfile();
         if (profile) {
           setFormData(prev => ({
@@ -88,7 +94,6 @@ const BookingPage = () => {
           }));
         }
 
-        // Check for active bookings
         const { getMyBookings } = await import("@/app/actions/booking");
         const bookings = await getMyBookings();
         const active = bookings.some((b: any) => b.status === 'pending' || b.status === 'confirmed');
@@ -101,11 +106,10 @@ const BookingPage = () => {
     };
     loadProfile();
 
-    // Fetch dynamic services
     const fetchServicesData = async () => {
       try {
         const data = await getServices();
-        setDbServices(data.filter(s => s.active && s.category === 'once'));
+        setDbServices(data.filter(s => s.active));
       } catch (err) {
         console.error("Error fetching services:", err);
       } finally {
@@ -115,31 +119,42 @@ const BookingPage = () => {
     fetchServicesData();
   }, [fetchProfile]);
 
-  // Handle pre-selected service from URL
+  const offerIdParam = searchParams.get('offerId');
+
   useEffect(() => {
     if (serviceIdParam && dbServices.length > 0) {
       const exists = dbServices.find(s => s.id === serviceIdParam);
-      if (exists) {
-        setSelectedService(serviceIdParam);
-        setStep(2);
+      if (exists && selectedService?.id !== exists.id) {
+        handleServiceSelect(exists, offerIdParam);
       }
     }
-  }, [serviceIdParam, dbServices]);
+  }, [serviceIdParam, dbServices, offerIdParam]);
 
-  const services = dbServices.map(s => ({
-    id: s.id,
-    title: language === 'fr' ? s.title_fr : (language === 'ar' ? s.title_ar : s.title_en),
-    price: (s.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) ? "0" : s.price.toString(),
-    icon: s.price >= 500 ? <Sparkles className="w-6 h-6" /> : <Droplets className="w-6 h-6" />,
-    features: language === 'fr' ? s.features_fr : (language === 'ar' ? s.features_ar : s.features_en),
-    recommended: s.price >= 500,
-    originalPrice: s.price
-  }));
+  const handleServiceSelect = async (service: ServiceRecord, initialOfferId?: string | null) => {
+    setSelectedService(service);
+    setSelectedOffer(null);
+    setIsFetchingOffers(true);
+    try {
+      const offers = await getServiceOffers(service.id);
+      const activeOffers = offers.filter(o => o.active);
+      setDbOffers(activeOffers);
+      
+      if (initialOfferId) {
+        const targetOffer = activeOffers.find(o => o.id === initialOfferId);
+        if (targetOffer) {
+          setSelectedOffer(targetOffer);
+          setStep(2);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching offers:", err);
+    } finally {
+      setIsFetchingOffers(false);
+    }
+  };
 
-  const selectedServiceData = services.find(s => s.id === selectedService);
-
-  const handleServiceSelect = (id: string) => {
-    setSelectedService(id);
+  const handleOfferSelect = (offer: ServiceOfferRecord) => {
+    setSelectedOffer(offer);
     setStep(2);
   };
 
@@ -150,9 +165,8 @@ const BookingPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    // Client-side rate limit check
     const lastSubmit = localStorage.getItem('last_booking');
-    if (lastSubmit && Date.now() - parseInt(lastSubmit) < 60000) { // 1 minute limit
+    if (lastSubmit && Date.now() - parseInt(lastSubmit) < 60000) {
       setError(t.errors.rateLimit);
       setLoading(false);
       return;
@@ -171,23 +185,27 @@ const BookingPage = () => {
         return;
       }
 
+      if (!selectedOffer) throw new Error("No offer selected");
+
+      const offerTitle = language === 'fr' ? selectedOffer.title_fr : (language === 'ar' ? selectedOffer.title_ar : selectedOffer.title_en);
+      const isSubWash = selectedOffer.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0;
+      const finalPrice = isSubWash ? 0 : selectedOffer.price;
+
       const result = await submitBooking({
         full_name: formData.fullname,
         phone: formData.phone,
         plate_number: formData.carModel,
-        service_type: selectedServiceData?.title || "Unknown",
-        price: selectedServiceData ? parseInt(selectedServiceData.price) : 0,
+        service_type: offerTitle,
+        price: finalPrice,
         date: bookingDateTime.toISOString(),
-        notes: `Selected service: ${selectedServiceData?.title}. Language: ${language}. ${selectedServiceData?.price === "0" ? '(Used Subscription Wash)' : ''}`,
-        hp: hp, // Honeypot field
-        ts: startTime.toString(), // Time when page was opened
+        notes: `Selected service: ${selectedService?.title_en} - ${offerTitle}. Language: ${language}. ${isSubWash ? '(Used Subscription Wash)' : ''}`,
+        hp: hp,
+        ts: startTime.toString(),
       });
 
       if (result.success) {
         localStorage.setItem('last_booking', Date.now().toString());
 
-        // Only save booking ID in localStorage for GUEST users.
-        // Logged-in users have their bookings linked in the DB via user ID.
         if (!cachedProfile) {
           const existing = localStorage.getItem('my_booking_ids') || "";
           const bookingId = result.id as string;
@@ -328,49 +346,111 @@ const BookingPage = () => {
 
         {/* Step 1: Service Selection */}
         {step === 1 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 reveal">
-            {isFetchingServices ? (
-              <div className="col-span-full py-20 flex flex-col items-center">
-                <Loader2 className="w-10 h-10 text-brand-blue animate-spin mb-4" />
-                <p className="text-zinc-400 font-bold uppercase tracking-widest">{language === 'fr' ? 'Chargement des services...' : (language === 'ar' ? 'جاري تحميل الخدمات...' : 'Loading services...')}</p>
-              </div>
-            ) : services.map((service) => (
-              <button
-                key={service.id}
-                onClick={() => handleServiceSelect(service.id)}
-                className={`relative p-8 rounded-[2rem] border-2 text-left transition-all duration-500 group ${selectedService === service.id ? "border-brand-blue bg-brand-blue/5" : "border-zinc-100 bg-zinc-50 hover:border-brand-blue/30"
-                  } ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
-              >
-                {service.recommended && (
-                  <span className={`absolute top-4 ${dir === 'rtl' ? 'left-8' : 'right-8'} px-4 py-1 bg-brand-gold text-black text-[10px] font-black uppercase tracking-widest rounded-full`}>
-                    {b.recommended}
-                  </span>
-                )}
-                <div className={`w-14 h-14 rounded-2xl bg-white border border-zinc-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ${dir === 'rtl' ? 'ml-auto mr-0' : 'mr-auto ml-0'}`}>
-                  <div className="text-brand-blue">{service.icon}</div>
-                </div>
-                <h3 className="text-2xl font-black uppercase italic tracking-tight mb-2">{service.title}</h3>
-                <div className="flex flex-col mb-6">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-black">{service.price}</span>
-                    <span className="text-xs font-bold text-zinc-400 uppercase">DH</span>
+          <div className="reveal">
+            {!selectedService ? (
+              // Show Parent Services
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {isFetchingServices ? (
+                  <div className="col-span-full py-20 flex flex-col items-center">
+                    <Loader2 className="w-10 h-10 text-brand-blue animate-spin mb-4" />
+                    <p className="text-zinc-400 font-bold uppercase tracking-widest">{language === 'fr' ? 'Chargement des services...' : (language === 'ar' ? 'جاري تحميل الخدمات...' : 'Loading services...')}</p>
                   </div>
-                  {service.price === "0" && (
-                    <p className="text-[9px] font-black text-brand-blue uppercase tracking-widest mt-1">
-                      {b.summary.deductNotice}
-                    </p>
-                  )}
+                ) : dbServices.map((service) => {
+                  const title = language === 'fr' ? service.title_fr : (language === 'ar' ? service.title_ar : service.title_en);
+                  const desc = language === 'fr' ? service.description_fr : (language === 'ar' ? service.description_ar : service.description_en);
+                  
+                  return (
+                    <button
+                      key={service.id}
+                      onClick={() => handleServiceSelect(service)}
+                      className={`relative p-8 rounded-[2rem] border-2 border-zinc-100 bg-zinc-50 text-left transition-all duration-500 hover:border-brand-blue/30 group ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
+                    >
+                      {service.photo && (
+                        <div className="w-full h-32 rounded-2xl overflow-hidden mb-6 relative">
+                          <img src={service.photo} alt={title} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
+                        </div>
+                      )}
+                      <h3 className="text-2xl font-black uppercase italic tracking-tight mb-2">{title}</h3>
+                      <p className="text-zinc-500 text-sm line-clamp-2">{desc}</p>
+                      <div className={`mt-6 flex items-center gap-2 text-brand-blue font-bold uppercase tracking-widest text-[10px] ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                        {language === 'fr' ? 'Voir les offres' : (language === 'ar' ? 'عرض العروض' : 'View Offers')}
+                        <ChevronRight size={14} className={dir === 'rtl' ? 'rotate-180' : ''} />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              // Show Offers for Selected Service
+              <div>
+                <button 
+                  onClick={() => setSelectedService(null)}
+                  className={`mb-6 flex items-center gap-2 text-zinc-400 font-bold hover:text-zinc-950 transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
+                >
+                  <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> 
+                  {language === 'fr' ? 'Retour aux services' : (language === 'ar' ? 'العودة للخدمات' : 'Back to Services')}
+                </button>
+                
+                <h2 className={`text-2xl font-black uppercase italic mb-8 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                  {language === 'fr' ? 'Choisissez une offre' : (language === 'ar' ? 'اختر عرضاً' : 'Choose an Offer')}
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {isFetchingOffers ? (
+                    <div className="col-span-full py-20 flex flex-col items-center">
+                      <Loader2 className="w-10 h-10 text-brand-blue animate-spin mb-4" />
+                      <p className="text-zinc-400 font-bold uppercase tracking-widest">{language === 'fr' ? 'Chargement des offres...' : (language === 'ar' ? 'جاري تحميل العروض...' : 'Loading offers...')}</p>
+                    </div>
+                  ) : dbOffers.length === 0 ? (
+                    <div className="col-span-full py-12 text-center">
+                      <p className="text-zinc-500 font-bold uppercase tracking-widest">
+                        {language === 'fr' ? 'Aucune offre disponible pour ce service.' : (language === 'ar' ? 'لا توجد عروض متاحة لهذه الخدمة.' : 'No offers available for this service.')}
+                      </p>
+                    </div>
+                  ) : dbOffers.map((offer) => {
+                    const title = language === 'fr' ? offer.title_fr : (language === 'ar' ? offer.title_ar : offer.title_en);
+                    const features = language === 'fr' ? offer.features_fr : (language === 'ar' ? offer.features_ar : offer.features_en);
+                    const isSubWash = offer.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0;
+                    const finalPrice = isSubWash ? "0" : offer.price.toString();
+                    const isRecommended = offer.price >= 500;
+
+                    return (
+                      <button
+                        key={offer.id}
+                        onClick={() => handleOfferSelect(offer)}
+                        className={`relative p-8 rounded-[2rem] border-2 text-left transition-all duration-500 group border-zinc-100 bg-zinc-50 hover:border-brand-blue/30 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
+                      >
+                        {isRecommended && (
+                          <span className={`absolute top-4 ${dir === 'rtl' ? 'left-8' : 'right-8'} px-4 py-1 bg-brand-gold text-black text-[10px] font-black uppercase tracking-widest rounded-full`}>
+                            {b.recommended}
+                          </span>
+                        )}
+                        <h3 className="text-xl font-black uppercase italic tracking-tight mb-2">{title}</h3>
+                        <div className="flex flex-col mb-6">
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-3xl font-black">{finalPrice}</span>
+                            <span className="text-xs font-bold text-zinc-400 uppercase">DH</span>
+                          </div>
+                          {finalPrice === "0" && (
+                            <p className="text-[9px] font-black text-brand-blue uppercase tracking-widest mt-1">
+                              {b.summary.deductNotice}
+                            </p>
+                          )}
+                        </div>
+                        <ul className="space-y-3">
+                          {Array.isArray(features) && features.map((f: string, i: number) => (
+                            <li key={i} className={`flex items-center gap-3 text-sm text-zinc-500 font-medium ${dir === 'rtl' ? 'flex-row-reverse text-right' : 'text-left'}`}>
+                              <CheckCircle2 size={14} className="text-brand-blue shrink-0" />
+                              <span>{f}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </button>
+                    );
+                  })}
                 </div>
-                <ul className="space-y-3">
-                  {service.features.map((f, i) => (
-                    <li key={i} className={`flex items-center gap-3 text-sm text-zinc-500 font-medium ${dir === 'rtl' ? 'flex-row-reverse text-right' : 'text-left'}`}>
-                      <CheckCircle2 size={14} className="text-brand-blue shrink-0" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </button>
-            ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -505,10 +585,13 @@ const BookingPage = () => {
               <div className={`flex justify-between items-center pt-8 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
+                  onClick={() => {
+                    setStep(1);
+                    setSelectedOffer(null);
+                  }}
                   className={`flex items-center gap-2 text-zinc-400 font-bold hover:text-zinc-950 transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
                 >
-                  <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> {language === 'fr' ? 'Retour' : (language === 'ar' ? 'رجوع' : 'Back')}
+                  <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> {language === 'fr' ? 'Retour aux offres' : (language === 'ar' ? 'العودة للعروض' : 'Back to Offers')}
                 </button>
                 <button
                   type="button"
@@ -557,7 +640,11 @@ const BookingPage = () => {
                   </div>
                   <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                     <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{b.steps.service}</span>
-                    <span className="font-black text-sm uppercase text-brand-blue">{selectedServiceData?.title || 'Unknown'}</span>
+                    <span className="font-black text-sm uppercase text-brand-blue">
+                      {selectedService && selectedOffer ? 
+                        `${language === 'fr' ? selectedService.title_fr : (language === 'ar' ? selectedService.title_ar : selectedService.title_en)} - ${language === 'fr' ? selectedOffer.title_fr : (language === 'ar' ? selectedOffer.title_ar : selectedOffer.title_en)}` 
+                        : 'Unknown'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -566,10 +653,12 @@ const BookingPage = () => {
                 <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
                   <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">{b.summary.total}</p>
                   <div className={`flex items-baseline gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-5xl font-black tracking-tighter text-zinc-950">{selectedServiceData?.price || '0'}</span>
+                    <span className="text-5xl font-black tracking-tighter text-zinc-950">
+                      {selectedOffer && selectedOffer.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0 ? "0" : selectedOffer?.price || '0'}
+                    </span>
                     <span className="text-sm font-black text-zinc-400 uppercase">DH</span>
                   </div>
-                  {(selectedService === 'simple' && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) && (
+                  {(selectedOffer && selectedOffer.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) && (
                     <p className="text-[10px] font-bold text-brand-blue uppercase tracking-wider mt-1">
                       {b.summary.deductNotice}
                     </p>

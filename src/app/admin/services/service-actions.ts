@@ -2,19 +2,21 @@
 
 import { getAdminPB } from "@/lib/pocketbase";
 import { revalidatePath } from "next/cache";
-import { ServiceRecord } from "./service-types";
+import { ServiceRecord, ServiceOfferRecord } from "./service-types";
 import { cached, invalidateCache } from "@/lib/cache";
+
+// ==========================================
+// PARENT SERVICES
+// ==========================================
 
 export async function getServices() {
   const pb = await getAdminPB();
   
-  // Align with project's 15s cache pattern for admin listings
   return await cached("admin:services", 15 * 1000, async () => {
     const records = await pb.collection("services").getFullList<ServiceRecord>({
       sort: "-created",
     });
     
-    // Map records to use our local proxy for images to ensure they are served securely
     return records.map(record => ({
       ...record,
       photo: record.photo ? `/api/files/${record.collectionId}/${record.id}/${record.photo}` : undefined
@@ -22,57 +24,21 @@ export async function getServices() {
   });
 }
 
-/**
- * Helper to prepare data for PocketBase.
- * Returns a plain object for simple fields and only uses FormData if a file is present.
- */
-function prepareData(formData: FormData) {
+function prepareServiceData(formData: FormData) {
   const data: Record<string, any> = {};
-  let hasFile = false;
 
   formData.forEach((value, key) => {
-    // Handle File (Photo)
-    if (value instanceof File && value.size > 0) {
-      hasFile = true;
-      return;
-    }
-    if (key === "photo") return; // Ignore photo if it's not a file (string URL)
+    if (value instanceof File && value.size > 0) return;
+    if (key === "photo") return;
 
-    // Handle Booleans
     if (key === "active") {
       data[key] = value === "true" || value === "1";
       return;
     }
 
-    // Handle Numbers
-    if (["price", "washes_count"].includes(key)) {
-      const num = parseFloat(value as string);
-      data[key] = isNaN(num) ? 0 : num;
-      return;
-    }
-
-    // Handle JSON (Features)
-    if (key.startsWith("features_")) {
-      try {
-        data[key] = JSON.parse(value as string);
-      } catch (e) {
-        data[key] = [];
-      }
-      return;
-    }
-
-    // Handle Strings
     if (typeof value === "string") {
-      // CRITICAL: Do not send the 'photo' field if it's a URL string (existing photo)
-      if (key === "photo") return;
-
       let val = value.trim();
-      // Handle the case where the string "undefined" is passed
-      if (val === "undefined" || val === "") {
-        if (key === "category") val = "once";
-        else return; // Skip other empty strings
-      }
-      
+      if (val === "undefined" || val === "") return;
       data[key] = val;
     }
   });
@@ -83,14 +49,12 @@ function prepareData(formData: FormData) {
 export async function createService(formData: FormData) {
   const pb = await getAdminPB();
   try {
-    const data = prepareData(formData);
+    const data = prepareServiceData(formData);
     
-    // 1. Generate a manual ID (Required by your collection schema)
     const randomId = Math.random().toString(36).substring(2, 10) + 
                      Math.random().toString(36).substring(2, 9);
     data.id = randomId.substring(0, 15);
 
-    // 2. Determine if we have a file to use multipart/form-data
     const photo = formData.get("photo");
     let payload: any = data;
     
@@ -104,19 +68,15 @@ export async function createService(formData: FormData) {
       payload = fd;
     }
 
-    console.log("--- POCKETBASE CREATE ATTEMPT ---");
-    console.log("Payload Keys:", Object.keys(data));
-
     const record = await pb.collection("services").create(payload);
     
     invalidateCache("admin:services");
     revalidatePath("/admin/services");
+    revalidatePath("/");
     
     return JSON.parse(JSON.stringify(record));
   } catch (err: any) {
-    console.error("❌ POCKETBASE CREATE FAILED");
-    console.error("Error Status:", err.status);
-    console.error("Detailed Error Data:", JSON.stringify(err.data, null, 2));
+    console.error("❌ POCKETBASE CREATE FAILED", err);
     throw err;
   }
 }
@@ -124,9 +84,7 @@ export async function createService(formData: FormData) {
 export async function updateService(id: string, formData: FormData) {
   const pb = await getAdminPB();
   try {
-    const data = prepareData(formData);
-    
-    // Determine if we have a file to use multipart/form-data
+    const data = prepareServiceData(formData);
     const photo = formData.get("photo");
     let payload: any = data;
     
@@ -140,15 +98,15 @@ export async function updateService(id: string, formData: FormData) {
       payload = fd;
     }
 
-    console.log(`--- POCKETBASE UPDATE ATTEMPT (${id}) ---`);
     const record = await pb.collection("services").update(id, payload);
     
     invalidateCache("admin:services");
     revalidatePath("/admin/services");
+    revalidatePath("/");
+    
     return JSON.parse(JSON.stringify(record));
   } catch (err: any) {
-    console.error("❌ POCKETBASE UPDATE FAILED");
-    console.error("Response Data:", JSON.stringify(err.data, null, 2));
+    console.error("❌ POCKETBASE UPDATE FAILED", err);
     throw err;
   }
 }
@@ -159,8 +117,120 @@ export async function deleteService(id: string) {
     await pb.collection("services").delete(id);
     invalidateCache("admin:services");
     revalidatePath("/admin/services");
+    revalidatePath("/");
   } catch (err) {
     console.error("Delete Error:", err);
+    throw err;
+  }
+}
+
+// ==========================================
+// SERVICE OFFERS
+// ==========================================
+
+export async function getServiceOffers(serviceId?: string) {
+  const pb = await getAdminPB();
+  
+  const cacheKey = serviceId ? `admin:offers:${serviceId}` : "admin:offers:all";
+  
+  return await cached(cacheKey, 15 * 1000, async () => {
+    const filter = serviceId ? `service = "${serviceId}"` : "";
+    
+    const records = await pb.collection("service_offers").getFullList<ServiceOfferRecord>({
+      sort: "-created",
+      filter: filter,
+    });
+    
+    return records;
+  });
+}
+
+function prepareOfferData(formData: FormData) {
+  const data: Record<string, any> = {};
+
+  formData.forEach((value, key) => {
+    if (key === "active") {
+      data[key] = value === "true" || value === "1";
+      return;
+    }
+
+    if (["price", "washes_count"].includes(key)) {
+      const num = parseFloat(value as string);
+      data[key] = isNaN(num) ? 0 : num;
+      return;
+    }
+
+    if (key.startsWith("features_")) {
+      try {
+        data[key] = JSON.parse(value as string);
+      } catch (e) {
+        data[key] = [];
+      }
+      return;
+    }
+
+    if (typeof value === "string") {
+      let val = value.trim();
+      if (val === "undefined" || val === "") {
+        if (key === "category") val = "once";
+        else return; 
+      }
+      data[key] = val;
+    }
+  });
+
+  return data;
+}
+
+export async function createServiceOffer(formData: FormData) {
+  const pb = await getAdminPB();
+  try {
+    const data = prepareOfferData(formData);
+    
+    const randomId = Math.random().toString(36).substring(2, 10) + 
+                     Math.random().toString(36).substring(2, 9);
+    data.id = randomId.substring(0, 15);
+
+    const record = await pb.collection("service_offers").create(data);
+    
+    if (data.service) invalidateCache(`admin:offers:${data.service}`);
+    invalidateCache("admin:offers:all");
+    revalidatePath(`/admin/services/${data.service}/offers`);
+    
+    return JSON.parse(JSON.stringify(record));
+  } catch (err: any) {
+    console.error("❌ POCKETBASE CREATE OFFER FAILED", err);
+    throw err;
+  }
+}
+
+export async function updateServiceOffer(id: string, formData: FormData) {
+  const pb = await getAdminPB();
+  try {
+    const data = prepareOfferData(formData);
+    const record = await pb.collection("service_offers").update(id, data);
+    
+    if (data.service) invalidateCache(`admin:offers:${data.service}`);
+    invalidateCache("admin:offers:all");
+    revalidatePath(`/admin/services/${data.service}/offers`);
+    
+    return JSON.parse(JSON.stringify(record));
+  } catch (err: any) {
+    console.error("❌ POCKETBASE UPDATE OFFER FAILED", err);
+    throw err;
+  }
+}
+
+export async function deleteServiceOffer(id: string, serviceId: string) {
+  try {
+    const pb = await getAdminPB();
+    await pb.collection("service_offers").delete(id);
+    
+    invalidateCache(`admin:offers:${serviceId}`);
+    invalidateCache("admin:offers:all");
+    revalidatePath(`/admin/services/${serviceId}/offers`);
+  } catch (err) {
+    console.error("Delete Offer Error:", err);
     throw err;
   }
 }

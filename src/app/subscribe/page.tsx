@@ -48,9 +48,9 @@ export default function SubscribePage() {
 
   const fetchPlans = async () => {
     try {
-      const { getServices } = await import("../admin/services/service-actions");
-      const data = await getServices();
-      setDbPlans(data.filter(s => s.active && s.category === 'subscription'));
+      const { getServiceOffers } = await import("../admin/services/service-actions");
+      const data = await getServiceOffers();
+      setDbPlans(data.filter((s: any) => s.active && s.category === 'subscription'));
     } catch (err) {
       console.error("Error fetching plans:", err);
     } finally {
@@ -191,7 +191,7 @@ export default function SubscribePage() {
                   <div className="flex flex-col items-start leading-none">
                     <span className="text-xs font-bold text-zinc-400 uppercase">DH</span>
                     <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">
-                      {isMonthly ? t.pricing.perMonth : t.pricing.perYear}
+                      {plan.washes_count} {language === 'fr' ? 'LAVAGES' : (language === 'ar' ? 'غسلات' : 'WASHES')} {isMonthly ? t.pricing.perMonth : t.pricing.perYear}
                     </span>
                   </div>
                 </div>

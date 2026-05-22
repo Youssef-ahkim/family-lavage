@@ -28,7 +28,7 @@ const Navbar = () => {
     setMounted(true);
     const loggedIn = document.cookie.includes('pb_logged_in=true');
     setIsAuthenticated(loggedIn);
-    
+
     // Use shared ProfileContext — cached across navigations
     if (loggedIn) {
       fetchProfile();
@@ -44,7 +44,6 @@ const Navbar = () => {
   const navLinks = [
     { name: t.services, href: "/services" },
     { name: t.pricing, href: "/subscribe" },
-    { name: t.contact, href: "/#contact" },
     ...(!isAuthenticated ? [{ name: t.myBookings, href: "/my-bookings" }] : []),
   ];
 
@@ -73,11 +72,11 @@ const Navbar = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link href="/" className="flex items-center group">
-            <Image 
-              src="/logo4.png" 
-              alt="Family Lavage" 
-              width={1481} 
-              height={720} 
+            <Image
+              src="/logo4.png"
+              alt="Family Lavage"
+              width={1481}
+              height={720}
               className="h-10 sm:h-12 lg:h-14 xl:h-16 w-auto max-w-[180px] sm:max-w-[200px] lg:max-w-[220px] xl:max-w-[250px] object-contain"
               priority
             />
@@ -132,8 +131,8 @@ const Navbar = () => {
             ) : isAuthenticated ? (
               <div className="flex items-center gap-4">
                 {userProfile?.role === 'admin' && (
-                  <Link 
-                    href="/admin" 
+                  <Link
+                    href="/admin"
                     className="p-2 text-zinc-400 hover:text-brand-blue transition-colors rounded-lg hover:bg-brand-blue/5"
                     title="Admin Dashboard"
                   >
@@ -141,8 +140,8 @@ const Navbar = () => {
                   </Link>
                 )}
 
-                <Link 
-                  href="/profile" 
+                <Link
+                  href="/profile"
                   className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-blue/5 text-brand-blue hover:bg-brand-blue/10 transition-all border border-brand-blue/10"
                 >
                   <div className="w-7 h-7 rounded-full bg-brand-blue text-white flex items-center justify-center">
@@ -153,13 +152,13 @@ const Navbar = () => {
                   </span>
                 </Link>
 
-                <button 
+                <button
                   onClick={async () => {
                     setIsAuthenticated(false);
                     clearProfile();
                     document.cookie = "pb_logged_in=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                     await logout();
-                  }} 
+                  }}
                   className="p-2 text-zinc-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
                   title={t.logout}
                 >
@@ -229,13 +228,13 @@ const Navbar = () => {
                   </Link>
                 </div>
               )}
-              
+
               {!mounted ? (
                 <div className="h-12 w-full max-w-xs bg-zinc-100 animate-pulse rounded-xl" />
               ) : isAuthenticated ? (
                 <div className="flex flex-col gap-4 w-full items-center">
-                  <Link 
-                    href="/profile" 
+                  <Link
+                    href="/profile"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-6 py-3 rounded-xl bg-zinc-50 border border-zinc-100 w-full max-w-xs justify-center"
                   >
@@ -245,8 +244,8 @@ const Navbar = () => {
                     </span>
                   </Link>
                   {userProfile?.role === 'admin' && (
-                    <Link 
-                      href="/admin" 
+                    <Link
+                      href="/admin"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-6 py-3 rounded-xl bg-zinc-50 border border-zinc-100 w-full max-w-xs justify-center"
                     >
@@ -254,13 +253,13 @@ const Navbar = () => {
                       <span className="text-lg font-bold text-zinc-800">Admin</span>
                     </Link>
                   )}
-                  <button 
+                  <button
                     onClick={async () => {
                       setIsAuthenticated(false);
                       clearProfile();
                       document.cookie = "pb_logged_in=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                       await logout();
-                    }} 
+                    }}
                     className="flex items-center gap-2 text-xl font-bold text-red-500 hover:text-red-600 mt-2"
                   >
                     <LogOut size={22} />

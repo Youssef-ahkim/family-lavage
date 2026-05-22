@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, Upload, X, Globe, Save, Loader2 } from "lucide-react";
 import { serviceSchema, ServiceFormData, ServiceRecord } from "./service-types";
@@ -25,10 +25,8 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
 
   const {
     register,
-    control,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors },
   } = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),
@@ -36,22 +34,12 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
       title_fr: initialData?.title_fr || "",
       title_ar: initialData?.title_ar || "",
       title_en: initialData?.title_en || "",
-      price: initialData?.price || 0,
-      category: initialData?.category || "once",
-      plan_type: initialData?.plan_type || "monthly",
-      washes_count: initialData?.washes_count || 0,
+      description_fr: initialData?.description_fr || "",
+      description_ar: initialData?.description_ar || "",
+      description_en: initialData?.description_en || "",
       active: initialData?.active ?? true,
-      features_fr: initialData?.features_fr || [],
-      features_ar: initialData?.features_ar || [],
-      features_en: initialData?.features_en || [],
     },
   });
-
-  const isSub = watch("category") === "subscription";
-
-  const featuresFr = useFieldArray({ control, name: "features_fr" as any });
-  const featuresAr = useFieldArray({ control, name: "features_ar" as any });
-  const featuresEn = useFieldArray({ control, name: "features_en" as any });
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,16 +58,10 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
       formData.append("title_fr", data.title_fr);
       formData.append("title_ar", data.title_ar);
       formData.append("title_en", data.title_en);
-      formData.append("price", data.price.toString());
-      formData.append("category", data.category);
-      if (data.category === "subscription") {
-        formData.append("plan_type", data.plan_type || "monthly");
-      }
-      formData.append("washes_count", (data.washes_count || 0).toString());
+      formData.append("description_fr", data.description_fr || "");
+      formData.append("description_ar", data.description_ar || "");
+      formData.append("description_en", data.description_en || "");
       formData.append("active", data.active.toString());
-      formData.append("features_fr", JSON.stringify(data.features_fr));
-      formData.append("features_ar", JSON.stringify(data.features_ar));
-      formData.append("features_en", JSON.stringify(data.features_en));
       
       if (data.photo instanceof File) {
         formData.append("photo", data.photo);
@@ -97,45 +79,6 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
       setIsSubmitting(false);
     }
   };
-
-  const renderFeatures = (fieldArray: any, lang: string) => (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <label className="text-xs font-black uppercase tracking-widest text-zinc-500">
-          {lang === 'fr' ? sTrans.formFeaturesFr : lang === 'ar' ? sTrans.formFeaturesAr : sTrans.formFeaturesEn}
-        </label>
-        <button
-          type="button"
-          onClick={() => fieldArray.append("")}
-          className="p-1.5 rounded-lg bg-brand-blue/10 text-brand-blue hover:bg-brand-blue/20 transition-all"
-        >
-          <Plus size={14} />
-        </button>
-      </div>
-      <div className="space-y-2">
-        {fieldArray.fields.map((field: any, index: number) => (
-          <div key={field.id} className="flex gap-2">
-            <input
-              {...register(`features_${lang}.${index}` as any)}
-              dir={lang === 'ar' ? 'rtl' : 'ltr'}
-              className={`flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-brand-blue transition-all ${lang === 'ar' ? 'text-right' : 'text-left'}`}
-              placeholder={sTrans.formAddFeature}
-            />
-            <button
-              type="button"
-              onClick={() => fieldArray.remove(index)}
-              className="p-2 text-zinc-500 hover:text-red-500 transition-colors"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        ))}
-        {fieldArray.fields.length === 0 && (
-          <p className="text-[10px] text-zinc-600 italic font-bold uppercase">{sTrans.noServices}</p>
-        )}
-      </div>
-    </div>
-  );
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-2xl mx-auto bg-zinc-950 p-8 rounded-[2.5rem] border border-zinc-900 shadow-2xl">
@@ -165,88 +108,70 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {/* Multilingual Title */}
-        <div className={activeTab === "en" ? "block" : "hidden"}>
-          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">{sTrans.formTitleEn}</label>
-          <input
-            {...register("title_en")}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
-            placeholder="e.g. VIP Car Wash"
-          />
-          {errors.title_en && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-widest">{errors.title_en.message}</p>}
-        </div>
-
-        <div className={activeTab === "fr" ? "block" : "hidden"}>
-          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">{sTrans.formTitleFr}</label>
-          <input
-            {...register("title_fr")}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
-            placeholder="e.g. Lavage VIP"
-          />
-          {errors.title_fr && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-widest">{errors.title_fr.message}</p>}
-        </div>
-
-        <div className={activeTab === "ar" ? "block" : "hidden"}>
-          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 text-right">{sTrans.formTitleAr}</label>
-          <input
-            {...register("title_ar")}
-            dir="rtl"
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all text-right"
-            placeholder="غسيل سيارات VIP"
-          />
-          {errors.title_ar && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-widest text-right">{errors.title_ar.message}</p>}
-        </div>
-
-        {/* Price & Category */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className={`space-y-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-            <label className="text-xs font-black uppercase tracking-widest text-zinc-500">{sTrans.formPrice}</label>
-            <input 
-              type="number"
-              {...register("price", { valueAsNumber: true })}
-              dir="ltr"
-              className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
+        {/* EN fields */}
+        <div className={activeTab === "en" ? "block space-y-4" : "hidden"}>
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">{sTrans.formTitleEn}</label>
+            <input
+              {...register("title_en")}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
+              placeholder="e.g. VIP Car Wash"
             />
-            {errors.price && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.price.message}</p>}
+            {errors.title_en && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-widest">{errors.title_en.message}</p>}
           </div>
-
-          <div className={`space-y-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-            <label className="text-xs font-black uppercase tracking-widest text-zinc-500">{sTrans.formCategory}</label>
-            <select 
-              {...register("category")}
-              className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all appearance-none ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
-            >
-              <option value="once">{sTrans.formCategoryOnce}</option>
-              <option value="subscription">{sTrans.formCategorySub}</option>
-            </select>
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Description (EN)</label>
+            <textarea
+              {...register("description_en")}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all resize-none h-24"
+              placeholder="Short description..."
+            />
           </div>
         </div>
 
-        {/* Subscription Specifics */}
-        {isSub && (
-          <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-brand-blue/5 border border-brand-blue/20 rounded-[2rem] ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-            <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-brand-blue">{sTrans.formPlanType}</label>
-              <select 
-                {...register("plan_type")}
-                className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all appearance-none ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
-              >
-                <option value="monthly">{sTrans.formPlanMonthly}</option>
-                <option value="yearly">{sTrans.formPlanYearly}</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-brand-blue">{sTrans.formWashes}</label>
-              <input 
-                type="number"
-                {...register("washes_count", { valueAsNumber: true })}
-                dir="ltr"
-                className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
-                placeholder="e.g. 4 for monthly"
-              />
-            </div>
+        {/* FR fields */}
+        <div className={activeTab === "fr" ? "block space-y-4" : "hidden"}>
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">{sTrans.formTitleFr}</label>
+            <input
+              {...register("title_fr")}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
+              placeholder="e.g. Lavage VIP"
+            />
+            {errors.title_fr && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-widest">{errors.title_fr.message}</p>}
           </div>
-        )}
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Description (FR)</label>
+            <textarea
+              {...register("description_fr")}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all resize-none h-24"
+              placeholder="Courte description..."
+            />
+          </div>
+        </div>
+
+        {/* AR fields */}
+        <div className={activeTab === "ar" ? "block space-y-4" : "hidden"}>
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 text-right">{sTrans.formTitleAr}</label>
+            <input
+              {...register("title_ar")}
+              dir="rtl"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all text-right"
+              placeholder="غسيل سيارات VIP"
+            />
+            {errors.title_ar && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-widest text-right">{errors.title_ar.message}</p>}
+          </div>
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 text-right">Description (AR)</label>
+            <textarea
+              {...register("description_ar")}
+              dir="rtl"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all text-right resize-none h-24"
+              placeholder="وصف قصير..."
+            />
+          </div>
+        </div>
 
         {/* Active Status */}
         <div className={`flex items-center gap-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
@@ -285,19 +210,6 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
                 Max size: 5MB. Formats: WebP, PNG, JPG.
               </p>
             </div>
-          </div>
-        </div>
-
-        {/* JSON Features List */}
-        <div className="p-6 bg-zinc-900/50 rounded-3xl border border-zinc-800/50">
-          <div className={activeTab === "en" ? "block" : "hidden"}>
-            {renderFeatures(featuresEn, "en")}
-          </div>
-          <div className={activeTab === "fr" ? "block" : "hidden"}>
-            {renderFeatures(featuresFr, "fr")}
-          </div>
-          <div className={activeTab === "ar" ? "block" : "hidden"}>
-            {renderFeatures(featuresAr, "ar")}
           </div>
         </div>
       </div>

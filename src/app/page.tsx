@@ -19,70 +19,21 @@ export default function Home() {
     getServices().then(setDbServices).catch(console.error);
   }, []);
 
-  const services = [
-    {
-      title: t.services.items[0].title,
-      desc: t.services.items[0].desc,
-      icon: <Droplets className="w-6 h-6 text-brand-blue" />,
-    },
-    {
-      title: t.services.items[1].title,
-      desc: t.services.items[1].desc,
-      icon: <Zap className="w-6 h-6 text-brand-blue" />,
-    },
-    {
-      title: t.services.items[2].title,
-      desc: t.services.items[2].desc,
-      icon: <Sparkles className="w-6 h-6 text-brand-blue" />,
-    },
-    {
-      title: t.services.items[3].title,
-      desc: t.services.items[3].desc,
-      icon: <ShieldCheck className="w-6 h-6 text-brand-blue" />,
-    },
-  ];
 
-  // Map all DB services to the pricing grid format
-  const allPlans = dbServices
+
+  // Map all DB services to the new format
+  const activeServices = dbServices
     .filter(s => s.active)
-    .sort((a, b) => {
-      // Show one-time services first, then subscriptions
-      if (a.category === b.category) return a.price - b.price;
-      return a.category === 'once' ? -1 : 1;
-    })
     .map(s => {
       const name = language === 'fr' ? s.title_fr : (language === 'ar' ? s.title_ar : s.title_en);
-      const isSub = s.category === 'subscription';
-      const isMonthly = s.plan_type === 'monthly';
-      const features = language === 'fr' ? s.features_fr : (language === 'ar' ? s.features_ar : s.features_en);
+      const desc = language === 'fr' ? s.description_fr : (language === 'ar' ? s.description_ar : s.description_en);
 
-      if (isSub) {
-        return {
-          name,
-          price: s.price.toString(),
-          period: isMonthly ? t.pricing.perMonth : t.pricing.perYear,
-          features,
-          subPrice: isMonthly ? t.pricing.plans.month.subPrice : t.pricing.plans.year.subPrice,
-          cta: t.pricing.ctas.subscribe,
-          accent: isMonthly ? "border-brand-blue/50 ring-1 ring-brand-blue/30" : "border-zinc-200",
-          badge: isMonthly ? t.pricing.badges.mostChosen : undefined,
-          gold: false,
-          link: "/subscribe"
-        };
-      }
-
-      // Standard One-time Service
       return {
+        id: s.id,
         name,
-        price: s.price.toString(),
-        period: t.pricing.perWash,
-        features,
-        cta: t.pricing.ctas.book,
-        accent: s.price >= 500 ? "border-brand-gold ring-2 ring-brand-gold/50" : "border-zinc-200",
-        badge: s.price >= 500 ? t.pricing.badges.luxe : undefined,
-        gold: s.price >= 500,
-        subPrice: undefined as string | undefined,
-        link: `/booking?serviceId=${s.id}`
+        desc,
+        photo: s.photo,
+        link: `/services/${s.id}`
       };
     })
     .slice(0, 4);
@@ -123,14 +74,13 @@ export default function Home() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-5 mb-16">
-                <Link href={dbServices.find(s => s.price === 100)?.id ? `/booking?serviceId=${dbServices.find(s => s.price === 100)?.id}` : "/booking"}>
+                <Link href={dbServices[0] ? `/booking?serviceId=${dbServices[0].id}` : "/booking"}>
                   <button className="btn-primary group w-full sm:w-auto">
                     {t.hero.btnSimple}
                     <div className="w-1.5 h-1.5 rounded-full bg-white ml-3 opacity-50 group-hover:scale-150 transition-transform" />
-                    <span className="text-xs font-medium ml-2">(100DH)</span>
                   </button>
                 </Link>
-                <Link href={dbServices.find(s => s.price >= 500)?.id ? `/booking?serviceId=${dbServices.find(s => s.price >= 500)?.id}` : "/booking"}>
+                <Link href="/services">
                   <button className="btn-outline-gold group gap-3 w-full sm:w-auto">
                     {t.hero.btnVip}
                     <ArrowRight size={18} className={`${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'} transition-transform`} />
@@ -185,97 +135,41 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Services Grid */}
-      <section id="services" className="py-32 bg-white border-y border-zinc-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-16">
-            <div className={`max-w-2xl reveal ${dir === 'rtl' ? 'text-right md:order-2' : ''}`}>
-              <h2 className="section-heading">
-                {t.services.title} <span className="text-brand-blue italic">{t.services.titleAccent}</span>
-              </h2>
-              <p className="text-zinc-500 text-lg">
-                {t.services.desc}
-              </p>
-            </div>
-            <Link href="/services" className={`text-brand-blue font-bold flex items-center gap-2 transition-transform ${dir === 'rtl' ? 'hover:-translate-x-1' : 'hover:translate-x-1'}`}>
-              {t.services.viewPricing} <Zap size={18} className={dir === 'rtl' ? 'rotate-180' : ''} />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services.map((service, idx) => (
-              <div key={idx} className={`p-8 rounded-3xl bg-zinc-50 border border-zinc-200 hover:border-brand-blue/30 transition-all duration-300 group reveal ${dir === 'rtl' ? 'text-right' : ''}`} style={{ animationDelay: `${idx * 100}ms` }}>
-                <div className={`mb-6 w-14 h-14 bg-white rounded-2xl flex items-center justify-center border border-zinc-200 group-hover:scale-110 group-hover:bg-brand-blue/10 transition-all shadow-sm ${dir === 'rtl' ? 'mr-0 ml-auto' : ''}`}>
-                  {service.icon}
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-zinc-900">{service.title}</h3>
-                <p className="text-zinc-500 text-sm leading-relaxed">{service.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
 
-      {/* Pricing Section */}
-      <section id="subscriptions" className="py-32 bg-zinc-50">
+
+      {/* Dynamic Services Section */}
+      <section id="services-catalog" className="py-32 bg-zinc-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="reveal">
             <h2 className="section-heading">
-              {t.pricing.title} <span className="text-brand-blue italic">{t.pricing.titleAccent}</span>
+              {t.services.title} <span className="text-brand-blue italic">{t.services.titleAccent}</span>
             </h2>
-            <p className="text-zinc-500 mb-20 max-w-2xl mx-auto">{t.pricing.desc}</p>
+            <p className="text-zinc-500 mb-20 max-w-2xl mx-auto">{t.services.desc}</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {allPlans.map((plan, idx) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {activeServices.map((plan, idx) => (
               <div
                 key={idx}
-                className={`relative flex flex-col p-8 rounded-[2rem] bg-white border ${plan.accent === 'border-white/10' ? 'border-zinc-200' : plan.accent} transition-all duration-500 hover:-translate-y-4 hover:shadow-2xl hover:shadow-brand-blue/10 ${plan.gold ? 'hover:border-brand-gold' : 'hover:border-brand-blue'} reveal`}
+                className="relative flex flex-col p-8 rounded-[2rem] bg-white border border-zinc-200 transition-all duration-500 hover:-translate-y-4 hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue reveal"
                 style={{ animationDelay: `${idx * 150}ms` }}
               >
-                {plan.badge && (
-                  <span className={`absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] ${plan.gold ? 'bg-brand-gold text-black' : 'bg-brand-blue text-white'}`}>
-                    {plan.badge}
-                  </span>
-                )}
-
-                <h3 className={`text-xl font-black mb-6 uppercase tracking-tight italic ${plan.gold ? 'text-brand-gold' : ''}`}>{plan.name}</h3>
-
-                <div className="flex flex-col items-center mb-10">
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-5xl font-black tracking-tighter text-zinc-900">{plan.price}</span>
-                    <div className="flex flex-col items-start leading-none">
-                      <span className="text-xs font-bold text-zinc-400 uppercase">DH</span>
-                      <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">{plan.period}</span>
-                    </div>
+                {plan.photo && (
+                  <div className="w-full h-48 rounded-2xl overflow-hidden mb-6 relative">
+                    <img src={plan.photo} alt={plan.name} className="object-cover w-full h-full hover:scale-110 transition-transform duration-700" />
                   </div>
-                  {plan.subPrice && (
-                    <div className="mt-3 bg-brand-gold/10 text-brand-gold text-[10px] font-black py-1.5 px-4 rounded-full uppercase tracking-widest">
-                      {plan.subPrice}
-                    </div>
-                  )}
-                </div>
+                )}
+                
+                <h3 className="text-2xl font-black mb-4 uppercase tracking-tight italic text-zinc-900">{plan.name}</h3>
+                
+                <p className="text-zinc-500 text-sm flex-grow mb-8 text-left line-clamp-3">
+                  {plan.desc}
+                </p>
 
-                <div className="h-px w-full bg-zinc-100 mb-10" />
-
-                <ul className="space-y-5 mb-12 flex-grow text-left">
-                  {plan.features.map((feature, fIdx) => (
-                    <li key={fIdx} className={`flex items-center gap-3 text-sm text-zinc-600 font-medium ${dir === 'rtl' ? 'flex-row-reverse text-right' : ''}`}>
-                      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${plan.gold ? 'bg-brand-gold' : 'bg-brand-blue'}`} />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href={plan.link || "/booking"} className="w-full">
-                  <button className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${plan.gold
-                    ? 'bg-brand-gold text-black hover:bg-white hover:scale-105 active:scale-95'
-                    : plan.name.includes('Mois') || plan.name.includes('Month') || plan.name.includes('شهري') || plan.name.includes('Abonnement') || plan.name.includes('Subscription')
-                      ? 'bg-brand-blue text-white hover:bg-brand-blue/80 hover:scale-105 active:scale-95'
-                      : 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200 hover:scale-105 active:scale-95'
-                    }`}>
-                    {plan.cta}
+                <Link href={plan.link} className="w-full mt-auto">
+                  <button className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all bg-brand-blue text-white hover:bg-brand-blue/80 hover:scale-105 active:scale-95">
+                    View Offers
                   </button>
                 </Link>
               </div>

@@ -4,13 +4,14 @@ import React, { useState, useEffect } from "react";
 import { 
   Plus, Edit2, Trash2, Search, Filter, 
   MoreVertical, CheckCircle2, XCircle, 
-  Package, DollarSign, Info, Loader2 
+  Package, DollarSign, Info, Loader2, List
 } from "lucide-react";
 import { getServices, deleteService } from "./service-actions";
 import { ServiceRecord } from "./service-types";
 import ServiceForm from "./service-form";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
+import Link from "next/link";
 
 export default function AdminServicesPage() {
   const [services, setServices] = useState<ServiceRecord[]>([]);
@@ -83,7 +84,7 @@ export default function AdminServicesPage() {
         <div>
           <h1 className="text-3xl font-black uppercase italic tracking-tighter text-white">{sTrans.title}</h1>
           <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest mt-1">
-            Dynamic PocketBase-driven Service Catalog
+            Service Catalog & Categories
           </p>
         </div>
         <button 
@@ -115,7 +116,7 @@ export default function AdminServicesPage() {
           </div>
           <div>
             <p className="text-2xl font-black text-white">{services.filter(s => s.active).length}</p>
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Active Plans</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Active Services</p>
           </div>
         </div>
         <div className="bg-zinc-900/30 border border-zinc-800/50 p-6 rounded-3xl flex items-center gap-4">
@@ -143,11 +144,6 @@ export default function AdminServicesPage() {
               className={`w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4'} py-3 text-sm text-white focus:outline-none focus:border-brand-blue transition-all`}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <button className="p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-all">
-              <Filter size={18} />
-            </button>
-          </div>
         </div>
 
         {/* Data Table */}
@@ -156,7 +152,6 @@ export default function AdminServicesPage() {
             <thead>
               <tr className={`border-b border-zinc-800/50 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">{sTrans.tableTitle}</th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">{sTrans.tablePrice}</th>
                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">{sTrans.tableStatus}</th>
                 <th className={`px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>{t.admin.actions}</th>
               </tr>
@@ -164,14 +159,14 @@ export default function AdminServicesPage() {
             <tbody className="divide-y divide-zinc-800/30">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-8 py-20 text-center">
+                  <td colSpan={3} className="px-8 py-20 text-center">
                     <Loader2 className="animate-spin mx-auto text-brand-blue mb-4" size={32} />
                     <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Synchronizing Catalog...</p>
                   </td>
                 </tr>
               ) : filteredServices.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-8 py-20 text-center text-zinc-500 uppercase text-[10px] font-black tracking-widest">
+                  <td colSpan={3} className="px-8 py-20 text-center text-zinc-500 uppercase text-[10px] font-black tracking-widest">
                     {sTrans.noServices}
                   </td>
                 </tr>
@@ -196,11 +191,6 @@ export default function AdminServicesPage() {
                       </div>
                     </td>
                     <td className="px-8 py-6 text-center">
-                      <span className="inline-flex items-center gap-1 text-sm font-black text-white">
-                        {service.price} <span className="text-[10px] text-brand-blue">DH</span>
-                      </span>
-                    </td>
-                    <td className="px-8 py-6 text-center">
                       {service.active ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
                           <CheckCircle2 size={12} />
@@ -215,6 +205,13 @@ export default function AdminServicesPage() {
                     </td>
                     <td className={`px-8 py-6 ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>
                       <div className={`flex items-center ${dir === 'rtl' ? 'justify-start' : 'justify-end'} gap-2`}>
+                        <Link 
+                          href={`/admin/services/${service.id}/offers`}
+                          className="p-2.5 rounded-xl bg-brand-blue/10 text-brand-blue hover:text-white hover:bg-brand-blue transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
+                        >
+                          <List size={16} />
+                          Offers
+                        </Link>
                         <button 
                           onClick={() => {
                             setEditingService(service);
