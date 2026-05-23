@@ -9,7 +9,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import { getServices, getServiceOffers } from "@/app/admin/services/service-actions";
 import { ServiceRecord, ServiceOfferRecord } from "@/app/admin/services/service-types";
-import { ArrowLeft, Car, ArrowRight, CheckCircle2, ShieldCheck, Zap, Sparkles } from "lucide-react";
+import { ArrowLeft, Car, ArrowRight, CheckCircle2, Sparkles, X } from "lucide-react";
 
 export default function ServiceDetailsPage() {
   const params = useParams();
@@ -37,6 +37,8 @@ export default function ServiceDetailsPage() {
         setLoading(false);
       });
   }, [id]);
+
+
 
   if (loading) {
     return (
@@ -67,6 +69,7 @@ export default function ServiceDetailsPage() {
   const title = language === 'fr' ? service.title_fr : (language === 'ar' ? service.title_ar : service.title_en);
   const desc = language === 'fr' ? service.description_fr : (language === 'ar' ? service.description_ar : service.description_en);
   const isGold = title?.toLowerCase().includes('vip');
+
 
   return (
     <div className="min-h-screen bg-white text-zinc-950 font-sans overflow-x-hidden">
@@ -140,7 +143,7 @@ export default function ServiceDetailsPage() {
                 {language === 'fr' ? 'Offres Disponibles' : (language === 'ar' ? 'العروض المتاحة' : 'Available Offers')}
               </h2>
               <p className="text-zinc-500 font-medium text-lg">
-                {language === 'fr' ? 'Sélectionnez l\'offre qui vous convient le mieux.' : (language === 'ar' ? 'اختر العرض الذي يناسبك.' : 'Select the offer that suits you best.')}
+                {language === 'fr' ? 'Sélectionnez une offre pour voir les détails.' : (language === 'ar' ? 'اختر عرضاً لرؤية التفاصيل.' : 'Select an offer to view details.')}
               </p>
             </div>
 
@@ -152,68 +155,55 @@ export default function ServiceDetailsPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {offers.map((offer) => {
                   const offerTitle = language === 'fr' ? offer.title_fr : (language === 'ar' ? offer.title_ar : offer.title_en);
-                  const offerFeatures = language === 'fr' ? offer.features_fr : (language === 'ar' ? offer.features_ar : offer.features_en);
                   const isPremiumOffer = offer.price >= 500;
                   
                   return (
-                    <div 
+                    <Link 
+                      href={`/services/${service.id}/offers/${offer.id}`}
                       key={offer.id}
-                      className={`flex flex-col relative bg-white p-8 rounded-[2.5rem] border-2 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl group ${
+                      className={`cursor-pointer flex flex-col relative bg-white rounded-[2.5rem] border-2 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl overflow-hidden group ${
                         isPremiumOffer 
                         ? 'border-brand-gold/20 hover:border-brand-gold shadow-brand-gold/10' 
                         : 'border-zinc-100 hover:border-brand-blue shadow-brand-blue/5'
                       } ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
                     >
-                      {isPremiumOffer && (
-                        <div className={`absolute -top-4 ${dir === 'rtl' ? 'left-8' : 'right-8'} px-4 py-1.5 bg-brand-gold text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg`}>
-                          {t.pricing.badges.mostChosen}
-                        </div>
-                      )}
+                      {/* Image Thumbnail */}
+                      <div className="relative h-48 w-full bg-zinc-100">
+                        {offer.photo || service.photo ? (
+                          <Image 
+                            src={(offer.photo || service.photo) as string} 
+                            alt={offerTitle} 
+                            fill 
+                            unoptimized={true}
+                            className="object-cover group-hover:scale-105 transition-transform duration-700"
+                          />
+                        ) : (
+                          <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${isPremiumOffer ? 'from-zinc-900 to-zinc-800' : 'from-brand-blue to-teal-600'}`}>
+                            <Car className="w-16 h-16 text-white/20 group-hover:scale-110 transition-transform duration-500" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/60 to-transparent" />
+                        {isPremiumOffer && (
+                          <div className={`absolute top-4 ${dir === 'rtl' ? 'left-4' : 'right-4'} px-3 py-1 bg-brand-gold text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg`}>
+                            {t.pricing.badges.mostChosen}
+                          </div>
+                        )}
+                      </div>
                       
-                      <h3 className={`text-2xl font-black uppercase italic tracking-tight mb-6 ${isPremiumOffer ? 'text-brand-gold' : 'text-zinc-900'}`}>
-                        {offerTitle}
-                      </h3>
-                      
-                      <div className="flex items-baseline gap-2 mb-8">
-                        <span className="text-5xl font-black tracking-tighter text-zinc-900">{offer.price}</span>
-                        <div className="flex flex-col leading-none">
-                          <span className="text-sm font-bold text-zinc-400 uppercase">DH</span>
-                          {offer.category === 'subscription' && (
-                            <span className="text-[10px] text-brand-blue font-black uppercase tracking-widest mt-1">
-                              {offer.washes_count} {language === 'fr' ? 'LAVAGES' : (language === 'ar' ? 'غسلات' : 'WASHES')} {offer.plan_type === 'monthly' ? t.pricing.perMonth : t.pricing.perYear}
-                            </span>
-                          )}
+                      {/* Title & Action Hint */}
+                      <div className="p-6 bg-white">
+                        <h3 className={`text-xl font-black uppercase italic tracking-tight mb-4 group-hover:text-brand-blue transition-colors ${isPremiumOffer ? 'text-brand-gold' : 'text-zinc-900'}`}>
+                          {offerTitle}
+                        </h3>
+                        <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-400 group-hover:text-brand-blue transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                          <span>{language === 'fr' ? 'Voir les détails' : (language === 'ar' ? 'عرض التفاصيل' : 'View Details')}</span>
+                          <ArrowRight size={14} className={`transition-transform ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
                         </div>
                       </div>
-
-                      <div className="flex-grow">
-                        <ul className="space-y-4 mb-8">
-                          {Array.isArray(offerFeatures) && offerFeatures.map((f: string, i: number) => (
-                            <li key={i} className={`flex items-start gap-3 text-sm text-zinc-600 font-medium ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                              <CheckCircle2 size={16} className={`shrink-0 mt-0.5 ${isPremiumOffer ? 'text-brand-gold' : 'text-brand-blue'}`} />
-                              <span>{f}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <Link 
-                        href={offer.category === 'subscription' ? '/subscribe' : `/booking?serviceId=${service.id}&offerId=${offer.id}`} 
-                        className="mt-auto block"
-                      >
-                        <button className={`w-full py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all flex items-center justify-center gap-2 group-hover:scale-[1.02] active:scale-95 ${
-                          isPremiumOffer 
-                          ? 'bg-brand-gold text-black shadow-lg shadow-brand-gold/20 hover:bg-zinc-900 hover:text-brand-gold' 
-                          : 'bg-brand-blue text-white shadow-lg shadow-brand-blue/20 hover:bg-zinc-900'
-                        }`}>
-                          {offer.category === 'subscription' ? t.subscription.requestBtn : t.nav.book}
-                          <ArrowRight size={16} className={`transition-transform ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
-                        </button>
-                      </Link>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>
@@ -221,6 +211,7 @@ export default function ServiceDetailsPage() {
           </div>
         </div>
       </section>
+
       
       {/* Footer */}
       <footer className="py-16 border-t border-zinc-100 bg-zinc-50 mt-auto">

@@ -196,6 +196,7 @@ const BookingPage = () => {
         phone: formData.phone,
         plate_number: formData.carModel,
         service_type: offerTitle,
+        service_id: selectedService?.id, // NEW: pass the service ID
         price: finalPrice,
         date: bookingDateTime.toISOString(),
         notes: `Selected service: ${selectedService?.title_en} - ${offerTitle}. Language: ${language}. ${isSubWash ? '(Used Subscription Wash)' : ''}`,

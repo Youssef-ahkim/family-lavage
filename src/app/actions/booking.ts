@@ -89,6 +89,7 @@ export async function submitBooking(formData: any) {
       phone: cleanPhone,
       plate_number: cleanPlate,
       service_type: formData.service_type,
+      service: formData.service_id || null, // Link to the specific service
       price: formData.price,
       status: "pending", // FORCED server-side — users can never set their own status
       notes: cleanNotes + " (Validated Server Action)",

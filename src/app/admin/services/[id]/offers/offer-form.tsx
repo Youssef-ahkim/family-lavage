@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, X, Save, Loader2 } from "lucide-react";
+import { Plus, Trash2, X, Save, Loader2, Upload } from "lucide-react";
 import { serviceOfferSchema, ServiceOfferFormData, ServiceOfferRecord } from "../../service-types";
 import { createServiceOffer, updateServiceOffer } from "../../service-actions";
 import { useLanguage } from "@/context/LanguageContext";
@@ -19,9 +19,19 @@ interface OfferFormProps {
 export default function OfferForm({ serviceId, initialData, onSuccess, onCancel }: OfferFormProps) {
   const [activeTab, setActiveTab] = useState<"fr" | "ar" | "en">("en");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string>(initialData?.photo || "");
   const { language, dir } = useLanguage();
   const t = translations[language];
   const sTrans = t.admin.services;
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhoto(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
 
   const {
     register,
@@ -74,6 +84,9 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
       formData.append("features_fr", JSON.stringify(data.features_fr));
       formData.append("features_ar", JSON.stringify(data.features_ar));
       formData.append("features_en", JSON.stringify(data.features_en));
+      if (photo) {
+        formData.append("photo", photo);
+      }
 
       if (initialData?.id) {
         await updateServiceOffer(initialData.id, formData);
@@ -241,6 +254,32 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
               after:content-[''] after:absolute after:top-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue`}></div>
             <span className={`text-[10px] font-black uppercase tracking-widest text-zinc-400 ${dir === 'rtl' ? 'mr-3' : 'ml-3'}`}>Active</span>
           </label>
+        </div>
+
+        {/* Photo Upload */}
+        <div>
+          <label className={`block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>Offer Image (Optional)</label>
+          <div className={`flex items-center gap-6 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+            <div className="w-24 h-24 rounded-3xl bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden group relative">
+              {preview ? (
+                <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+              ) : (
+                <Upload className="text-zinc-700 group-hover:text-brand-blue transition-colors" />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+            </div>
+            <div className="flex-1">
+              <p className={`text-[10px] text-zinc-500 font-bold uppercase leading-relaxed ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                {language === 'fr' ? "Téléchargez une image pour cette offre." : language === 'ar' ? "قم بتحميل صورة لهذا العرض." : "Upload an image for this offer."}<br/>
+                Max size: 5MB. Formats: WebP, PNG, JPG.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="p-6 bg-zinc-900/50 rounded-3xl border border-zinc-800/50">

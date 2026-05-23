@@ -37,6 +37,7 @@ export const serviceOfferSchema = z.object({
   features_fr: z.array(z.string()),
   features_ar: z.array(z.string()),
   features_en: z.array(z.string()),
+  photo: z.any().optional(),
 });
 
 export type ServiceOfferFormData = z.infer<typeof serviceOfferSchema>;
@@ -48,4 +49,5 @@ export interface ServiceOfferRecord extends ServiceOfferFormData {
   created: string;
   updated: string;
   category: "once" | "subscription";
+  photo?: string;
 }

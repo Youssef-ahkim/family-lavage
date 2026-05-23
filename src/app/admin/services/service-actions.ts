@@ -141,7 +141,10 @@ export async function getServiceOffers(serviceId?: string) {
       filter: filter,
     });
     
-    return records;
+    return records.map(record => ({
+      ...record,
+      photo: record.photo ? `/api/files/${record.collectionId}/${record.id}/${record.photo}` : undefined
+    }));
   });
 }
 
@@ -149,6 +152,9 @@ function prepareOfferData(formData: FormData) {
   const data: Record<string, any> = {};
 
   formData.forEach((value, key) => {
+    if (value instanceof File && value.size > 0) return;
+    if (key === "photo") return;
+
     if (key === "active") {
       data[key] = value === "true" || value === "1";
       return;
@@ -191,7 +197,17 @@ export async function createServiceOffer(formData: FormData) {
                      Math.random().toString(36).substring(2, 9);
     data.id = randomId.substring(0, 15);
 
-    const record = await pb.collection("service_offers").create(data);
+    const photo = formData.get("photo");
+    let payload: any = data;
+    
+    if (photo && photo instanceof File && photo.size > 0) {
+      const formPayload = new FormData();
+      Object.keys(data).forEach(key => formPayload.append(key, data[key]));
+      formPayload.append("photo", photo);
+      payload = formPayload;
+    }
+
+    const record = await pb.collection("service_offers").create(payload);
     
     if (data.service) invalidateCache(`admin:offers:${data.service}`);
     invalidateCache("admin:offers:all");
@@ -208,7 +224,25 @@ export async function updateServiceOffer(id: string, formData: FormData) {
   const pb = await getAdminPB();
   try {
     const data = prepareOfferData(formData);
-    const record = await pb.collection("service_offers").update(id, data);
+    
+    const photo = formData.get("photo");
+    let payload: any = data;
+    
+    if (photo && photo instanceof File && photo.size > 0) {
+      const formPayload = new FormData();
+      Object.keys(data).forEach(key => {
+        const val = data[key];
+        if (Array.isArray(val)) {
+          formPayload.append(key, JSON.stringify(val));
+        } else {
+          formPayload.append(key, val);
+        }
+      });
+      formPayload.append("photo", photo);
+      payload = formPayload;
+    }
+
+    const record = await pb.collection("service_offers").update(id, payload);
     
     if (data.service) invalidateCache(`admin:offers:${data.service}`);
     invalidateCache("admin:offers:all");

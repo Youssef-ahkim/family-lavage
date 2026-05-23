@@ -40,13 +40,14 @@ export async function verifyAdmin() {
   }
 }
 
-export async function getAllBookings(page = 1, perPage = 20, statusFilter = '', searchQuery = '', dateFilter = '') {
+export async function getAllBookings(page = 1, perPage = 20, statusFilter = '', searchQuery = '', dateFilter = '', serviceFilter = '') {
   try {
     await authenticateAdmin();
     const adminPb = await getAdminPB();
 
     const filters: string[] = [];
     if (statusFilter && statusFilter !== 'all') filters.push(`status = "${statusFilter}"`);
+    if (serviceFilter && serviceFilter !== 'all') filters.push(`service = "${serviceFilter}"`);
     if (searchQuery) {
       const q = searchQuery.replace(/"/g, '\\"');
       filters.push(`(full_name ~ "${q}" || phone ~ "${q}" || plate_number ~ "${q}" || id ~ "${q}")`);
@@ -60,7 +61,7 @@ export async function getAllBookings(page = 1, perPage = 20, statusFilter = '', 
     }
     const filter = filters.join(' && ');
 
-    const cacheKey = `bookings:admin:${page}:${perPage}:${statusFilter}:${searchQuery}:${dateFilter}`;
+    const cacheKey = `bookings:admin:${page}:${perPage}:${statusFilter}:${searchQuery}:${dateFilter}:${serviceFilter}`;
     const records = await cached(cacheKey, 15 * 1000, async () => {
       return await adminPb.collection('bookings').getList(page, perPage, { filter, sort: '-created' });
     });

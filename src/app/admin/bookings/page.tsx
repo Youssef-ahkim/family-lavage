@@ -3,12 +3,14 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { getAllBookings, updateBookingStatus, deleteBooking } from "@/app/actions/admin";
+import { getServices } from "@/app/admin/services/service-actions";
+import { ServiceRecord } from "@/app/admin/services/service-types";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import ConfirmModal from "@/components/ConfirmModal";
 import {
   Loader2, Calendar, Clock, Car, User, CheckCircle2, XCircle, 
-  Trash2, ChevronLeft, ChevronRight, Search, RefreshCw, Eye
+  Trash2, ChevronLeft, ChevronRight, Search, RefreshCw, Eye, Tags
 } from "lucide-react";
 
 type BookingItem = {
@@ -31,11 +33,13 @@ export default function AdminBookingsPage() {
   const adm = t.admin;
 
   const [bookings, setBookings] = useState<BookingItem[]>([]);
+  const [services, setServices] = useState<ServiceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [serviceFilter, setServiceFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -54,12 +58,13 @@ export default function AdminBookingsPage() {
 
   useEffect(() => {
     setMounted(true);
+    getServices().then(setServices).catch(console.error);
   }, []);
 
   const fetchData = useCallback(async () => {
     setRefreshing(true);
     try {
-      const res = await getAllBookings(page, 15, statusFilter, searchQuery, dateFilter);
+      const res = await getAllBookings(page, 15, statusFilter, searchQuery, dateFilter, serviceFilter);
       if (res.success) {
         setBookings(res.items as BookingItem[]);
         setTotalPages(res.totalPages);
@@ -71,7 +76,7 @@ export default function AdminBookingsPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [page, statusFilter, searchQuery, dateFilter]);
+  }, [page, statusFilter, searchQuery, dateFilter, serviceFilter]);
 
   useEffect(() => {
     fetchData();
@@ -193,6 +198,34 @@ export default function AdminBookingsPage() {
               {language === 'fr' ? 'Rechercher' : (language === 'ar' ? 'بحث' : 'Search')}
             </button>
           </form>
+
+          {/* Service Filter (NEW) */}
+          <div className="flex-1 overflow-x-auto no-scrollbar">
+            <div className={`flex items-center gap-1 min-w-max ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+              <button
+                onClick={() => { setServiceFilter('all'); setPage(1); }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${serviceFilter === 'all'
+                  ? "bg-zinc-100 text-zinc-900 shadow-lg shadow-white/10"
+                  : "bg-zinc-900/50 text-zinc-500 hover:text-white border border-zinc-800/50"
+                  }`}
+              >
+                <Tags size={14} />
+                {language === 'fr' ? 'Tous les Services' : (language === 'ar' ? 'جميع الخدمات' : 'All Services')}
+              </button>
+              {services.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => { setServiceFilter(s.id); setPage(1); }}
+                  className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${serviceFilter === s.id
+                    ? "bg-zinc-100 text-zinc-900 shadow-lg shadow-white/10"
+                    : "bg-zinc-900/50 text-zinc-500 hover:text-white border border-zinc-800/50"
+                    }`}
+                >
+                  {language === 'fr' ? s.title_fr : (language === 'ar' ? s.title_ar : s.title_en)}
+                </button>
+              ))}
+            </div>
+          </div>
           
           <div className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-3 ${dir === 'rtl' ? 'sm:flex-row-reverse' : ''}`}>
             <div className={`flex-1 overflow-x-auto no-scrollbar`}>
