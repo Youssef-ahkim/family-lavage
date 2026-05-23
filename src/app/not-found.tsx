@@ -1,9 +1,24 @@
+"use client";
+
 import Link from "next/link";
 import { Home, Search } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
+import { translations } from "@/lib/translations";
 
 export default function NotFound() {
+  const { language, dir } = useLanguage();
+  const t = translations[language];
+
+  const title = language === 'fr' 
+    ? 'Page Introuvable' 
+    : (language === 'ar' ? 'الصفحة غير موجودة' : 'Page Not Found');
+
+  const desc = language === 'fr' 
+    ? "Désolé, la page que vous recherchez n'existe pas ou a été déplacée." 
+    : (language === 'ar' ? "عذرًا، الصفحة التي تبحث عنها غير موجودة أو تم نقلها." : "Sorry, the page you are looking for does not exist or has been moved.");
+
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-zinc-50 p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-zinc-50 p-4" dir={dir}>
       <div className="max-w-md w-full bg-white p-10 rounded-[2rem] shadow-2xl shadow-zinc-200/50 text-center border border-zinc-100 relative overflow-hidden">
         
         {/* Background Decorative "404" */}
@@ -16,15 +31,15 @@ export default function NotFound() {
             <Search size={48} />
           </div>
           
-          <h2 className="text-3xl font-black text-zinc-900 mb-4 uppercase tracking-tighter">Page Introuvable</h2>
+          <h2 className="text-3xl font-black text-zinc-900 mb-4 uppercase tracking-tighter">{title}</h2>
           <p className="text-zinc-500 mb-10 leading-relaxed font-medium">
-            Désolé, la page que vous recherchez n'existe pas ou a été déplacée.
+            {desc}
           </p>
           
           <Link href="/">
             <button className="w-full flex items-center justify-center gap-3 bg-brand-blue text-white py-4 rounded-2xl font-black hover:bg-brand-blue/90 hover:-translate-y-1 transition-all active:scale-95 uppercase tracking-[0.2em] text-xs shadow-lg shadow-brand-blue/20">
               <Home size={18} />
-              Retour à l'accueil
+              {t.profile.backHome}
             </button>
           </Link>
         </div>

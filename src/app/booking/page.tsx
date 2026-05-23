@@ -481,7 +481,7 @@ const BookingPage = () => {
                       type="text"
                       name="fullname"
                       pattern="[A-Za-zÀ-ÿ\s\-\']+"
-                      title="Name should only contain letters and spaces"
+                      title={language === 'fr' ? "Le nom ne doit contenir que des lettres et des espaces" : (language === 'ar' ? "يجب أن يحتوي الاسم على أحرف ومسافات فقط" : "Name should only contain letters and spaces")}
                       placeholder={b.form.placeholderName}
                       value={formData.fullname}
                       onChange={handleInputChange}
@@ -498,7 +498,7 @@ const BookingPage = () => {
                       type="tel"
                       name="phone"
                       pattern="\+?[0-9\s\-\(\)]{8,15}"
-                      title="Please enter a valid phone number"
+                      title={language === 'fr' ? "Veuillez entrer un numéro de téléphone valide" : (language === 'ar' ? "يرجى إدخال رقم هاتف صحيح" : "Please enter a valid phone number")}
                       placeholder={b.form.placeholderPhone}
                       value={formData.phone}
                       onChange={handleInputChange}
@@ -636,7 +636,7 @@ const BookingPage = () => {
                 </div>
                 <div className="space-y-6">
                   <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{language === 'fr' ? 'Date & Heure' : 'Date & Time'}</span>
+                    <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{language === 'fr' ? 'Date & Heure' : (language === 'ar' ? 'التاريخ والوقت' : 'Date & Time')}</span>
                     <span className="font-black text-sm uppercase">{formData.date} | {formData.time}</span>
                   </div>
                   <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>

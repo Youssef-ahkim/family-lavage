@@ -187,12 +187,18 @@ const ProfilePage = () => {
                       <CheckCircle2 size={16} className="text-black" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-brand-gold">Abonnement Actif</p>
-                      <p className="text-xs font-bold text-zinc-600">Expire le {new Date(user.subscription_expiry || '').toLocaleDateString()}</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-brand-gold">
+                        {language === 'fr' ? 'Abonnement Actif' : (language === 'ar' ? 'اشتراك نشط' : 'Active Subscription')}
+                      </p>
+                      <p className="text-xs font-bold text-zinc-600">
+                        {language === 'fr' ? 'Expire le' : (language === 'ar' ? 'ينتهي في' : 'Expires on')} {new Date(user.subscription_expiry || '').toLocaleDateString(language === 'ar' ? 'ar-MA' : (language === 'fr' ? 'fr-FR' : 'en-US'))}
+                      </p>
                     </div>
                   </div>
                   <div className={`flex items-center justify-between bg-white p-3 rounded-xl border border-brand-gold/20 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Lavages Restants</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                      {language === 'fr' ? 'Lavages Restants' : (language === 'ar' ? 'الغسلات المتبقية' : 'Remaining Washes')}
+                    </span>
                     <span className="text-lg font-black text-brand-gold">{user.washes_remaining || 0}</span>
                   </div>
                 </div>
@@ -242,7 +248,10 @@ const ProfilePage = () => {
                                 booking.status === 'cancelled' ? 'bg-zinc-100 text-zinc-500' :
                                   'bg-brand-blue/10 text-brand-blue'
                             }`}>
-                            {booking.status}
+                            {booking.status === 'pending' ? t.admin.pending : 
+                             booking.status === 'confirmed' ? t.admin.confirmed : 
+                             booking.status === 'completed' ? t.admin.completed : 
+                             booking.status === 'cancelled' ? t.admin.cancelled : booking.status}
                           </span>
                           <span className="text-zinc-300 text-[10px] font-medium">#{booking.id}</span>
                         </div>
@@ -296,7 +305,7 @@ const ProfilePage = () => {
                         {booking.status === 'confirmed' && (
                           <div className="flex items-center gap-2 text-green-500 font-black uppercase text-[9px] tracking-widest px-4 py-3 justify-center">
                             <CheckCircle2 size={14} />
-                            {language === 'fr' ? 'Confirmé' : 'Confirmed'}
+                            {t.admin.confirmed}
                           </div>
                         )}
                       </div>

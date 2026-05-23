@@ -169,7 +169,10 @@ const MyBookingsPage = () => {
                               booking.status === 'cancelled' ? 'bg-zinc-100 text-zinc-500' :
                                 'bg-brand-blue/10 text-brand-blue'
                           }`}>
-                          {booking.status}
+                          {booking.status === 'pending' ? t.admin.pending : 
+                           booking.status === 'confirmed' ? t.admin.confirmed : 
+                           booking.status === 'completed' ? t.admin.completed : 
+                           booking.status === 'cancelled' ? t.admin.cancelled : booking.status}
                         </span>
                         <span className="text-zinc-300 text-[10px] font-medium">#{booking.id}</span>
                       </div>
@@ -223,7 +226,7 @@ const MyBookingsPage = () => {
                       {booking.status === 'confirmed' && (
                         <div className="flex items-center gap-2 text-green-500 font-black uppercase text-[9px] tracking-widest px-4 py-3 justify-center">
                           <CheckCircle2 size={14} />
-                          {language === 'fr' ? 'Confirmé' : 'Confirmed'}
+                          {t.admin.confirmed}
                         </div>
                       )}
                     </div>

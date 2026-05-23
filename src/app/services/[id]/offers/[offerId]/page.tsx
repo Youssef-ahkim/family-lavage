@@ -43,11 +43,13 @@ export default function OfferDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white text-zinc-950 font-sans">
+      <div className="min-h-screen bg-white text-zinc-950 font-sans" dir={dir}>
         <Navbar />
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <div className="w-16 h-16 border-4 border-brand-blue border-t-transparent rounded-full animate-spin mb-4" />
-          <p className="text-zinc-400 font-bold uppercase tracking-widest animate-pulse">Chargement...</p>
+          <p className="text-zinc-400 font-bold uppercase tracking-widest animate-pulse">
+            {language === 'fr' ? 'Chargement...' : (language === 'ar' ? 'جاري التحميل...' : 'Loading...')}
+          </p>
         </div>
       </div>
     );
@@ -55,12 +57,15 @@ export default function OfferDetailsPage() {
 
   if (!service || !offer) {
     return (
-      <div className="min-h-screen bg-white text-zinc-950 font-sans">
+      <div className="min-h-screen bg-white text-zinc-950 font-sans" dir={dir}>
         <Navbar />
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <h1 className="text-4xl font-black uppercase italic tracking-tighter mb-4">Offre Introuvable</h1>
+          <h1 className="text-4xl font-black uppercase italic tracking-tighter mb-4">
+            {language === 'fr' ? 'Offre Introuvable' : (language === 'ar' ? 'العرض غير موجود' : 'Offer Not Found')}
+          </h1>
           <button onClick={() => router.push(`/services/${serviceId}`)} className="text-brand-blue font-bold flex items-center gap-2">
-            <ArrowLeft size={20} /> Retour
+            <ArrowLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} />
+            {language === 'fr' ? 'Retour' : (language === 'ar' ? 'رجوع' : 'Back')}
           </button>
         </div>
       </div>

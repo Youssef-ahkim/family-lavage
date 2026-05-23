@@ -169,7 +169,7 @@ export default function Home() {
 
                 <Link href={plan.link} className="w-full mt-auto">
                   <button className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all bg-brand-blue text-white hover:bg-brand-blue/80 hover:scale-105 active:scale-95">
-                    View Offers
+                    {t.services.viewPricing}
                   </button>
                 </Link>
               </div>
@@ -263,7 +263,7 @@ export default function Home() {
               © 2026 FAMILY LAVAGE GROUP. {t.footer.rights}
             </p>
             <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-zinc-400">
-              <span>{language === 'ar' ? 'الدار البيضاء، المغرب' : 'CASABLANCA, MOROCCO'}</span>
+              <span>{language === 'ar' ? 'الدار البيضاء، المغرب' : (language === 'fr' ? 'CASABLANCA, MAROC' : 'CASABLANCA, MOROCCO')}</span>
             </div>
           </div>
         </div>

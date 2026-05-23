@@ -1,4 +1,10 @@
+"use client";
+
+import { useLanguage } from "@/context/LanguageContext";
+
 export default function Loading() {
+  const { language } = useLanguage();
+
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-white fixed inset-0 z-[100]">
       <div className="relative flex items-center justify-center">
@@ -12,7 +18,7 @@ export default function Loading() {
         </div>
       </div>
       <p className="mt-8 text-zinc-400 font-bold text-[10px] tracking-[0.3em] uppercase animate-pulse">
-        Chargement
+        {language === 'fr' ? 'Chargement...' : (language === 'ar' ? 'جاري التحميل...' : 'Loading...')}
       </p>
     </div>
   );

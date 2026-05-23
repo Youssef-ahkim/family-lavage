@@ -225,7 +225,9 @@ export default function SubscribePage() {
           <div className="reveal">
             <div className={`flex items-center gap-3 mb-8 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
               <History className="text-brand-blue" />
-              <h2 className="text-2xl font-black uppercase italic tracking-tight">Historique des demandes</h2>
+              <h2 className="text-2xl font-black uppercase italic tracking-tight">
+                {language === 'fr' ? 'Historique des demandes' : (language === 'ar' ? 'سجل الطلبات' : 'Request History')}
+              </h2>
             </div>
 
             <div className="bg-zinc-50 border border-zinc-100 rounded-[2rem] overflow-hidden">
@@ -233,10 +235,18 @@ export default function SubscribePage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className={`border-b border-zinc-200 bg-zinc-100/50 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                      <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-zinc-500">Plan</th>
-                      <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-zinc-500">Statut</th>
-                      <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-zinc-500">Date</th>
-                      <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-zinc-500">Prix</th>
+                      <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-zinc-500">
+                        {language === 'fr' ? 'Plan' : (language === 'ar' ? 'الاشتراك' : 'Plan')}
+                      </th>
+                      <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-zinc-500">
+                        {t.admin.status}
+                      </th>
+                      <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-zinc-500">
+                        {language === 'fr' ? 'Date' : (language === 'ar' ? 'التاريخ' : 'Date')}
+                      </th>
+                      <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-zinc-500">
+                        {t.admin.price}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
