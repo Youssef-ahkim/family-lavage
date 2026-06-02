@@ -50,15 +50,15 @@ export default function SignupPage() {
     <div className="min-h-screen bg-white relative overflow-hidden font-sans">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-blue/5 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-blue/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-blue/5 opacity-50 rounded-full blur-[150px] animate-pulse-slow" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-blue/5 opacity-50 rounded-full blur-[150px] animate-pulse-slow" style={{ animationDelay: '4s' }} />
       </div>
 
       <Navbar />
       
       <div className="relative z-10 max-w-xl mx-auto pt-32 pb-20 px-4">
-        <div className="bg-white/80 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] border border-zinc-200/50 shadow-[0_20px_60px_rgba(0,112,243,0.06)] reveal relative overflow-hidden">
-          <div className="w-20 h-20 bg-gradient-to-br from-brand-blue via-blue-500 to-teal-500 rounded-3xl flex items-center justify-center mb-8 mx-auto shadow-lg shadow-brand-blue/25 transform rotate-3 hover:rotate-0 transition-transform duration-500">
+        <div className="bg-white/80 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] border border-zinc-200/50 shadow-[0_10px_40px_rgba(0,112,243,0.03)] reveal relative overflow-hidden">
+          <div className="w-20 h-20 bg-gradient-to-br from-brand-blue via-blue-500 to-teal-500 rounded-3xl flex items-center justify-center mb-8 mx-auto shadow-md shadow-brand-blue/15 transform rotate-2 hover:rotate-0 transition-transform duration-500">
             <UserPlus className="w-10 h-10 text-white" />
           </div>
 
@@ -200,7 +200,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-5 bg-brand-blue text-white font-black uppercase tracking-[0.2em] text-sm rounded-2xl hover:bg-brand-blue/90 hover:scale-[1.01] active:scale-[0.99] transition-all shadow-[0_15px_30px_rgba(0,112,243,0.3)] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3"
+              className="w-full py-5 bg-brand-blue text-white font-black uppercase tracking-[0.2em] text-sm rounded-2xl hover:bg-brand-blue/90 hover:scale-[1.01] active:scale-[0.99] transition-all shadow-[0_8px_20px_rgba(0,112,243,0.15)] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                 <>

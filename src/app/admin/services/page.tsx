@@ -205,13 +205,15 @@ export default function AdminServicesPage() {
                     </td>
                     <td className={`px-8 py-6 ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>
                       <div className={`flex items-center ${dir === 'rtl' ? 'justify-start' : 'justify-end'} gap-2`}>
-                        <Link 
-                          href={`/admin/services/${service.id}/offers`}
-                          className="p-2.5 rounded-xl bg-brand-blue/10 text-brand-blue hover:text-white hover:bg-brand-blue transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
-                        >
-                          <List size={16} />
-                          Offers
-                        </Link>
+                        {service.booking_type === "has_offers" && (
+                          <Link 
+                            href={`/admin/services/${service.id}/offers`}
+                            className="p-2.5 rounded-xl bg-brand-blue/10 text-brand-blue hover:text-white hover:bg-brand-blue transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
+                          >
+                            <List size={16} />
+                            Offers
+                          </Link>
+                        )}
                         <button 
                           onClick={() => {
                             setEditingService(service);

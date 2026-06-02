@@ -99,9 +99,16 @@ export async function submitBooking(formData: any) {
 
     if (userId) {
       data.user = userId;
-      // Check for existing active bookings for this user (skip cache — must be real-time)
+      let filterStr = `user = "${userId}" && (status = "pending" || status = "confirmed")`;
+      if (data.service) {
+        filterStr += ` && service = "${data.service}"`;
+      } else {
+        filterStr += ` && service_type = "${data.service_type}"`;
+      }
+
+      // Check for existing active bookings for this user for the SAME service
       const existingBookings = await adminPb.collection('bookings').getList(1, 1, {
-        filter: `user = "${userId}" && (status = "pending" || status = "confirmed")`,
+        filter: filterStr,
       });
       if (existingBookings.totalItems > 0) {
         return { success: false, error: "errors.alreadyHasBooking" };
@@ -112,8 +119,14 @@ export async function submitBooking(formData: any) {
       if (bookingIds) {
         const idsArray = bookingIds.split(',').filter(id => id.length > 0);
         if (idsArray.length > 0) {
-          const filter = `(${idsArray.map(id => `id = "${id}"`).join(' || ')}) && (status = "pending" || status = "confirmed")`;
-          const existingBookings = await adminPb.collection('bookings').getList(1, 1, { filter });
+          let filterStr = `(${idsArray.map(id => `id = "${id}"`).join(' || ')}) && (status = "pending" || status = "confirmed")`;
+          if (data.service) {
+            filterStr += ` && service = "${data.service}"`;
+          } else {
+            filterStr += ` && service_type = "${data.service_type}"`;
+          }
+
+          const existingBookings = await adminPb.collection('bookings').getList(1, 1, { filter: filterStr });
           if (existingBookings.totalItems > 0) {
             return { success: false, error: "errors.alreadyHasBooking" };
           }
@@ -279,7 +292,7 @@ export async function cancelBooking(bookingId: string) {
   }
 }
 
-export async function getBookedTimes(dateStr: string) {
+export async function getBookedTimes(dateStr: string, serviceId?: string) {
   try {
     // No caching for booked times as requested
     const start = new Date(`${dateStr}T00:00:00`).toISOString();
@@ -288,9 +301,14 @@ export async function getBookedTimes(dateStr: string) {
     const startPb = start.replace('T', ' ');
     const endPb = end.replace('T', ' ');
 
+    let filterStr = `date >= "${startPb}" && date <= "${endPb}" && status != "cancelled"`;
+    if (serviceId) {
+      filterStr += ` && service = "${serviceId}"`;
+    }
+
     const adminPb = await getAdminPB();
     const records = await adminPb.collection('bookings').getList(1, 100, {
-      filter: `date >= "${startPb}" && date <= "${endPb}" && status != "cancelled"`,
+      filter: filterStr,
     });
 
     return records.items.map(record => record.date);

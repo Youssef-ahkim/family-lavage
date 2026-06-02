@@ -205,8 +205,8 @@ export default function AdminSubscriptionsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className={`border-b border-zinc-800/50 bg-zinc-900/50 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                  {[t.admin.customer, "Plan Requested", t.admin.services.tablePrice, t.admin.status, "Date", t.admin.actions].map(h => (
-                    <th key={h} className={`px-5 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest whitespace-nowrap ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{h}</th>
+                  {[t.admin.customer, language === 'fr' ? 'Plan Demandé' : (language === 'ar' ? 'الخطة المطلوبة' : 'Plan Requested'), t.admin.services.tablePrice, t.admin.status, language === 'fr' ? 'Date' : (language === 'ar' ? 'التاريخ' : 'Date'), t.admin.actions].map((h, i) => (
+                    <th key={i} className={`px-5 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest whitespace-nowrap ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -238,7 +238,7 @@ export default function AdminSubscriptionsPage() {
                             {item.plan === 'yearly' ? t.pricing.plans.year.name : t.pricing.plans.month.name}
                           </span>
                           <span className="text-[10px] text-zinc-500 font-bold">
-                            {item.notes?.includes("Service ID") ? "Custom Plan" : t.pricing.plans[item.plan === 'yearly' ? 'year' : 'month'].subPrice}
+                            {item.notes?.includes("Service ID") ? (language === 'fr' ? 'Plan Personnalisé' : (language === 'ar' ? 'خطة مخصصة' : 'Custom Plan')) : t.pricing.plans[item.plan === 'yearly' ? 'year' : 'month'].subPrice}
                           </span>
                         </div>
                       </td>
@@ -260,20 +260,20 @@ export default function AdminSubscriptionsPage() {
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center gap-2">
                             <Clock size={12} className="text-zinc-600" />
-                            <span className="text-[9px] font-black uppercase tracking-tight text-zinc-600 w-16">Request:</span>
+                            <span className="text-[9px] font-black uppercase tracking-tight text-zinc-600 w-16">{language === 'fr' ? 'Demande:' : (language === 'ar' ? 'الطلب:' : 'Request:')}</span>
                             <span className="font-medium">{formatDate(item.created)}</span>
                           </div>
                           {item.status === 'active' && (
                             <>
                               <div className="flex items-center gap-2 text-zinc-400">
                                 <Check size={12} className="text-green-500" />
-                                <span className="text-[9px] font-black uppercase tracking-tight w-16">Approved:</span>
+                                <span className="text-[9px] font-black uppercase tracking-tight w-16">{language === 'fr' ? 'Approuvé:' : (language === 'ar' ? 'موافق عليه:' : 'Approved:')}</span>
                                 <span className="font-medium">{formatDate(item.updated)}</span>
                               </div>
                               {item.expiry_date && (
                                 <div className="flex items-center gap-2 text-brand-blue">
                                   <AlertCircle size={12} />
-                                  <span className="text-[9px] font-black uppercase tracking-tight w-16">Expires:</span>
+                                  <span className="text-[9px] font-black uppercase tracking-tight w-16">{language === 'fr' ? 'Expire le:' : (language === 'ar' ? 'ينتهي في:' : 'Expires:')}</span>
                                   <span className="font-bold">{formatDate(item.expiry_date)}</span>
                                 </div>
                               )}
@@ -364,13 +364,13 @@ export default function AdminSubscriptionsPage() {
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2 text-zinc-500">
                       <Clock size={12} />
-                      <span className="text-[9px] font-black uppercase tracking-tight w-16">Request:</span>
+                      <span className="text-[9px] font-black uppercase tracking-tight w-16">{language === 'fr' ? 'Demande:' : (language === 'ar' ? 'الطلب:' : 'Request:')}</span>
                       <span className="text-[11px] font-bold">{formatDate(item.created)}</span>
                     </div>
                     {item.status === 'active' && (
                       <div className="flex items-center gap-2 text-green-400">
                         <Check size={12} />
-                        <span className="text-[9px] font-black uppercase tracking-tight w-16">Approved:</span>
+                        <span className="text-[9px] font-black uppercase tracking-tight w-16">{language === 'fr' ? 'Approuvé:' : (language === 'ar' ? 'موافق عليه:' : 'Approved:')}</span>
                         <span className="text-[11px] font-bold">{formatDate(item.updated)}</span>
                       </div>
                     )}

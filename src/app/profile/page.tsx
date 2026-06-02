@@ -181,26 +181,17 @@ const ProfilePage = () => {
               </div>
 
               {user?.subscription_status === 'active' && (
-                <div className={`mt-6 p-5 rounded-2xl bg-brand-gold/10 border border-brand-gold/20 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                  <div className={`flex items-center gap-3 mb-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <div className="p-2 bg-brand-gold rounded-lg">
-                      <CheckCircle2 size={16} className="text-black" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-brand-gold">
-                        {language === 'fr' ? 'Abonnement Actif' : (language === 'ar' ? 'اشتراك نشط' : 'Active Subscription')}
-                      </p>
-                      <p className="text-xs font-bold text-zinc-600">
-                        {language === 'fr' ? 'Expire le' : (language === 'ar' ? 'ينتهي في' : 'Expires on')} {new Date(user.subscription_expiry || '').toLocaleDateString(language === 'ar' ? 'ar-MA' : (language === 'fr' ? 'fr-FR' : 'en-US'))}
-                      </p>
-                    </div>
+                <div className={`mt-6 p-5 rounded-2xl bg-brand-gold/10 border border-brand-gold/20 flex flex-col items-center text-center`}>
+                  <div className="w-12 h-12 bg-brand-gold rounded-full flex items-center justify-center mb-3">
+                    <CheckCircle2 size={24} className="text-black" />
                   </div>
-                  <div className={`flex items-center justify-between bg-white p-3 rounded-xl border border-brand-gold/20 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                      {language === 'fr' ? 'Lavages Restants' : (language === 'ar' ? 'الغسلات المتبقية' : 'Remaining Washes')}
-                    </span>
-                    <span className="text-lg font-black text-brand-gold">{user.washes_remaining || 0}</span>
-                  </div>
+                  <p className="text-[12px] font-black uppercase tracking-widest text-brand-gold mb-4">
+                    {language === 'fr' ? 'Abonnement Actif' : (language === 'ar' ? 'اشتراك نشط' : 'Active Subscription')}
+                  </p>
+                  <Link href="/subscribe" className="w-full py-3 bg-brand-gold text-black font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-brand-gold/90 transition-colors shadow-sm flex items-center justify-center gap-2">
+                    {language === 'fr' ? 'Voir les détails' : (language === 'ar' ? 'رؤية التفاصيل' : 'See Details')}
+                    <ArrowRight size={14} className={dir === 'rtl' ? 'rotate-180' : ''} />
+                  </Link>
                 </div>
               )}
 
@@ -257,7 +248,7 @@ const ProfilePage = () => {
                         </div>
 
                         <h3 className="text-lg font-black uppercase italic tracking-tight mb-3">
-                          {booking.service_type === 'VIP' ? t.pricing.plans.vip.name : (language === 'fr' ? 'Lavage Simple' : (language === 'ar' ? 'غسيل عادي' : 'Basic Wash'))}
+                          {booking.service_type === 'VIP' ? t.pricing.plans.vip.name : (booking.service_type === 'basic' ? (language === 'fr' ? 'Lavage Simple' : (language === 'ar' ? 'غسيل عادي' : 'Basic Wash')) : booking.service_type)}
                         </h3>
 
                         <div className={`grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 ${dir === 'rtl' ? 'text-right' : ''}`}>
@@ -275,7 +266,7 @@ const ProfilePage = () => {
                           </div>
                           <div className={`flex items-center gap-2 text-zinc-950 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                             <span className="text-xs font-black px-2 py-0.5 bg-zinc-50 rounded border border-zinc-100">
-                              {booking.price} DH
+                              {booking.price === -1 ? (language === 'fr' ? 'Sur place' : (language === 'ar' ? 'في عين المكان' : 'On site')) : `${booking.price} DH`}
                             </span>
                           </div>
                         </div>

@@ -63,10 +63,7 @@ export default function SubscribePage() {
     setRequests(data);
     setIsFetchingRequests(false);
     
-    // Check if user already has a pending or active request
-    if (data.some((r: any) => r.status === 'pending' || r.status === 'active')) {
-      setIsSubmitted(true);
-    }
+    // We no longer block the whole page based on this.
   };
 
   const handleSubscribe = async (planId: string) => {
@@ -80,15 +77,15 @@ export default function SubscribePage() {
     try {
       const result = await requestSubscription(planId);
       if (result.success) {
-        setIsSubmitted(true);
+        // Refresh the list to update the button states
         fetchRequests();
       } else {
-        const errorKey = result.error || "errors.general";
-        const errorMsg = errorKey.split('.').reduce((obj: any, key: string) => obj?.[key], t) || t.errors.general;
+        const errorKey = result.error || "subscription.errors.general";
+        const errorMsg = errorKey.split('.').reduce((obj: any, key: string) => obj?.[key], t) || s.errors.general;
         setError(errorMsg);
       }
     } catch (err) {
-      setError(t.errors.general);
+      setError(s.errors.general);
     } finally {
       setLoading(false);
     }
@@ -102,47 +99,8 @@ export default function SubscribePage() {
     );
   }
 
-  if (isSubmitted) {
-    const activeSub = requests.find((r: any) => r.status === 'active');
-    const pendingSub = requests.find((r: any) => r.status === 'pending');
-
-    return (
-      <div className="min-h-screen bg-white">
-        <Navbar />
-        <div className="max-w-3xl mx-auto pt-40 px-4 text-center">
-          <div className="reveal">
-            <div className={`w-24 h-24 ${activeSub ? 'bg-green-50' : 'bg-brand-blue/10'} rounded-full flex items-center justify-center mx-auto mb-8`}>
-              {activeSub ? <CheckCircle2 className="text-green-600 w-12 h-12" /> : <Clock className="text-brand-blue w-12 h-12" />}
-            </div>
-            <h1 className="text-4xl font-black mb-4 uppercase italic tracking-tighter">
-              {activeSub ? (language === 'fr' ? 'Abonnement Actif' : (language === 'ar' ? 'اشتراك نشط' : 'Active Subscription')) : s.successTitle}
-            </h1>
-            <p className="text-zinc-500 mb-12 text-lg">
-              {activeSub 
-                ? (language === 'fr' ? `Vous êtes actuellement abonné.` : 
-                   language === 'ar' ? `أنت مشترك حالياً.` : 
-                   `You are currently subscribed.`)
-                : (
-                  <>
-                    {s.successDesc} <br />
-                    <span className="text-brand-blue font-bold">{s.pendingDesc}</span>
-                  </>
-                )
-              }
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/profile" className="btn-primary inline-flex">
-                {t.nav.profile}
-              </Link>
-              <Link href="/" className="btn-outline inline-flex border-2 border-zinc-200 py-4 px-8 rounded-2xl font-bold">
-                {s.backHome}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // We no longer render a full-screen success component here.
+  // The success states will be reflected on the individual plan cards.
 
   return (
     <div className="min-h-screen bg-white text-zinc-950 font-sans overflow-x-hidden selection:bg-brand-blue selection:text-white">
@@ -178,10 +136,14 @@ export default function SubscribePage() {
             const features = language === 'fr' ? plan.features_fr : (language === 'ar' ? plan.features_ar : plan.features_en);
             const isMonthly = plan.plan_type === 'monthly';
             
+            const activeReq = requests.find(r => r.status === 'active' && r.plan === plan.plan_type && r.amount === plan.price);
+            const hasActive = !!activeReq;
+            const hasPending = requests.some(r => r.status === 'pending' && r.plan === plan.plan_type && r.amount === plan.price);
+
             return (
               <div 
                 key={plan.id}
-                className={`card-premium relative flex flex-col p-10 rounded-[3rem] border-2 transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl hover:shadow-brand-blue/10 bg-zinc-50 border-zinc-100 hover:border-brand-blue reveal`}
+                className={`card-premium relative flex flex-col p-10 rounded-[3rem] border-2 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-blue/5 bg-zinc-50 border-zinc-100 hover:border-brand-blue reveal`}
               >
                 <h3 className="text-2xl font-black mb-6 uppercase tracking-tight italic text-zinc-900">
                   {name}
@@ -199,7 +161,7 @@ export default function SubscribePage() {
                 <div className="h-px w-full bg-zinc-200 mb-10" />
 
                 <ul className="space-y-5 mb-12 flex-grow">
-                  {features.map((feature: string, fIdx: number) => (
+                  {Array.isArray(features) && features.map((feature: string, fIdx: number) => (
                     <li key={fIdx} className={`flex items-center gap-3 text-base text-zinc-600 font-medium ${dir === 'rtl' ? 'flex-row-reverse text-right' : ''}`}>
                       <CheckCircle2 size={18} className="text-brand-blue shrink-0" />
                       <span>{feature}</span>
@@ -207,13 +169,44 @@ export default function SubscribePage() {
                   ))}
                 </ul>
 
+                {hasActive && activeReq && (
+                  <div className="mb-8 p-5 bg-green-500/10 rounded-2xl border border-green-500/20 flex flex-col gap-3">
+                    <div className={`flex justify-between items-center text-xs ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                      <span className="font-bold text-green-600 uppercase tracking-widest">{language === 'fr' ? 'Lavages restants :' : (language === 'ar' ? 'الغسلات المتبقية:' : 'Washes remaining:')}</span>
+                      <span className="font-black text-green-600 text-sm bg-green-500/20 px-2 py-0.5 rounded-md">{activeReq.washes_remaining ?? 0}</span>
+                    </div>
+                    {activeReq.expiry_date && (
+                      <div className={`flex justify-between items-center text-xs ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                        <span className="font-bold text-green-600 uppercase tracking-widest">{language === 'fr' ? 'Expire le :' : (language === 'ar' ? 'ينتهي في:' : 'Expires:')}</span>
+                        <span className="font-black text-green-600">{new Date(activeReq.expiry_date).toLocaleDateString(language === 'fr' ? 'fr-FR' : (language === 'ar' ? 'ar-MA' : 'en-US'))}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <button
                   onClick={() => handleSubscribe(plan.id)}
-                  disabled={loading}
-                  className="w-full py-5 bg-brand-blue text-white font-black uppercase tracking-[0.2em] text-sm rounded-2xl hover:bg-brand-blue/80 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-brand-blue/20 disabled:opacity-50 flex items-center justify-center gap-3"
+                  disabled={loading || hasActive || hasPending}
+                  className={`w-full py-5 text-white font-black uppercase tracking-[0.2em] text-sm rounded-2xl transition-all shadow-md flex items-center justify-center gap-3 ${
+                    hasActive 
+                      ? 'bg-green-500 shadow-green-500/20' 
+                      : hasPending 
+                        ? 'bg-amber-500 shadow-amber-500/20' 
+                        : 'bg-brand-blue hover:bg-brand-blue/80 hover:-translate-y-1 active:scale-[0.98] shadow-brand-blue/10 disabled:opacity-50'
+                  }`}
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : s.requestBtn}
-                  {!loading && <ChevronRight size={18} className={dir === 'rtl' ? 'rotate-180' : ''} />}
+                  {loading && !hasActive && !hasPending ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : hasActive ? (
+                    <><CheckCircle2 size={18} /> {language === 'fr' ? 'Abonnement Actif' : (language === 'ar' ? 'اشتراك نشط' : 'Active Subscription')}</>
+                  ) : hasPending ? (
+                    <><Clock size={18} /> {language === 'fr' ? 'Demande en cours' : (language === 'ar' ? 'طلب قيد الانتظار' : 'Request Pending')}</>
+                  ) : (
+                    <>
+                      {s.requestBtn}
+                      <ChevronRight size={18} className={dir === 'rtl' ? 'rotate-180' : ''} />
+                    </>
+                  )}
                 </button>
               </div>
             );

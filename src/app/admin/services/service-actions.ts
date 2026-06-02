@@ -16,10 +16,10 @@ export async function getServices() {
     const records = await pb.collection("services").getFullList<ServiceRecord>({
       sort: "-created",
     });
-    
     return records.map(record => ({
       ...record,
-      photo: record.photo ? `/api/files/${record.collectionId}/${record.id}/${record.photo}` : undefined
+      photo: record.photo ? `/api/files/${record.collectionId}/${record.id}/${record.photo}` : undefined,
+      gallery: record.gallery?.length ? record.gallery.map(g => `/api/files/${record.collectionId}/${record.id}/${g}`) : []
     }));
   });
 }
@@ -29,16 +29,25 @@ function prepareServiceData(formData: FormData) {
 
   formData.forEach((value, key) => {
     if (value instanceof File && value.size > 0) return;
-    if (key === "photo") return;
+    if (key === "photo" || key === "gallery" || key === "clear_gallery") return;
 
     if (key === "active") {
       data[key] = value === "true" || value === "1";
       return;
     }
 
+    if (key === "price") {
+      const num = parseFloat(value as string);
+      data[key] = isNaN(num) ? "" : num;
+      return;
+    }
+
     if (typeof value === "string") {
       let val = value.trim();
-      if (val === "undefined" || val === "") return;
+      if (val === "undefined" || val === "") {
+        if (key === "parent_service") data[key] = "";
+        return;
+      }
       data[key] = val;
     }
   });
@@ -56,15 +65,31 @@ export async function createService(formData: FormData) {
     data.id = randomId.substring(0, 15);
 
     const photo = formData.get("photo");
+    const gallery = formData.getAll("gallery");
+    
     let payload: any = data;
     
+    const fd = new FormData();
+    Object.entries(data).forEach(([k, v]) => {
+      if (typeof v === 'object') fd.append(k, JSON.stringify(v));
+      else fd.append(k, v.toString());
+    });
+    
+    let hasFiles = false;
+
     if (photo instanceof File && photo.size > 0) {
-      const fd = new FormData();
-      Object.entries(data).forEach(([k, v]) => {
-        if (typeof v === 'object') fd.append(k, JSON.stringify(v));
-        else fd.append(k, v.toString());
-      });
       fd.append("photo", photo);
+      hasFiles = true;
+    }
+
+    gallery.forEach(file => {
+      if (file instanceof File && file.size > 0) {
+        fd.append("gallery", file);
+        hasFiles = true;
+      }
+    });
+
+    if (hasFiles) {
       payload = fd;
     }
 
@@ -86,15 +111,36 @@ export async function updateService(id: string, formData: FormData) {
   try {
     const data = prepareServiceData(formData);
     const photo = formData.get("photo");
+    const gallery = formData.getAll("gallery");
+    
     let payload: any = data;
     
+    const fd = new FormData();
+    Object.entries(data).forEach(([k, v]) => {
+      if (typeof v === 'object') fd.append(k, JSON.stringify(v));
+      else fd.append(k, v.toString());
+    });
+    
+    let hasFiles = false;
+
     if (photo instanceof File && photo.size > 0) {
-      const fd = new FormData();
-      Object.entries(data).forEach(([k, v]) => {
-        if (typeof v === 'object') fd.append(k, JSON.stringify(v));
-        else fd.append(k, v.toString());
-      });
       fd.append("photo", photo);
+      hasFiles = true;
+    }
+
+    if (formData.get("clear_gallery") === "true") {
+      fd.append("gallery", "");
+      hasFiles = true;
+    } else {
+      gallery.forEach(file => {
+        if (file instanceof File && file.size > 0) {
+          fd.append("gallery", file);
+          hasFiles = true;
+        }
+      });
+    }
+
+    if (hasFiles) {
       payload = fd;
     }
 

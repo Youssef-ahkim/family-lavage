@@ -295,7 +295,7 @@ export async function approveSubscription(subscriptionId: string) {
     // We look for an active 'subscription' service with matching plan_type
     const filter = `category = "subscription" && plan_type = "${subRequest.plan}" && active = true`;
     
-    const plans = await adminPb.collection('services').getList(1, 1, { filter });
+    const plans = await adminPb.collection('service_offers').getList(1, 1, { filter });
     const planDetails = plans.items[0];
 
     if (!planDetails) {

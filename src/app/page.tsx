@@ -21,21 +21,8 @@ export default function Home() {
 
 
 
-  // Map all DB services to the new format
   const activeServices = dbServices
-    .filter(s => s.active)
-    .map(s => {
-      const name = language === 'fr' ? s.title_fr : (language === 'ar' ? s.title_ar : s.title_en);
-      const desc = language === 'fr' ? s.description_fr : (language === 'ar' ? s.description_ar : s.description_en);
-
-      return {
-        id: s.id,
-        name,
-        desc,
-        photo: s.photo,
-        link: `/services/${s.id}`
-      };
-    })
+    .filter(s => s.active && !s.parent_service)
     .slice(0, 4);
 
   return (
@@ -168,34 +155,82 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {activeServices.map((plan, idx) => (
-              <div
-                key={idx}
-                className="card-premium relative flex flex-col p-3 rounded-[2rem] bg-white border border-zinc-200/70 transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl hover:shadow-brand-blue/8 hover:border-brand-blue/30 reveal group"
-                style={{ animationDelay: `${idx * 150}ms` }}
-              >
-                {plan.photo && (
-                  <div className="w-full h-48 rounded-[1.5rem] overflow-hidden mb-6 relative bg-zinc-100">
-                    <img src={plan.photo} alt={plan.name} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  </div>
-                )}
-                
-                <div className="px-3 pb-3 flex flex-col flex-grow">
-                  <h3 className="text-2xl font-black mb-4 uppercase tracking-tight italic text-zinc-900 group-hover:text-brand-blue transition-colors duration-300">{plan.name}</h3>
-                  
-                  <p className="text-zinc-500 text-sm flex-grow mb-8 text-left line-clamp-3">
-                    {plan.desc}
-                  </p>
+            {activeServices.map((service, idx) => {
+              const title = language === 'fr' ? service.title_fr : (language === 'ar' ? service.title_ar : service.title_en);
+              const isGold = title?.toLowerCase().includes('vip');
 
-                  <Link href={plan.link} className="w-full mt-auto">
-                    <button className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all bg-zinc-50 text-brand-blue ring-1 ring-zinc-100 group-hover:bg-brand-blue group-hover:text-white group-hover:ring-brand-blue group-hover:shadow-lg group-hover:shadow-brand-blue/20 active:scale-95">
-                      {t.services.viewPricing}
-                    </button>
+              return (
+                <div 
+                  key={service.id} 
+                  className="flex flex-col reveal group cursor-pointer h-full"
+                  style={{ animationDelay: `${idx * 150}ms` }}
+                >
+                  <Link 
+                    href={`/services/${service.id}`} 
+                    className={`card-premium block h-full relative p-3 rounded-[2rem] transition-all duration-500 overflow-hidden ${
+                      isGold 
+                      ? 'bg-zinc-950 shadow-xl hover:shadow-2xl hover:shadow-brand-gold/20 ring-1 ring-white/10 hover:ring-brand-gold/50' 
+                      : 'bg-white shadow-sm hover:shadow-2xl hover:shadow-brand-blue/10 ring-1 ring-zinc-200/60 hover:ring-brand-blue/30 hover:-translate-y-2'
+                    }`}
+                  >
+                    {/* Inner Glow for Gold */}
+                    {isGold && (
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
+                    )}
+
+                    {/* Image Area */}
+                    <div className="relative aspect-video rounded-[1.5rem] overflow-hidden mb-6 bg-zinc-100">
+                      {service.photo ? (
+                        <>
+                          <Image 
+                            src={service.photo} 
+                            alt={title || "Service"} 
+                            fill 
+                            unoptimized={true}
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                          {/* Subtle dark overlay to make badges pop */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
+                        </>
+                      ) : (
+                        <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${isGold ? 'from-zinc-800 to-zinc-900' : 'from-zinc-100 to-zinc-200'}`}>
+                          <Car className={`w-16 h-16 ${isGold ? 'text-white/10' : 'text-zinc-300'}`} />
+                        </div>
+                      )}
+
+                      {/* Badges */}
+                      <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
+                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg backdrop-blur-md ${
+                          isGold 
+                          ? 'bg-brand-gold/90 text-black' 
+                          : 'bg-white/90 text-brand-blue'
+                        }`}>
+                          {isGold ? t.pricing.badges.luxe : (language === 'fr' ? 'Premium' : (language === 'ar' ? 'ممتاز' : 'Premium'))}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Content Area */}
+                    <div className={`relative z-10 flex flex-col flex-grow px-4 pb-4 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                      <h3 className={`text-2xl font-black mb-2 uppercase italic tracking-tight line-clamp-2 transition-colors duration-300 ${isGold ? 'text-white group-hover:text-brand-gold' : 'text-zinc-900 group-hover:text-brand-blue'}`}>
+                        {title}
+                      </h3>
+                      
+                      <div className="mt-auto pt-6">
+                        <div className={`w-full px-6 py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 ${
+                          isGold 
+                          ? 'bg-brand-gold/10 text-brand-gold group-hover:bg-brand-gold group-hover:text-black' 
+                          : 'bg-zinc-50 text-brand-blue group-hover:bg-brand-blue group-hover:text-white ring-1 ring-zinc-100 group-hover:ring-brand-blue group-hover:shadow-lg group-hover:shadow-brand-blue/20'
+                        }`}>
+                          {language === 'fr' ? 'Voir Détails' : (language === 'ar' ? 'عرض التفاصيل' : 'View Details')}
+                          <ArrowRight size={16} className={`transition-transform group-hover:translate-x-1 ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
+                        </div>
+                      </div>
+                    </div>
                   </Link>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

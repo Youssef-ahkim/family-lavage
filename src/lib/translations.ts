@@ -323,6 +323,7 @@ export const translations = {
       errors: {
         alreadyPending: "Vous avez déjà une demande d'abonnement en attente.",
         alreadyActive: "Vous avez déjà un abonnement actif.",
+        general: "Une erreur est survenue lors de votre demande d'abonnement.",
       }
     }
   },
@@ -650,6 +651,7 @@ export const translations = {
       errors: {
         alreadyPending: "You already have a pending subscription request.",
         alreadyActive: "You already have an active subscription.",
+        general: "An error occurred during your subscription request.",
       }
     }
   },
@@ -977,6 +979,7 @@ export const translations = {
       errors: {
         alreadyPending: "لديك بالفعل طلب اشتراك قيد الانتظار.",
         alreadyActive: "لديك بالفعل اشتراك نشط.",
+        general: "حدث خطأ أثناء طلب اشتراكك.",
       }
     }
   },

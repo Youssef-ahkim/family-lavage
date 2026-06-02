@@ -308,14 +308,14 @@ export default function AdminBookingsPage() {
                         <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">{booking.plate_number}</td>
                         <td className="px-5 py-4">
                           <span className={`text-xs font-black uppercase ${booking.service_type === 'VIP' ? 'text-brand-gold' : 'text-zinc-400'}`}>
-                            {booking.service_type}
+                            {booking.service_type === 'VIP' ? 'VIP' : (booking.service_type === 'basic' ? 'Basic Wash' : booking.service_type)}
                           </span>
                         </td>
                         <td className="px-5 py-4 whitespace-nowrap">
                           <p className="text-zinc-300 font-medium text-xs">{formatDate(booking.date)}</p>
                           <p className="text-zinc-500 text-xs">{formatTime(booking.date)}</p>
                         </td>
-                        <td className="px-5 py-4 font-black text-white">{booking.price} DH</td>
+                        <td className="px-5 py-4 font-black text-white">{booking.price === -1 ? (language === 'fr' ? 'Sur place' : (language === 'ar' ? 'في عين المكان' : 'On site')) : `${booking.price} DH`}</td>
                         <td className="px-5 py-4">
                           <div className={`flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                             {booking.status === 'pending' && (
@@ -418,7 +418,7 @@ export default function AdminBookingsPage() {
                     </div>
                     <div>
                       <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{adm.price}</p>
-                      <p className="text-base font-black text-white">{booking.price} DH</p>
+                      <p className="text-base font-black text-white">{booking.price === -1 ? (language === 'fr' ? 'Sur place' : (language === 'ar' ? 'في عين المكان' : 'On site')) : `${booking.price} DH`}</p>
                     </div>
                   </div>
 
@@ -526,7 +526,7 @@ export default function AdminBookingsPage() {
                 { label: adm.phone, value: selectedBooking.phone },
                 { label: adm.vehicle, value: selectedBooking.plate_number },
                 { label: adm.service, value: selectedBooking.service_type },
-                { label: adm.price, value: `${selectedBooking.price} DH` },
+                { label: adm.price, value: selectedBooking.price === -1 ? (language === 'fr' ? 'Sur place' : (language === 'ar' ? 'في عين المكان' : 'On site')) : `${selectedBooking.price} DH` },
                 { label: t.booking.form.date, value: formatDate(selectedBooking.date) },
                 { label: t.booking.form.time, value: formatTime(selectedBooking.date) },
                 { label: adm.notes, value: selectedBooking.notes || "—" },

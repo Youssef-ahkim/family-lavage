@@ -10,17 +10,22 @@ export const serviceSchema = z.object({
   description_en: z.string().optional(),
   active: z.boolean(),
   photo: z.any().optional(), // Handled separately for upload
+  gallery: z.any().optional(), // Multiple images for carousel
+  parent_service: z.string().optional(),
+  price: z.number().optional().nullable(),
+  booking_type: z.enum(["has_children", "has_offers", "direct"]).default("has_offers"),
 });
 
 export type ServiceFormData = z.infer<typeof serviceSchema>;
 
-export interface ServiceRecord extends ServiceFormData {
+export interface ServiceRecord extends Omit<ServiceFormData, 'photo' | 'gallery'> {
   id: string;
   collectionId: string;
   collectionName: string;
   created: string;
   updated: string;
   photo?: string; // URL string from PB
+  gallery?: string[]; // Array of URL strings from PB
 }
 
 // Child Offer (e.g. 100dh wash, 500dh subscription)

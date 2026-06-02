@@ -21,6 +21,7 @@ const BookingPage = () => {
   const b = t.booking;
 
   const [step, setStep] = useState(1);
+  const [selectedParentService, setSelectedParentService] = useState<ServiceRecord | null>(null);
   const [selectedService, setSelectedService] = useState<ServiceRecord | null>(null);
   const [selectedOffer, setSelectedOffer] = useState<ServiceOfferRecord | null>(null);
   
@@ -43,7 +44,6 @@ const BookingPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasActiveBooking, setHasActiveBooking] = useState(false);
   const [isCheckingActive, setIsCheckingActive] = useState(true);
 
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
@@ -62,7 +62,7 @@ const BookingPage = () => {
     const fetchSlots = async () => {
       setIsFetchingSlots(true);
       try {
-        const dates = await getBookedTimes(formData.date);
+        const dates = await getBookedTimes(formData.date, selectedService?.id);
         const slots = dates.map(d => {
           const safeDateStr = d.replace(' ', 'T');
           const dateObj = new Date(safeDateStr);
@@ -79,7 +79,7 @@ const BookingPage = () => {
     };
 
     fetchSlots();
-  }, [formData.date]);
+  }, [formData.date, selectedService?.id]);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -94,12 +94,9 @@ const BookingPage = () => {
           }));
         }
 
-        const { getMyBookings } = await import("@/app/actions/booking");
-        const bookings = await getMyBookings();
-        const active = bookings.some((b: any) => b.status === 'pending' || b.status === 'confirmed');
-        setHasActiveBooking(active);
+        // Removed global hasActiveBooking check to allow multiple different service bookings
       } catch (err) {
-        console.error("Error loading profile or bookings", err);
+        console.error("Error loading profile", err);
       } finally {
         setIsCheckingActive(false);
       }
@@ -131,8 +128,37 @@ const BookingPage = () => {
   }, [serviceIdParam, dbServices, offerIdParam]);
 
   const handleServiceSelect = async (service: ServiceRecord, initialOfferId?: string | null) => {
+    if (service.booking_type === "has_children") {
+      setSelectedParentService(service);
+      return;
+    }
+
     setSelectedService(service);
     setSelectedOffer(null);
+
+    if (service.booking_type === "direct") {
+      const directOffer: ServiceOfferRecord = {
+        id: service.id,
+        collectionId: service.collectionId,
+        collectionName: service.collectionName,
+        created: service.created,
+        updated: service.updated,
+        category: "once",
+        service: service.id,
+        title_fr: service.title_fr,
+        title_ar: service.title_ar,
+        title_en: service.title_en,
+        price: service.price ? service.price : -1,
+        active: true,
+        features_fr: [],
+        features_ar: [],
+        features_en: [],
+      };
+      setSelectedOffer(directOffer);
+      setStep(2);
+      return;
+    }
+
     setIsFetchingOffers(true);
     try {
       const offers = await getServiceOffers(service.id);
@@ -187,7 +213,16 @@ const BookingPage = () => {
 
       if (!selectedOffer) throw new Error("No offer selected");
 
+      const serviceTitle = language === 'fr' ? selectedService?.title_fr : (language === 'ar' ? selectedService?.title_ar : selectedService?.title_en);
       const offerTitle = language === 'fr' ? selectedOffer.title_fr : (language === 'ar' ? selectedOffer.title_ar : selectedOffer.title_en);
+      
+      let bookingTitle = offerTitle || "Lavage";
+      if (selectedService?.booking_type !== 'direct') {
+        bookingTitle = `${serviceTitle} - ${offerTitle}`;
+      } else {
+        bookingTitle = serviceTitle || "Lavage";
+      }
+
       const isSubWash = selectedOffer.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0;
       const finalPrice = isSubWash ? 0 : selectedOffer.price;
 
@@ -195,7 +230,7 @@ const BookingPage = () => {
         full_name: formData.fullname,
         phone: formData.phone,
         plate_number: formData.carModel,
-        service_type: offerTitle,
+        service_type: bookingTitle,
         service_id: selectedService?.id, // NEW: pass the service ID
         price: finalPrice,
         date: bookingDateTime.toISOString(),
@@ -236,34 +271,7 @@ const BookingPage = () => {
     );
   }
 
-  if (hasActiveBooking) {
-    return (
-      <div className="min-h-screen bg-white">
-        <Navbar />
-        <div className="max-w-3xl mx-auto pt-40 px-4 text-center">
-          <div className="reveal">
-            <div className="w-24 h-24 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-8">
-              <AlertCircle className="text-brand-gold w-12 h-12" />
-            </div>
-            <h1 className="text-4xl font-black mb-4 uppercase italic tracking-tighter">
-              {language === 'ar' ? 'لديك حجز نشط' : (language === 'en' ? 'Active Reservation' : 'Réservation en cours')}
-            </h1>
-            <p className="text-zinc-500 mb-12 text-lg">
-              {t.errors.alreadyHasBooking}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href={cachedProfile ? "/profile" : "/my-bookings"} className="btn-primary inline-flex">
-                {language === 'fr' ? 'Voir mes réservations' : (language === 'ar' ? 'عرض حجوزاتي' : 'View My Bookings')}
-              </Link>
-              <Link href="/" className="btn-outline inline-flex border-2 border-zinc-200 py-4 px-8 rounded-2xl font-bold">
-                {language === 'fr' ? "Retour à l'accueil" : (language === 'ar' ? 'العودة للرئيسية' : 'Back to Home')}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
   if (isSubmitted) {
     return (
@@ -348,15 +356,15 @@ const BookingPage = () => {
         {/* Step 1: Service Selection */}
         {step === 1 && (
           <div className="reveal">
-            {!selectedService ? (
-              // Show Parent Services
+            {!selectedParentService && !selectedService && (
+              // Show Top-Level Services
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {isFetchingServices ? (
                   <div className="col-span-full py-20 flex flex-col items-center">
                     <Loader2 className="w-10 h-10 text-brand-blue animate-spin mb-4" />
                     <p className="text-zinc-400 font-bold uppercase tracking-widest">{language === 'fr' ? 'Chargement des services...' : (language === 'ar' ? 'جاري تحميل الخدمات...' : 'Loading services...')}</p>
                   </div>
-                ) : dbServices.map((service) => {
+                ) : dbServices.filter(s => !s.parent_service).map((service) => {
                   const title = language === 'fr' ? service.title_fr : (language === 'ar' ? service.title_ar : service.title_en);
                   const desc = language === 'fr' ? service.description_fr : (language === 'ar' ? service.description_ar : service.description_en);
                   
@@ -374,14 +382,68 @@ const BookingPage = () => {
                       <h3 className="text-2xl font-black uppercase italic tracking-tight mb-2">{title}</h3>
                       <p className="text-zinc-500 text-sm line-clamp-2">{desc}</p>
                       <div className={`mt-6 flex items-center gap-2 text-brand-blue font-bold uppercase tracking-widest text-[10px] ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                        {language === 'fr' ? 'Voir les offres' : (language === 'ar' ? 'عرض العروض' : 'View Offers')}
+                        {service.booking_type === "has_children" 
+                          ? (language === 'fr' ? 'Voir les options' : language === 'ar' ? 'عرض الخيارات' : 'View Options')
+                          : service.booking_type === "direct"
+                          ? (language === 'fr' ? 'Réserver' : language === 'ar' ? 'احجز' : 'Reserve')
+                          : (language === 'fr' ? 'Voir les offres' : language === 'ar' ? 'عرض العروض' : 'View Offers')
+                        }
                         <ChevronRight size={14} className={dir === 'rtl' ? 'rotate-180' : ''} />
                       </div>
                     </button>
                   );
                 })}
               </div>
-            ) : (
+            )}
+
+            {selectedParentService && !selectedService && (
+              // Show Sub-Services
+              <div>
+                <button 
+                  onClick={() => setSelectedParentService(null)}
+                  className={`mb-6 flex items-center gap-2 text-zinc-400 font-bold hover:text-zinc-950 transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
+                >
+                  <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> 
+                  {language === 'fr' ? 'Retour aux services' : (language === 'ar' ? 'العودة للخدمات' : 'Back to Services')}
+                </button>
+                
+                <h2 className={`text-2xl font-black uppercase italic mb-8 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                  {language === 'fr' ? 'Choisissez une option' : (language === 'ar' ? 'اختر خياراً' : 'Choose an Option')}
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {dbServices.filter(s => s.parent_service === selectedParentService.id).map((service) => {
+                    const title = language === 'fr' ? service.title_fr : (language === 'ar' ? service.title_ar : service.title_en);
+                    const desc = language === 'fr' ? service.description_fr : (language === 'ar' ? service.description_ar : service.description_en);
+                    
+                    return (
+                      <button
+                        key={service.id}
+                        onClick={() => handleServiceSelect(service)}
+                        className={`relative p-8 rounded-[2rem] border-2 border-zinc-100 bg-zinc-50 text-left transition-all duration-500 hover:border-brand-blue/30 group ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
+                      >
+                        {service.photo && (
+                          <div className="w-full h-32 rounded-2xl overflow-hidden mb-6 relative">
+                            <img src={service.photo} alt={title} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
+                          </div>
+                        )}
+                        <h3 className="text-2xl font-black uppercase italic tracking-tight mb-2">{title}</h3>
+                        <p className="text-zinc-500 text-sm line-clamp-2">{desc}</p>
+                        <div className={`mt-6 flex items-center gap-2 text-brand-blue font-bold uppercase tracking-widest text-[10px] ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                          {service.booking_type === "direct"
+                            ? (language === 'fr' ? 'Réserver' : language === 'ar' ? 'احجز' : 'Reserve')
+                            : (language === 'fr' ? 'Voir les offres' : language === 'ar' ? 'عرض العروض' : 'View Offers')
+                          }
+                          <ChevronRight size={14} className={dir === 'rtl' ? 'rotate-180' : ''} />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {selectedService && (
               // Show Offers for Selected Service
               <div>
                 <button 
@@ -587,12 +649,18 @@ const BookingPage = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setStep(1);
-                    setSelectedOffer(null);
+                    if (selectedService?.booking_type === "direct") {
+                      setSelectedService(null);
+                      setSelectedOffer(null);
+                      setStep(1);
+                    } else {
+                      setStep(1);
+                      setSelectedOffer(null);
+                    }
                   }}
                   className={`flex items-center gap-2 text-zinc-400 font-bold hover:text-zinc-950 transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
                 >
-                  <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> {language === 'fr' ? 'Retour aux offres' : (language === 'ar' ? 'العودة للعروض' : 'Back to Offers')}
+                  <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> {selectedService?.booking_type === "direct" ? (language === 'fr' ? 'Retour aux services' : language === 'ar' ? 'العودة للخدمات' : 'Back to Services') : (language === 'fr' ? 'Retour aux offres' : language === 'ar' ? 'العودة للعروض' : 'Back to Offers')}
                 </button>
                 <button
                   type="button"
@@ -655,11 +723,17 @@ const BookingPage = () => {
                   <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">{b.summary.total}</p>
                   <div className={`flex items-baseline gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                     <span className="text-5xl font-black tracking-tighter text-zinc-950">
-                      {selectedOffer && selectedOffer.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0 ? "0" : selectedOffer?.price || '0'}
+                      {selectedOffer?.price === -1 ? (
+                        <span className="text-2xl">{language === 'fr' ? 'Sur Place' : language === 'ar' ? 'في الموقع' : 'On Site'}</span>
+                      ) : (
+                        selectedOffer && selectedOffer.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0 ? "0" : selectedOffer?.price || '0'
+                      )}
                     </span>
-                    <span className="text-sm font-black text-zinc-400 uppercase">DH</span>
+                    {selectedOffer?.price !== -1 && (
+                      <span className="text-sm font-black text-zinc-400 uppercase">DH</span>
+                    )}
                   </div>
-                  {(selectedOffer && selectedOffer.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) && (
+                  {(selectedOffer && selectedOffer.price <= 100 && selectedOffer.price !== -1 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) && (
                     <p className="text-[10px] font-bold text-brand-blue uppercase tracking-wider mt-1">
                       {b.summary.deductNotice}
                     </p>

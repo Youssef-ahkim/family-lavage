@@ -178,7 +178,7 @@ const MyBookingsPage = () => {
                       </div>
 
                       <h3 className="text-lg font-black uppercase italic tracking-tight mb-3">
-                        {booking.service_type === 'VIP' ? t.pricing.plans.vip.name : (language === 'fr' ? 'Lavage Simple' : (language === 'ar' ? 'غسيل عادي' : 'Basic Wash'))}
+                        {booking.service_type === 'VIP' ? t.pricing.plans.vip.name : (booking.service_type === 'basic' ? (language === 'fr' ? 'Lavage Simple' : (language === 'ar' ? 'غسيل عادي' : 'Basic Wash')) : booking.service_type)}
                       </h3>
 
                       <div className={`grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 ${dir === 'rtl' ? 'text-right' : ''}`}>
@@ -196,7 +196,7 @@ const MyBookingsPage = () => {
                         </div>
                         <div className={`flex items-center gap-2 text-zinc-950 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                           <span className="text-xs font-black px-2 py-0.5 bg-zinc-50 rounded border border-zinc-100">
-                            {booking.price} DH
+                            {booking.price === -1 ? (language === 'fr' ? 'Sur place' : (language === 'ar' ? 'في عين المكان' : 'On site')) : `${booking.price} DH`}
                           </span>
                         </div>
                       </div>

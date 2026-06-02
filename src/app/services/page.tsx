@@ -24,7 +24,7 @@ export default function ServicesPage() {
     getServices()
       .then((data) => {
         console.log("Client-side Services Data:", data);
-        setDbServices(data.filter(s => s.active));
+        setDbServices(data.filter(s => s.active && !s.parent_service));
         setLoading(false);
       })
       .catch((err) => {
