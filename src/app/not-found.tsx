@@ -19,7 +19,7 @@ export default function NotFound() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-zinc-50 p-4" dir={dir}>
-      <div className="max-w-md w-full bg-white p-10 rounded-[2rem] shadow-2xl shadow-zinc-200/50 text-center border border-zinc-100 relative overflow-hidden">
+      <div className="max-w-md w-full bg-white/90 backdrop-blur-xl p-10 rounded-[2rem] shadow-[0_20px_60px_rgba(0,112,243,0.06)] text-center border border-zinc-100 relative overflow-hidden">
         
         {/* Background Decorative "404" */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[12rem] font-black text-zinc-50 pointer-events-none select-none z-0">
@@ -27,7 +27,7 @@ export default function NotFound() {
         </div>
 
         <div className="relative z-10">
-          <div className="w-24 h-24 bg-brand-blue/10 text-brand-blue rounded-3xl flex items-center justify-center mx-auto mb-8">
+          <div className="w-24 h-24 bg-gradient-to-br from-brand-blue/10 to-teal-400/5 text-brand-blue rounded-3xl flex items-center justify-center mx-auto mb-8">
             <Search size={48} />
           </div>
           

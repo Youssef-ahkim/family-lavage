@@ -51,7 +51,7 @@ export default function ServicesPage() {
             
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic mb-4 leading-[1.1]">
               {t.services.title}{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-teal-500">
+              <span className="bg-gradient-to-r from-brand-blue to-teal-500 bg-clip-text text-transparent">
                 {t.services.titleAccent}
               </span>
             </h1>
@@ -65,7 +65,10 @@ export default function ServicesPage() {
 
       {/* Main Services Grid */}
       <section className="pt-8 pb-24 bg-zinc-50 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Subtle dot pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(#d4d4d8_0.5px,transparent_0.5px)] bg-[size:24px_24px] opacity-30 pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {loading ? (
               <div className="col-span-full flex flex-col items-center justify-center py-32">
@@ -93,10 +96,10 @@ export default function ServicesPage() {
                   >
                     <Link 
                       href={`/services/${service.id}`} 
-                      className={`block h-full relative p-3 rounded-[2rem] transition-all duration-500 overflow-hidden ${
+                      className={`card-premium block h-full relative p-3 rounded-[2rem] transition-all duration-500 overflow-hidden ${
                         isGold 
                         ? 'bg-zinc-950 shadow-xl hover:shadow-2xl hover:shadow-brand-gold/20 ring-1 ring-white/10 hover:ring-brand-gold/50' 
-                        : 'bg-white shadow-sm hover:shadow-2xl hover:shadow-brand-blue/10 ring-1 ring-zinc-200 hover:ring-brand-blue/30'
+                        : 'bg-white shadow-sm hover:shadow-2xl hover:shadow-brand-blue/10 ring-1 ring-zinc-200/60 hover:ring-brand-blue/30'
                       }`}
                     >
                       {/* Inner Glow for Gold */}
@@ -138,7 +141,7 @@ export default function ServicesPage() {
 
                       {/* Content Area */}
                       <div className={`relative z-10 flex flex-col flex-grow px-4 pb-4 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                        <h2 className={`text-2xl font-black mb-2 uppercase italic tracking-tight line-clamp-2 ${isGold ? 'text-white' : 'text-zinc-900'}`}>
+                        <h2 className={`text-2xl font-black mb-2 uppercase italic tracking-tight line-clamp-2 transition-colors duration-300 ${isGold ? 'text-white group-hover:text-brand-gold' : 'text-zinc-900 group-hover:text-brand-blue'}`}>
                           {title}
                         </h2>
                         
@@ -146,7 +149,7 @@ export default function ServicesPage() {
                           <div className={`w-full px-6 py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 ${
                             isGold 
                             ? 'bg-brand-gold/10 text-brand-gold group-hover:bg-brand-gold group-hover:text-black' 
-                            : 'bg-zinc-50 text-brand-blue group-hover:bg-brand-blue group-hover:text-white ring-1 ring-zinc-100 group-hover:ring-brand-blue'
+                            : 'bg-zinc-50 text-brand-blue group-hover:bg-brand-blue group-hover:text-white ring-1 ring-zinc-100 group-hover:ring-brand-blue group-hover:shadow-lg group-hover:shadow-brand-blue/20'
                           }`}>
                             {language === 'fr' ? 'Voir Détails' : (language === 'ar' ? 'عرض التفاصيل' : 'View Details')}
                             <ArrowRight size={16} className={`transition-transform group-hover:translate-x-1 ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
@@ -172,11 +175,10 @@ export default function ServicesPage() {
       {/* Subscription CTA */}
       <section className="py-24 bg-zinc-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-[3rem] bg-gradient-to-br from-brand-blue to-blue-800 overflow-hidden group reveal shadow-2xl shadow-brand-blue/20">
+          <div className="relative rounded-[3rem] bg-gradient-to-br from-brand-blue via-blue-700 to-blue-800 overflow-hidden group reveal shadow-2xl shadow-brand-blue/20 noise-overlay">
             {/* Dynamic Background Elements */}
-            <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay pointer-events-none" />
-            <div className="absolute -top-32 -right-32 w-96 h-96 bg-white/20 rounded-full blur-[80px]" />
-            <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-teal-400/30 rounded-full blur-[80px]" />
+            <div className="absolute -top-32 -right-32 w-96 h-96 bg-white/15 rounded-full blur-[80px]" />
+            <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-teal-400/25 rounded-full blur-[80px]" />
             
             <div className={`relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12 p-12 md:p-16 lg:p-20 ${dir === 'rtl' ? 'lg:flex-row-reverse text-right' : 'text-left'}`}>
               <div className="max-w-2xl">
@@ -203,11 +205,12 @@ export default function ServicesPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-white border-t border-zinc-100">
+      <footer className="py-12 bg-white border-t border-zinc-100 relative">
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-blue/15 to-transparent" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
           <Link href="/" className="inline-block mb-6">
             <span className="text-2xl font-black tracking-tighter italic text-zinc-900">
-              FAMILY <span className="text-brand-blue">LAVAGE</span>
+              FAMILY <span className="bg-gradient-to-r from-brand-blue to-teal-500 bg-clip-text text-transparent">LAVAGE</span>
             </span>
           </Link>
           <p className="text-zinc-400 text-xs font-bold uppercase tracking-[0.2em]">

@@ -57,8 +57,8 @@ export default function SignupPage() {
       <Navbar />
       
       <div className="relative z-10 max-w-xl mx-auto pt-32 pb-20 px-4">
-        <div className="bg-white/80 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] border border-zinc-200/50 shadow-[0_20px_50px_rgba(0,112,243,0.05)] reveal">
-          <div className="w-20 h-20 bg-gradient-to-br from-brand-blue to-brand-blue/60 rounded-3xl flex items-center justify-center mb-8 mx-auto shadow-lg shadow-brand-blue/20 transform rotate-3 hover:rotate-0 transition-transform duration-500">
+        <div className="bg-white/80 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] border border-zinc-200/50 shadow-[0_20px_60px_rgba(0,112,243,0.06)] reveal relative overflow-hidden">
+          <div className="w-20 h-20 bg-gradient-to-br from-brand-blue via-blue-500 to-teal-500 rounded-3xl flex items-center justify-center mb-8 mx-auto shadow-lg shadow-brand-blue/25 transform rotate-3 hover:rotate-0 transition-transform duration-500">
             <UserPlus className="w-10 h-10 text-white" />
           </div>
 

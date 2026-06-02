@@ -64,10 +64,15 @@ const Navbar = () => {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
-        ? "py-3 glass-light shadow-lg shadow-zinc-200/20"
-        : "py-6 bg-white/40 backdrop-blur-sm"
+        ? "py-3 glass-light"
+        : "py-5 bg-white/60 backdrop-blur-lg"
         }`}
     >
+      {/* Subtle bottom gradient line when scrolled */}
+      {isScrolled && (
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-blue/15 to-transparent" />
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
@@ -77,7 +82,7 @@ const Navbar = () => {
               alt="Family Lavage"
               width={1481}
               height={720}
-              className="h-10 sm:h-12 lg:h-14 xl:h-16 w-auto max-w-[180px] sm:max-w-[200px] lg:max-w-[220px] xl:max-w-[250px] object-contain"
+              className="h-10 sm:h-12 lg:h-14 xl:h-16 w-auto max-w-[180px] sm:max-w-[200px] lg:max-w-[220px] xl:max-w-[250px] object-contain group-hover:brightness-110 transition-all"
               priority
             />
           </Link>
@@ -89,23 +94,31 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-xs xl:text-sm font-medium text-zinc-600 hover:text-brand-blue transition-colors whitespace-nowrap"
+                  className={`text-xs xl:text-sm font-medium transition-colors whitespace-nowrap relative group/link ${
+                    pathname === link.href
+                      ? 'text-brand-blue'
+                      : 'text-zinc-600 hover:text-brand-blue'
+                  }`}
                 >
                   {link.name}
+                  {/* Active/hover indicator dot */}
+                  <span className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-brand-blue transition-all ${
+                    pathname === link.href ? 'opacity-100 scale-100' : 'opacity-0 scale-0 group-hover/link:opacity-100 group-hover/link:scale-100'
+                  }`} />
                 </Link>
               ))}
             </div>
 
-            <div className="h-4 w-px bg-zinc-200" />
+            <div className="h-4 w-px bg-zinc-200/80" />
 
             {/* Language Switcher */}
-            <div className="flex items-center gap-1 bg-zinc-100/50 p-1 rounded-lg border border-zinc-200/50">
+            <div className="flex items-center gap-0.5 bg-zinc-100/60 p-1 rounded-xl border border-zinc-200/40">
               {languages.map((lang) => (
                 <button
                   key={lang.code}
                   onClick={() => setLanguage(lang.code)}
-                  className={`px-2 py-1 text-[10px] font-black rounded-md transition-all ${language === lang.code
-                    ? "bg-white text-brand-blue shadow-sm"
+                  className={`px-2.5 py-1.5 text-[10px] font-black rounded-lg transition-all duration-200 ${language === lang.code
+                    ? "bg-white text-brand-blue shadow-sm ring-1 ring-zinc-200/50"
                     : "text-zinc-400 hover:text-zinc-600"
                     }`}
                 >
@@ -117,14 +130,15 @@ const Navbar = () => {
             {!isBookingPage && (
               <div className="flex items-center gap-3">
                 <Link href="/booking">
-                  <button className="px-6 py-2.5 bg-brand-blue text-white text-xs xl:text-sm font-bold rounded-lg hover:bg-brand-blue/90 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
-                    {t.book}
+                  <button className="px-6 py-2.5 bg-brand-blue text-white text-xs xl:text-sm font-bold rounded-xl hover:bg-brand-blue/90 transition-all active:scale-95 shadow-lg shadow-brand-blue/20 relative overflow-hidden group/btn">
+                    <span className="relative z-10">{t.book}</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
                   </button>
                 </Link>
               </div>
             )}
 
-            <div className="h-4 w-px bg-zinc-200" />
+            <div className="h-4 w-px bg-zinc-200/80" />
 
             {!mounted ? (
               <div className="h-9 w-24 bg-zinc-100 animate-pulse rounded-full" />
@@ -144,7 +158,7 @@ const Navbar = () => {
                   href="/profile"
                   className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-blue/5 text-brand-blue hover:bg-brand-blue/10 transition-all border border-brand-blue/10"
                 >
-                  <div className="w-7 h-7 rounded-full bg-brand-blue text-white flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-blue to-blue-600 text-white flex items-center justify-center">
                     <User size={16} />
                   </div>
                   <span className={`text-sm font-bold truncate max-w-[100px] ${isLoadingProfile ? 'w-12 h-3 bg-brand-blue/20 animate-pulse rounded' : ''}`}>
@@ -170,7 +184,7 @@ const Navbar = () => {
                 <Link href="/auth/login" className="text-sm font-medium text-zinc-600 hover:text-brand-blue transition-colors">
                   {t.login}
                 </Link>
-                <Link href="/auth/signup" className="text-sm font-bold bg-zinc-100 hover:bg-zinc-200 text-zinc-900 px-4 py-2 rounded-lg transition-colors">
+                <Link href="/auth/signup" className="text-sm font-bold bg-zinc-100 hover:bg-zinc-200 text-zinc-900 px-4 py-2 rounded-xl transition-colors">
                   {t.signup}
                 </Link>
               </div>
@@ -179,13 +193,13 @@ const Navbar = () => {
 
           {/* Mobile Menu Toggle */}
           <div className="lg:hidden flex items-center gap-4">
-            <div className="flex items-center gap-1 bg-zinc-100/50 p-1 rounded-lg border border-zinc-200/50">
+            <div className="flex items-center gap-0.5 bg-zinc-100/60 p-1 rounded-xl border border-zinc-200/40">
               {languages.map((lang) => (
                 <button
                   key={lang.code}
                   onClick={() => setLanguage(lang.code)}
-                  className={`px-2 py-1 text-[10px] font-black rounded-md transition-all ${language === lang.code
-                    ? "bg-white text-brand-blue shadow-sm"
+                  className={`px-2 py-1 text-[10px] font-black rounded-lg transition-all ${language === lang.code
+                    ? "bg-white text-brand-blue shadow-sm ring-1 ring-zinc-200/50"
                     : "text-zinc-400 hover:text-zinc-600"
                     }`}
                 >
@@ -195,7 +209,7 @@ const Navbar = () => {
             </div>
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-zinc-600 hover:text-zinc-950"
+              className="p-2 text-zinc-600 hover:text-zinc-950 transition-colors"
             >
               {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
@@ -207,14 +221,14 @@ const Navbar = () => {
       {isMobileMenuOpen && (
         <>
           {/* Backdrop Blur Overlay */}
-          <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-t border-zinc-200 animate-in slide-in-from-top duration-300">
+          <div className="lg:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/50 animate-in slide-in-from-top duration-300 shadow-2xl shadow-zinc-200/30">
             <div className="px-4 py-12 flex flex-col gap-6 items-center text-center">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-xl font-bold text-zinc-800 hover:text-brand-blue"
+                  className={`text-xl font-bold ${pathname === link.href ? 'text-brand-blue' : 'text-zinc-800 hover:text-brand-blue'} transition-colors`}
                 >
                   {link.name}
                 </Link>
@@ -222,7 +236,7 @@ const Navbar = () => {
               {!isBookingPage && (
                 <div className="flex flex-col gap-3 w-full max-w-xs">
                   <Link href="/booking" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                    <button className="w-full py-4 bg-brand-blue text-white font-bold rounded-xl shadow-lg shadow-brand-blue/20">
+                    <button className="w-full py-4 bg-brand-blue text-white font-bold rounded-2xl shadow-lg shadow-brand-blue/20">
                       {t.book}
                     </button>
                   </Link>
@@ -236,7 +250,7 @@ const Navbar = () => {
                   <Link
                     href="/profile"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-6 py-3 rounded-xl bg-zinc-50 border border-zinc-100 w-full max-w-xs justify-center"
+                    className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-zinc-50 border border-zinc-100 w-full max-w-xs justify-center"
                   >
                     <User size={20} className="text-brand-blue" />
                     <span className={`text-lg font-bold text-zinc-800 ${isLoadingProfile ? 'w-24 h-4 bg-zinc-200 animate-pulse rounded' : ''}`}>
@@ -247,7 +261,7 @@ const Navbar = () => {
                     <Link
                       href="/admin"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-6 py-3 rounded-xl bg-zinc-50 border border-zinc-100 w-full max-w-xs justify-center"
+                      className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-zinc-50 border border-zinc-100 w-full max-w-xs justify-center"
                     >
                       <Shield size={20} className="text-brand-blue" />
                       <span className="text-lg font-bold text-zinc-800">Admin</span>
@@ -269,12 +283,12 @@ const Navbar = () => {
               ) : (
                 <div className="flex flex-col gap-4 mt-4 w-full max-w-xs">
                   <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)}>
-                    <button className="w-full py-4 bg-zinc-50 text-zinc-800 font-bold rounded-xl hover:bg-zinc-100">
+                    <button className="w-full py-4 bg-zinc-50 text-zinc-800 font-bold rounded-2xl hover:bg-zinc-100 border border-zinc-100">
                       {t.login}
                     </button>
                   </Link>
                   <Link href="/auth/signup" onClick={() => setIsMobileMenuOpen(false)}>
-                    <button className="w-full py-4 bg-zinc-100 text-zinc-900 font-bold rounded-xl hover:bg-zinc-200">
+                    <button className="w-full py-4 bg-zinc-100 text-zinc-900 font-bold rounded-2xl hover:bg-zinc-200">
                       {t.signup}
                     </button>
                   </Link>

@@ -145,14 +145,14 @@ export default function SubscribePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-zinc-950 font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-white text-zinc-950 font-sans overflow-x-hidden selection:bg-brand-blue selection:text-white">
       <Navbar />
 
       <div className="max-w-6xl mx-auto pt-32 pb-24 px-4">
         {/* Header */}
         <div className={`mb-16 reveal ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic mb-4">
-            {s.title} <span className="text-brand-blue">{s.titleAccent}</span>
+            {s.title} <span className="bg-gradient-to-r from-brand-blue to-teal-500 bg-clip-text text-transparent">{s.titleAccent}</span>
           </h1>
           <p className="text-zinc-500 text-lg max-w-2xl">
             {s.subtitle}
@@ -181,7 +181,7 @@ export default function SubscribePage() {
             return (
               <div 
                 key={plan.id}
-                className={`relative flex flex-col p-10 rounded-[3rem] border-2 transition-all duration-500 hover:-translate-y-4 hover:shadow-2xl hover:shadow-brand-blue/10 bg-zinc-50 border-zinc-100 hover:border-brand-blue reveal`}
+                className={`card-premium relative flex flex-col p-10 rounded-[3rem] border-2 transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl hover:shadow-brand-blue/10 bg-zinc-50 border-zinc-100 hover:border-brand-blue reveal`}
               >
                 <h3 className="text-2xl font-black mb-6 uppercase tracking-tight italic text-zinc-900">
                   {name}

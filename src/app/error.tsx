@@ -29,7 +29,7 @@ export default function Error({
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-zinc-50 p-4" dir={dir}>
-      <div className="max-w-md w-full bg-white p-10 rounded-[2rem] shadow-2xl shadow-zinc-200/50 text-center border border-zinc-100">
+      <div className="max-w-md w-full bg-white/90 backdrop-blur-xl p-10 rounded-[2rem] shadow-[0_20px_60px_rgba(0,112,243,0.06)] text-center border border-zinc-100">
         
         <div className="w-24 h-24 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mx-auto mb-8 rotate-12">
           <AlertTriangle size={48} className="-rotate-12" />

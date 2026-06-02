@@ -77,7 +77,7 @@ export default function ServiceDetailsPage() {
 
 
   return (
-    <div className="min-h-screen bg-white text-zinc-950 font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-white text-zinc-950 font-sans overflow-x-hidden selection:bg-brand-blue selection:text-white">
       <Navbar />
 
       <section className="relative pt-40 pb-24 overflow-hidden bg-white">
@@ -116,7 +116,7 @@ export default function ServiceDetailsPage() {
 
             {/* Content Side */}
             <div className={`w-full lg:w-1/2 reveal ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-              <h1 className={`text-4xl md:text-6xl font-black mb-6 uppercase italic tracking-tighter leading-none ${isGold ? 'text-brand-gold' : 'text-zinc-900'}`}>
+              <h1 className={`text-4xl md:text-6xl font-black mb-6 uppercase italic tracking-tighter leading-none ${isGold ? 'bg-gradient-to-r from-brand-gold to-brand-gold-light bg-clip-text text-transparent' : 'text-zinc-900'}`}>
                 {title}
               </h1>
               
@@ -169,7 +169,7 @@ export default function ServiceDetailsPage() {
                     <Link 
                       href={`/services/${service.id}/offers/${offer.id}`}
                       key={offer.id}
-                      className={`cursor-pointer flex flex-col relative bg-white rounded-[2.5rem] border-2 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl overflow-hidden group ${
+                      className={`card-premium cursor-pointer flex flex-col relative bg-white rounded-[2.5rem] border-2 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl overflow-hidden group ${
                         isPremiumOffer 
                         ? 'border-brand-gold/20 hover:border-brand-gold shadow-brand-gold/10' 
                         : 'border-zinc-100 hover:border-brand-blue shadow-brand-blue/5'
@@ -200,7 +200,7 @@ export default function ServiceDetailsPage() {
                       
                       {/* Title & Action Hint */}
                       <div className="p-6 bg-white">
-                        <h3 className={`text-xl font-black uppercase italic tracking-tight mb-4 group-hover:text-brand-blue transition-colors ${isPremiumOffer ? 'text-brand-gold' : 'text-zinc-900'}`}>
+                        <h3 className={`text-xl font-black uppercase italic tracking-tight mb-4 group-hover:text-brand-blue transition-colors duration-300 ${isPremiumOffer ? 'text-brand-gold' : 'text-zinc-900'}`}>
                           {offerTitle}
                         </h3>
                         <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-400 group-hover:text-brand-blue transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
@@ -219,10 +219,11 @@ export default function ServiceDetailsPage() {
 
       
       {/* Footer */}
-      <footer className="py-16 border-t border-zinc-100 bg-zinc-50 mt-auto">
+      <footer className="py-16 border-t border-zinc-100 bg-zinc-50 mt-auto relative">
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-blue/15 to-transparent" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-3xl font-black tracking-tighter italic mb-8 block text-zinc-900">
-            FAMILY <span className="text-brand-blue">LAVAGE</span>
+            FAMILY <span className="bg-gradient-to-r from-brand-blue to-teal-500 bg-clip-text text-transparent">LAVAGE</span>
           </span>
           <p className="text-zinc-400 text-xs font-bold uppercase tracking-[0.3em]">
             © 2026 FAMILY LAVAGE GROUP. {t.footer.rights}

@@ -2,7 +2,9 @@
 
 @theme {
   --color-brand-blue: #0070f3;
+  --color-brand-blue-light: #3b9dff;
   --color-brand-gold: #c5a059;
+  --color-brand-gold-light: #e0c47a;
   --font-heading: var(--font-geist-sans);
 }
 
@@ -18,7 +20,19 @@
 
 @layer components {
   .btn-primary {
-    @apply px-8 py-4 bg-brand-blue hover:bg-brand-blue/90 text-white font-bold rounded-xl transition-all active:scale-95 shadow-lg shadow-brand-blue/20 flex items-center justify-center;
+    @apply px-8 py-4 bg-brand-blue hover:bg-brand-blue/90 text-white font-bold rounded-xl transition-all active:scale-95 shadow-lg shadow-brand-blue/20 flex items-center justify-center relative overflow-hidden;
+  }
+
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.12) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+  }
+  .btn-primary:hover::after {
+    transform: translateX(100%);
   }
 
   .btn-outline-gold {
@@ -30,7 +44,8 @@
   }
 
   .glass-light {
-    @apply bg-white/90 backdrop-blur-2xl border-b border-zinc-200/80;
+    @apply bg-white/80 backdrop-blur-2xl border-b border-zinc-200/60;
+    box-shadow: 0 1px 40px rgba(0, 112, 243, 0.04), 0 1px 3px rgba(0,0,0,0.04);
   }
 
   .glass-dark {
@@ -39,6 +54,39 @@
 
   .section-heading {
     @apply text-4xl md:text-6xl font-black italic tracking-tighter uppercase mb-6;
+  }
+
+  /* Premium card with subtle shimmer on hover */
+  .card-premium {
+    @apply relative overflow-hidden;
+  }
+  .card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.06),
+      transparent
+    );
+    transition: none;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .card-premium:hover::before {
+    animation: shimmer-card 1.2s ease forwards;
+  }
+
+  /* Floating glow behind interactive elements */
+  .glow-blue {
+    box-shadow: 0 0 60px rgba(0, 112, 243, 0.08), 0 0 120px rgba(0, 112, 243, 0.04);
+  }
+  .glow-gold {
+    box-shadow: 0 0 60px rgba(197, 160, 89, 0.08), 0 0 120px rgba(197, 160, 89, 0.04);
   }
 }
 
@@ -52,10 +100,29 @@
     @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-gold to-yellow-200;
   }
 
+  .text-gradient-animated {
+    @apply bg-clip-text text-transparent;
+    background-size: 200% 200%;
+    animation: gradient-shift 6s ease-in-out infinite;
+  }
+
   .reveal {
     animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     opacity: 0;
     transform: translateY(20px);
+  }
+
+  .noise-overlay {
+    position: relative;
+  }
+  .noise-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    border-radius: inherit;
   }
 }
 
@@ -72,7 +139,6 @@
 }
 
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0);
@@ -106,6 +172,21 @@
   animation: pulse-slow 8s ease-in-out infinite;
 }
 
+@keyframes shimmer-card {
+  0% { left: -100%; }
+  100% { left: 150%; }
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes border-glow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
 /* Delay classes for sequential reveal */
 .delay-100 {
   animation-delay: 0.1s;
@@ -125,8 +206,8 @@
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -134,19 +215,19 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 112, 243, 0.15);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 112, 243, 0.5); /* brand-blue with opacity */
+  background: rgba(0, 112, 243, 0.35);
 }
 
 /* For Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-color: rgba(0, 112, 243, 0.15) transparent;
 }
 
 /* Hide native password reveal button in Edge/IE */
