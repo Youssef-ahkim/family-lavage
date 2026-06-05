@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useForm, useFieldArray, useWatch } from "react-hook-form";
+import { useForm, useFieldArray, useWatch, UseFieldArrayReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, X, Save, Loader2, Upload } from "lucide-react";
 import { serviceOfferSchema, ServiceOfferFormData, ServiceOfferRecord } from "../../service-types";
@@ -58,11 +58,8 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
 
   const isSub = useWatch({ control, name: "category" }) === "subscription";
 
-  // @ts-expect-error: RHF useFieldArray doesn't support primitive arrays well
   const featuresFr = useFieldArray({ control, name: "features_fr" });
-  // @ts-expect-error: RHF useFieldArray doesn't support primitive arrays well
   const featuresAr = useFieldArray({ control, name: "features_ar" });
-  // @ts-expect-error: RHF useFieldArray doesn't support primitive arrays well
   const featuresEn = useFieldArray({ control, name: "features_en" });
 
   const onSubmit = async (data: ServiceOfferFormData) => {
@@ -100,7 +97,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
     }
   };
 
-  const renderFeatures = (fieldArray: ReturnType<typeof useFieldArray>, lang: string) => (
+  const renderFeatures = (fieldArray: UseFieldArrayReturn<ServiceOfferFormData, "features_fr" | "features_ar" | "features_en">, lang: string) => (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <label className="text-xs font-black uppercase tracking-widest text-zinc-500">
@@ -115,7 +112,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
         </button>
       </div>
       <div className="space-y-2">
-        {fieldArray.fields.map((field: Record<string, unknown> & { id: string }, index: number) => (
+        {fieldArray.fields.map((field, index) => (
           <div key={field.id} className="flex gap-2">
             <input
               {...register(`features_${lang}.${index}` as `features_fr.${number}`)}
