@@ -8,6 +8,7 @@ import { Plus, Trash2, X, Save, Loader2, Upload } from "lucide-react";
 import { serviceOfferSchema, ServiceOfferFormData, ServiceOfferRecord } from "../../service-types";
 import { createServiceOffer, updateServiceOffer } from "../../service-actions";
 import { useLanguage } from "@/context/LanguageContext";
+import { translations } from "@/lib/translations";
 
 interface OfferFormProps {
   serviceId: string;
@@ -22,6 +23,8 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
   const [photo, setPhoto] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>(initialData?.photo || "");
   const { language, dir } = useLanguage();
+  const t = translations[language];
+  const oTrans = t.admin.offers;
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,7 +101,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <label className="text-xs font-black uppercase tracking-widest text-zinc-500">
-          Features ({lang.toUpperCase()})
+          {oTrans.featuresLabel} ({lang.toUpperCase()})
         </label>
         <button
           type="button"
@@ -115,7 +118,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
               {...register(`features_${lang}.${index}` as `features_fr.${number}`)}
               dir={lang === 'ar' ? 'rtl' : 'ltr'}
               className={`flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-brand-blue transition-all ${lang === 'ar' ? 'text-right' : 'text-left'}`}
-              placeholder="Feature details..."
+              placeholder={oTrans.featurePlaceholder}
             />
             <button
               type="button"
@@ -127,7 +130,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
           </div>
         ))}
         {fieldArray.fields.length === 0 && (
-          <p className="text-[10px] text-zinc-600 italic font-bold uppercase">No features added</p>
+          <p className="text-[10px] text-zinc-600 italic font-bold uppercase">{oTrans.noFeatures}</p>
         )}
       </div>
     </div>
@@ -137,7 +140,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-2xl mx-auto bg-zinc-950 p-8 rounded-[2.5rem] border border-zinc-900 shadow-2xl">
       <div className={`flex items-center justify-between mb-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
         <h2 className={`text-2xl font-black uppercase italic tracking-tighter text-white ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-          {initialData ? "Edit Offer" : "Add Offer"}
+          {initialData ? oTrans.edit : oTrans.add}
         </h2>
         <button type="button" onClick={onCancel} className="p-2 text-zinc-500 hover:text-white transition-colors">
           <X size={20} />
@@ -161,7 +164,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
 
       <div className="grid grid-cols-1 gap-6">
         <div className={activeTab === "en" ? "block" : "hidden"}>
-          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Offer Name (EN)</label>
+          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">{oTrans.nameLabelEn}</label>
           <input
             {...register("title_en")}
             className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
@@ -170,7 +173,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
         </div>
 
         <div className={activeTab === "fr" ? "block" : "hidden"}>
-          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Offer Name (FR)</label>
+          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">{oTrans.nameLabelFr}</label>
           <input
             {...register("title_fr")}
             className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all"
@@ -179,7 +182,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
         </div>
 
         <div className={activeTab === "ar" ? "block" : "hidden"}>
-          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 text-right">Offer Name (AR)</label>
+          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 text-right">{oTrans.nameLabelAr}</label>
           <input
             {...register("title_ar")}
             dir="rtl"
@@ -190,7 +193,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className={`space-y-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-            <label className="text-xs font-black uppercase tracking-widest text-zinc-500">Price (DH)</label>
+            <label className="text-xs font-black uppercase tracking-widest text-zinc-500">{oTrans.priceLabel}</label>
             <input 
               type="number"
               {...register("price", { valueAsNumber: true })}
@@ -200,13 +203,13 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
           </div>
 
           <div className={`space-y-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-            <label className="text-xs font-black uppercase tracking-widest text-zinc-500">Type</label>
+            <label className="text-xs font-black uppercase tracking-widest text-zinc-500">{oTrans.typeLabel}</label>
             <select 
               {...register("category")}
               className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all appearance-none ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
             >
-              <option value="once">One-Time Offer</option>
-              <option value="subscription">Subscription</option>
+              <option value="once">{oTrans.typeOnce}</option>
+              <option value="subscription">{oTrans.typeSub}</option>
             </select>
           </div>
         </div>
@@ -214,23 +217,23 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
         {isSub && (
           <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-brand-blue/5 border border-brand-blue/20 rounded-[2rem] ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-brand-blue">Plan Interval</label>
+              <label className="text-xs font-black uppercase tracking-widest text-brand-blue">{oTrans.intervalLabel}</label>
               <select 
                 {...register("plan_type")}
                 className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all appearance-none ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
               >
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
+                <option value="monthly">{oTrans.intervalMonthly}</option>
+                <option value="yearly">{oTrans.intervalYearly}</option>
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-brand-blue">Washes Included</label>
+              <label className="text-xs font-black uppercase tracking-widest text-brand-blue">{oTrans.washesLabel}</label>
               <input 
                 type="number"
                 {...register("washes_count", { valueAsNumber: true })}
                 dir="ltr"
                 className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-brand-blue transition-all ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
-                placeholder="e.g. 4 for monthly"
+                placeholder={oTrans.washesPlaceholder}
               />
             </div>
           </div>
@@ -245,13 +248,13 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
                 : 'peer-checked:after:translate-x-full peer-checked:after:border-white after:left-[2px]'
               } 
               after:content-[''] after:absolute after:top-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue`}></div>
-            <span className={`text-[10px] font-black uppercase tracking-widest text-zinc-400 ${dir === 'rtl' ? 'mr-3' : 'ml-3'}`}>Active</span>
+            <span className={`text-[10px] font-black uppercase tracking-widest text-zinc-400 ${dir === 'rtl' ? 'mr-3' : 'ml-3'}`}>{oTrans.activeLabel}</span>
           </label>
         </div>
 
         {/* Photo Upload */}
         <div>
-          <label className={`block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>Offer Image (Optional)</label>
+          <label className={`block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{oTrans.imageLabel}</label>
           <div className={`flex items-center gap-6 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
             <div className="w-24 h-24 rounded-3xl bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden group relative">
               {preview ? (
@@ -268,7 +271,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
             </div>
             <div className="flex-1">
               <p className={`text-[10px] text-zinc-500 font-bold uppercase leading-relaxed ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                {language === 'fr' ? "Téléchargez une image pour cette offre." : language === 'ar' ? "قم بتحميل صورة لهذا العرض." : "Upload an image for this offer."}<br/>
+                {oTrans.imageDesc}<br/>
                 Max size: 5MB. Formats: WebP, PNG, JPG.
               </p>
             </div>
@@ -294,7 +297,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
           onClick={onCancel}
           className="flex-1 py-4 px-6 rounded-2xl bg-zinc-900 text-zinc-400 font-black uppercase text-[10px] tracking-widest hover:bg-zinc-800 hover:text-white transition-all"
         >
-          Cancel
+          {oTrans.cancelBtn}
         </button>
         <button
           type="submit"
@@ -302,7 +305,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
           className="flex-[2] py-4 px-6 rounded-2xl bg-brand-blue text-white font-black uppercase text-[10px] tracking-widest hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-          Save Offer
+          {oTrans.saveBtn}
         </button>
       </div>
     </form>

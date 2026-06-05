@@ -182,7 +182,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
             {errors.title_en && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-widest">{errors.title_en.message}</p>}
           </div>
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Description (EN)</label>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">{sTrans.descriptionEn}</label>
             <textarea
               {...register("description_en")}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all resize-none h-24"
@@ -203,7 +203,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
             {errors.title_fr && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-widest">{errors.title_fr.message}</p>}
           </div>
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Description (FR)</label>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">{sTrans.descriptionFr}</label>
             <textarea
               {...register("description_fr")}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all resize-none h-24"
@@ -225,7 +225,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
             {errors.title_ar && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-widest text-right">{errors.title_ar.message}</p>}
           </div>
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 text-right">Description (AR)</label>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 text-right">{sTrans.descriptionAr}</label>
             <textarea
               {...register("description_ar")}
               dir="rtl"
@@ -253,27 +253,27 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800">
           <div>
             <label className={`block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-              Booking Type
+              {sTrans.bookingType}
             </label>
             <select
               {...register("booking_type")}
               className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
             >
-              <option value="has_offers">Has Offers (Standard)</option>
-              <option value="has_children">Has Sub-Services (Categories)</option>
-              <option value="direct">Direct Booking (No Offers)</option>
+              <option value="has_offers">{sTrans.bookingTypeOffers}</option>
+              <option value="has_children">{sTrans.bookingTypeSub}</option>
+              <option value="direct">{sTrans.bookingTypeDirect}</option>
             </select>
           </div>
 
           <div>
             <label className={`block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-              Parent Service (Optional)
+              {sTrans.parentService}
             </label>
             <select
               {...register("parent_service")}
               className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
             >
-              <option value="">-- None (Top Level) --</option>
+              <option value="">{sTrans.noneTopLevel}</option>
               {topLevelServices.map(ts => (
                 <option key={ts.id} value={ts.id}>
                   {language === 'fr' ? ts.title_fr : language === 'ar' ? ts.title_ar : ts.title_en}
@@ -285,14 +285,14 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
           {selectedBookingType === "direct" && (
             <div className="md:col-span-2">
               <label className={`block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                {language === 'fr' ? 'Prix Direct (DH) - Laissez vide pour "Sur Place"' : language === 'ar' ? 'السعر المباشر (درهم) - اتركه فارغاً لـ "في الموقع"' : 'Direct Price (DH) - Leave empty for "On Site"'}
+                {sTrans.directPriceLabel}
               </label>
               <input
                 type="number"
                 step="0.01"
                 {...register("price", { valueAsNumber: true })}
                 className={`w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-blue transition-all ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
-                placeholder={language === 'fr' ? "ex: 150" : "e.g. 150"}
+                placeholder={sTrans.directPricePlaceholder}
               />
             </div>
           )}
@@ -317,7 +317,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
             </div>
             <div className="flex-1">
               <p className={`text-[10px] text-zinc-500 font-bold uppercase leading-relaxed ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                {language === 'fr' ? "Téléchargez une image principale pour ce service." : language === 'ar' ? "قم بتحميل صورة رئيسية لهذه الخدمة." : "Upload a main thumbnail for this service."}<br/>
+                {sTrans.imageThumbnailDesc}<br/>
                 Max size: 5MB. Formats: WebP, PNG, JPG.
               </p>
             </div>
@@ -327,7 +327,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
         {/* Gallery Upload */}
         <div>
           <label className={`block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-            {language === 'fr' ? "Galerie d'images (Carousel)" : language === 'ar' ? "معرض الصور (Carousel)" : "Image Gallery (Carousel)"}
+            {sTrans.galleryLabel}
           </label>
           <div className="space-y-4">
             <div className={`flex items-center gap-6 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
@@ -343,7 +343,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
               </div>
               <div className="flex-1">
                 <p className={`text-[10px] text-zinc-500 font-bold uppercase leading-relaxed ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                  {language === 'fr' ? "Sélectionnez plusieurs images pour créer un carousel." : language === 'ar' ? "حدد عدة صور لإنشاء معرض." : "Select multiple images to create a carousel."}<br/>
+                  {sTrans.galleryDesc}<br/>
                   Max 10 files. Max size: 5MB each.
                 </p>
               </div>
@@ -362,7 +362,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
                   onClick={handleClearGallery}
                   className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-white hover:bg-red-500 px-4 py-2 rounded-xl transition-colors border border-red-500/20"
                 >
-                  {language === 'fr' ? "Supprimer la galerie" : language === 'ar' ? "حذف المعرض" : "Clear Gallery"}
+                  {sTrans.clearGallery}
                 </button>
               </div>
             )}

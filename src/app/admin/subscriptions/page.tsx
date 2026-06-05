@@ -97,7 +97,7 @@ export default function AdminSubscriptionsPage() {
         alert(res.error);
       }
     } catch {
-      alert("Error approving subscription");
+      alert(t.admin.errorApproveSub);
     } finally {
       setProcessingId(null);
     }
@@ -115,7 +115,7 @@ export default function AdminSubscriptionsPage() {
         alert(res.error);
       }
     } catch {
-      alert("Error rejecting subscription");
+      alert(t.admin.errorRejectSub);
     } finally {
       setProcessingId(null);
     }
@@ -148,10 +148,10 @@ export default function AdminSubscriptionsPage() {
       <div className={`flex items-center justify-between mb-8 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
         <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
           <h1 className="text-3xl font-black uppercase italic tracking-tighter">
-            {language === 'fr' ? 'Abonnements' : (language === 'ar' ? 'الاشتراكات' : 'Subscriptions')}
+            {t.admin.subscriptions}
           </h1>
           <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest mt-1">
-            {language === 'fr' ? 'Gérer la vérification des paiements et l\'activation des plans' : (language === 'ar' ? 'إدارة التحقق من الدفع وتفعيل الخطط' : 'Manage payment verification and plan activation')}
+            {t.admin.subscriptionsSubtitle}
           </p>
         </div>
         <button 
@@ -171,7 +171,7 @@ export default function AdminSubscriptionsPage() {
               <Search className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500`} />
               <input
                 type="text"
-                placeholder={language === 'fr' ? "Rechercher un client..." : (language === 'ar' ? "البحث عن زبون..." : "Search client...")}
+                placeholder={t.admin.searchClientPlaceholder}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 className={`w-full ${dir === 'rtl' ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4'} py-3.5 bg-zinc-900/50 border border-zinc-800/50 rounded-xl text-white placeholder-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 transition-all`}
@@ -181,7 +181,7 @@ export default function AdminSubscriptionsPage() {
               type="submit"
               className="px-6 py-3.5 bg-brand-blue text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-brand-blue/80 transition-all shadow-lg shadow-brand-blue/20 shrink-0"
             >
-              {language === 'fr' ? 'Rechercher' : (language === 'ar' ? 'بحث' : 'Search')}
+              {t.admin.searchBtn}
             </button>
           </form>
         </div>
@@ -210,7 +210,7 @@ export default function AdminSubscriptionsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className={`border-b border-zinc-800/50 bg-zinc-900/50 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                  {[t.admin.customer, language === 'fr' ? 'Plan Demandé' : (language === 'ar' ? 'الخطة المطلوبة' : 'Plan Requested'), t.admin.services.tablePrice, t.admin.status, language === 'fr' ? 'Date' : (language === 'ar' ? 'التاريخ' : 'Date'), t.admin.actions].map((h, i) => (
+                  {[t.admin.customer, t.admin.planRequested, t.admin.services.tablePrice, t.admin.status, t.admin.date, t.admin.actions].map((h, i) => (
                     <th key={i} className={`px-5 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest whitespace-nowrap ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
@@ -220,7 +220,7 @@ export default function AdminSubscriptionsPage() {
                   <tr>
                     <td colSpan={6} className="py-20 text-center">
                       <CreditCard className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-                      <p className="text-zinc-500 font-bold">{language === 'fr' ? 'Aucune demande d\'abonnement trouvée' : (language === 'ar' ? 'لم يتم العثور على طلبات اشتراك' : 'No subscription requests found')}</p>
+                      <p className="text-zinc-500 font-bold">{t.admin.noSubRequests}</p>
                     </td>
                   </tr>
                 ) : (
@@ -243,7 +243,7 @@ export default function AdminSubscriptionsPage() {
                             {item.plan === 'yearly' ? t.pricing.plans.year.name : t.pricing.plans.month.name}
                           </span>
                           <span className="text-[10px] text-zinc-500 font-bold">
-                            {item.notes?.includes("Service ID") ? (language === 'fr' ? 'Plan Personnalisé' : (language === 'ar' ? 'خطة مخصصة' : 'Custom Plan')) : t.pricing.plans[item.plan === 'yearly' ? 'year' : 'month'].subPrice}
+                            {item.notes?.includes("Service ID") ? t.admin.customPlan : t.pricing.plans[item.plan === 'yearly' ? 'year' : 'month'].subPrice}
                           </span>
                         </div>
                       </td>
@@ -265,20 +265,20 @@ export default function AdminSubscriptionsPage() {
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center gap-2">
                             <Clock size={12} className="text-zinc-600" />
-                            <span className="text-[9px] font-black uppercase tracking-tight text-zinc-600 w-16">{language === 'fr' ? 'Demande:' : (language === 'ar' ? 'الطلب:' : 'Request:')}</span>
+                            <span className="text-[9px] font-black uppercase tracking-tight text-zinc-600 w-16">{t.admin.requestColon}</span>
                             <span className="font-medium">{formatDate(item.created)}</span>
                           </div>
                           {item.status === 'active' && (
                             <>
                               <div className="flex items-center gap-2 text-zinc-400">
                                 <Check size={12} className="text-green-500" />
-                                <span className="text-[9px] font-black uppercase tracking-tight w-16">{language === 'fr' ? 'Approuvé:' : (language === 'ar' ? 'موافق عليه:' : 'Approved:')}</span>
+                                <span className="text-[9px] font-black uppercase tracking-tight w-16">{t.admin.approvedColon}</span>
                                 <span className="font-medium">{formatDate(item.updated)}</span>
                               </div>
                               {item.expiry_date && (
                                 <div className="flex items-center gap-2 text-brand-blue">
                                   <AlertCircle size={12} />
-                                  <span className="text-[9px] font-black uppercase tracking-tight w-16">{language === 'fr' ? 'Expire le:' : (language === 'ar' ? 'ينتهي في:' : 'Expires:')}</span>
+                                  <span className="text-[9px] font-black uppercase tracking-tight w-16">{t.admin.expiresColon}</span>
                                   <span className="font-bold">{formatDate(item.expiry_date)}</span>
                                 </div>
                               )}
@@ -309,7 +309,7 @@ export default function AdminSubscriptionsPage() {
                             </>
                           )}
                           {item.status !== 'pending' && (
-                            <span className="text-zinc-600 text-xs italic">{language === 'fr' ? 'Traité' : (language === 'ar' ? 'معالج' : 'Processed')}</span>
+                            <span className="text-zinc-600 text-xs italic">{t.admin.processed}</span>
                           )}
                         </div>
                       </td>
@@ -326,7 +326,7 @@ export default function AdminSubscriptionsPage() {
           {items.length === 0 ? (
             <div className="py-12 bg-zinc-900/30 border border-zinc-800/50 rounded-2xl text-center">
               <CreditCard className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
-              <p className="text-zinc-500 font-bold text-sm">{language === 'fr' ? 'Aucune demande trouvée' : (language === 'ar' ? 'لم يتم العثور على طلبات' : 'No requests found')}</p>
+              <p className="text-zinc-500 font-bold text-sm">{t.admin.noRequestsFound}</p>
             </div>
           ) : (
             items.map((item) => (
@@ -354,7 +354,7 @@ export default function AdminSubscriptionsPage() {
 
                   <div className={`bg-zinc-950/50 rounded-xl p-4 border border-zinc-800/30 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
                     <div className={`flex justify-between items-center mb-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{language === 'fr' ? 'Plan' : (language === 'ar' ? 'الخطة' : 'Plan')}</span>
+                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{t.admin.plan}</span>
                       <span className="text-xs font-black text-white uppercase italic">
                         {item.plan === 'yearly' ? t.pricing.plans.year.name : t.pricing.plans.month.name}
                       </span>
@@ -369,13 +369,13 @@ export default function AdminSubscriptionsPage() {
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2 text-zinc-500">
                       <Clock size={12} />
-                      <span className="text-[9px] font-black uppercase tracking-tight w-16">{language === 'fr' ? 'Demande:' : (language === 'ar' ? 'الطلب:' : 'Request:')}</span>
+                      <span className="text-[9px] font-black uppercase tracking-tight w-16">{t.admin.requestColon}</span>
                       <span className="text-[11px] font-bold">{formatDate(item.created)}</span>
                     </div>
                     {item.status === 'active' && (
                       <div className="flex items-center gap-2 text-green-400">
                         <Check size={12} />
-                        <span className="text-[9px] font-black uppercase tracking-tight w-16">{language === 'fr' ? 'Approuvé:' : (language === 'ar' ? 'موافق عليه:' : 'Approved:')}</span>
+                        <span className="text-[9px] font-black uppercase tracking-tight w-16">{t.admin.approvedColon}</span>
                         <span className="text-[11px] font-bold">{formatDate(item.updated)}</span>
                       </div>
                     )}
@@ -397,7 +397,7 @@ export default function AdminSubscriptionsPage() {
                         className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 disabled:opacity-50"
                       >
                         <X size={14} />
-                        {language === 'fr' ? 'Refuser' : (language === 'ar' ? 'رفض' : 'Reject')}
+                        {t.admin.reject}
                       </button>
                     </div>
                   )}
@@ -419,7 +419,7 @@ export default function AdminSubscriptionsPage() {
             <ChevronLeft className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
           </button>
           <span className="px-6 py-2 text-xs font-black uppercase tracking-widest text-zinc-500">
-            {language === 'fr' ? 'Page' : (language === 'ar' ? 'صفحة' : 'Page')} {page} / {totalPages}
+            {t.admin.page} {page} / {totalPages}
           </span>
           <button
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}

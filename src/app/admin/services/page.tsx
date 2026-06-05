@@ -94,7 +94,7 @@ export default function AdminServicesPage() {
         <div>
           <h1 className="text-3xl font-black uppercase italic tracking-tighter text-white">{sTrans.title}</h1>
           <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest mt-1">
-            Service Catalog & Categories
+            {sTrans.catalogDesc}
           </p>
         </div>
         <button 
@@ -117,7 +117,7 @@ export default function AdminServicesPage() {
           </div>
           <div>
             <p className="text-2xl font-black text-white">{services.length}</p>
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Total Services</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{sTrans.totalServices}</p>
           </div>
         </div>
         <div className="bg-zinc-900/30 border border-zinc-800/50 p-6 rounded-3xl flex items-center gap-4">
@@ -126,7 +126,7 @@ export default function AdminServicesPage() {
           </div>
           <div>
             <p className="text-2xl font-black text-white">{services.filter(s => s.active).length}</p>
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Active Services</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{sTrans.activeServices}</p>
           </div>
         </div>
         <div className="bg-zinc-900/30 border border-zinc-800/50 p-6 rounded-3xl flex items-center gap-4">
@@ -135,7 +135,7 @@ export default function AdminServicesPage() {
           </div>
           <div>
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">PocketBase</p>
-            <p className="text-xs font-bold text-white mt-1">Real-time Connected</p>
+            <p className="text-xs font-bold text-white mt-1">{sTrans.realtimeConnected}</p>
           </div>
         </div>
       </div>
@@ -171,7 +171,7 @@ export default function AdminServicesPage() {
                 <tr>
                   <td colSpan={3} className="px-8 py-20 text-center">
                     <Loader2 className="animate-spin mx-auto text-brand-blue mb-4" size={32} />
-                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Synchronizing Catalog...</p>
+                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">{sTrans.synchronizingCatalog}</p>
                   </td>
                 </tr>
               ) : filteredServices.length === 0 ? (
@@ -221,7 +221,7 @@ export default function AdminServicesPage() {
                             className="p-2.5 rounded-xl bg-brand-blue/10 text-brand-blue hover:text-white hover:bg-brand-blue transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
                           >
                             <List size={16} />
-                            Offers
+                            {sTrans.offers}
                           </Link>
                         )}
                         <button 

@@ -78,7 +78,7 @@ export default function ServicesPage() {
                   <Car className="absolute inset-0 m-auto w-6 h-6 text-brand-blue animate-pulse" />
                 </div>
                 <p className="text-zinc-400 font-bold uppercase tracking-widest text-sm animate-pulse">
-                  {language === 'fr' ? 'Chargement des services...' : (language === 'ar' ? 'جاري تحميل الخدمات...' : 'Loading services...')}
+                  {t.services.loading}
                 </p>
               </div>
             ) : dbServices.length > 0 ? (
@@ -134,7 +134,7 @@ export default function ServicesPage() {
                             ? 'bg-brand-gold/90 text-black' 
                             : 'bg-white/90 text-brand-blue'
                           }`}>
-                            {isGold ? t.pricing.badges.luxe : (language === 'fr' ? 'Premium' : (language === 'ar' ? 'ممتاز' : 'Premium'))}
+                            {isGold ? t.pricing.badges.luxe : t.services.premium}
                           </span>
                         </div>
                       </div>
@@ -151,7 +151,7 @@ export default function ServicesPage() {
                             ? 'bg-brand-gold/10 text-brand-gold group-hover:bg-brand-gold group-hover:text-black' 
                             : 'bg-zinc-50 text-brand-blue group-hover:bg-brand-blue group-hover:text-white ring-1 ring-zinc-100 group-hover:ring-brand-blue group-hover:shadow-lg group-hover:shadow-brand-blue/20'
                           }`}>
-                            {language === 'fr' ? 'Voir Détails' : (language === 'ar' ? 'عرض التفاصيل' : 'View Details')}
+                            {t.services.viewDetails}
                             <ArrowRight size={16} className={`transition-transform group-hover:translate-x-1 ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
                           </div>
                         </div>
@@ -164,7 +164,7 @@ export default function ServicesPage() {
               <div className="col-span-full text-center py-24 bg-white rounded-[3rem] border border-zinc-200 shadow-sm">
                 <Car className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
                 <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm">
-                  {language === 'fr' ? 'Aucun service disponible pour le moment.' : (language === 'ar' ? 'لا توجد خدمات متاحة في الوقت الحالي.' : 'No services available at the moment.')}
+                  {t.services.noServices}
                 </p>
               </div>
             )}
@@ -183,7 +183,7 @@ export default function ServicesPage() {
             <div className={`relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12 p-12 md:p-16 lg:p-20 ${dir === 'rtl' ? 'lg:flex-row-reverse text-right' : 'text-left'}`}>
               <div className="max-w-2xl">
                 <span className="inline-block py-1.5 px-4 rounded-full bg-white/10 text-white text-xs font-black tracking-widest uppercase mb-6 backdrop-blur-md border border-white/20">
-                  {language === 'fr' ? 'Abonnement VIP' : (language === 'ar' ? 'اشتراك VIP' : 'VIP Subscription')}
+                  {t.services.vipSubscription}
                 </span>
                 <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white uppercase italic tracking-tighter leading-[1.1] mb-6">
                   {t.pricing.title} <br />

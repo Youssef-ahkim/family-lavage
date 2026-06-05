@@ -290,10 +290,10 @@ const BookingPage = () => {
               {b.success}
             </h1>
             <p className="text-zinc-500 mb-12 text-lg">
-              {language === 'fr' ? 'Un conseiller vous contactera pour confirmer dans 5 minutes.' : (language === 'ar' ? 'سيتصل بك مستشار للتأكيد خلال 5 دقائق.' : 'An advisor will contact you for confirmation in 5 minutes.')}
+              {b.advisorNotice}
             </p>
             <Link href="/" className="btn-primary inline-flex">
-              {language === 'fr' ? 'Retour à l\'accueil' : (language === 'ar' ? 'العودة للرئيسية' : 'Back to Home')}
+              {b.backHome}
             </Link>
           </div>
         </div>
@@ -326,10 +326,10 @@ const BookingPage = () => {
                 </div>
                 <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
                   <p className="text-[10px] font-black uppercase tracking-widest text-brand-gold mb-1">
-                    {language === 'fr' ? 'Abonnement Actif' : (language === 'ar' ? 'اشتراك نشط' : 'Active Subscription')}
+                    {t.subscription.activeSubscription}
                   </p>
                   <p className="text-xl font-black uppercase italic tracking-tighter">
-                    {language === 'fr' ? 'Lavages Restants' : (language === 'ar' ? 'الغسلات المتبقية' : 'Remaining Washes')}
+                    {b.remainingWashes}
                   </p>
                 </div>
               </div>
@@ -366,7 +366,7 @@ const BookingPage = () => {
                 {isFetchingServices ? (
                   <div className="col-span-full py-20 flex flex-col items-center">
                     <Loader2 className="w-10 h-10 text-brand-blue animate-spin mb-4" />
-                    <p className="text-zinc-400 font-bold uppercase tracking-widest">{language === 'fr' ? 'Chargement des services...' : (language === 'ar' ? 'جاري تحميل الخدمات...' : 'Loading services...')}</p>
+                    <p className="text-zinc-400 font-bold uppercase tracking-widest">{b.loadingServices}</p>
                   </div>
                 ) : dbServices.filter(s => !s.parent_service).map((service) => {
                   const title = language === 'fr' ? service.title_fr : (language === 'ar' ? service.title_ar : service.title_en);
@@ -387,10 +387,10 @@ const BookingPage = () => {
                       <p className="text-zinc-500 text-sm line-clamp-2">{desc}</p>
                       <div className={`mt-6 flex items-center gap-2 text-brand-blue font-bold uppercase tracking-widest text-[10px] ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                         {service.booking_type === "has_children" 
-                          ? (language === 'fr' ? 'Voir les options' : language === 'ar' ? 'عرض الخيارات' : 'View Options')
+                          ? b.viewOptions
                           : service.booking_type === "direct"
-                          ? (language === 'fr' ? 'Réserver' : language === 'ar' ? 'احجز' : 'Reserve')
-                          : (language === 'fr' ? 'Voir les offres' : language === 'ar' ? 'عرض العروض' : 'View Offers')
+                          ? b.reserve
+                          : b.viewOffers
                         }
                         <ChevronRight size={14} className={dir === 'rtl' ? 'rotate-180' : ''} />
                       </div>
@@ -408,11 +408,11 @@ const BookingPage = () => {
                   className={`mb-6 flex items-center gap-2 text-zinc-400 font-bold hover:text-zinc-950 transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
                 >
                   <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> 
-                  {language === 'fr' ? 'Retour aux services' : (language === 'ar' ? 'العودة للخدمات' : 'Back to Services')}
+                  {b.backServices}
                 </button>
                 
                 <h2 className={`text-2xl font-black uppercase italic mb-8 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                  {language === 'fr' ? 'Choisissez une option' : (language === 'ar' ? 'اختر خياراً' : 'Choose an Option')}
+                  {b.chooseOption}
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -434,10 +434,7 @@ const BookingPage = () => {
                         <h3 className="text-2xl font-black uppercase italic tracking-tight mb-2">{title}</h3>
                         <p className="text-zinc-500 text-sm line-clamp-2">{desc}</p>
                         <div className={`mt-6 flex items-center gap-2 text-brand-blue font-bold uppercase tracking-widest text-[10px] ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                          {service.booking_type === "direct"
-                            ? (language === 'fr' ? 'Réserver' : language === 'ar' ? 'احجز' : 'Reserve')
-                            : (language === 'fr' ? 'Voir les offres' : language === 'ar' ? 'عرض العروض' : 'View Offers')
-                          }
+                          {service.booking_type === "direct" ? b.reserve : b.viewOffers}
                           <ChevronRight size={14} className={dir === 'rtl' ? 'rotate-180' : ''} />
                         </div>
                       </button>
@@ -455,23 +452,23 @@ const BookingPage = () => {
                   className={`mb-6 flex items-center gap-2 text-zinc-400 font-bold hover:text-zinc-950 transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
                 >
                   <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> 
-                  {language === 'fr' ? 'Retour aux services' : (language === 'ar' ? 'العودة للخدمات' : 'Back to Services')}
+                  {b.backServices}
                 </button>
                 
                 <h2 className={`text-2xl font-black uppercase italic mb-8 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                  {language === 'fr' ? 'Choisissez une offre' : (language === 'ar' ? 'اختر عرضاً' : 'Choose an Offer')}
+                  {b.chooseOffer}
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {isFetchingOffers ? (
                     <div className="col-span-full py-20 flex flex-col items-center">
                       <Loader2 className="w-10 h-10 text-brand-blue animate-spin mb-4" />
-                      <p className="text-zinc-400 font-bold uppercase tracking-widest">{language === 'fr' ? 'Chargement des offres...' : (language === 'ar' ? 'جاري تحميل العروض...' : 'Loading offers...')}</p>
+                      <p className="text-zinc-400 font-bold uppercase tracking-widest">{b.loadingOffers}</p>
                     </div>
                   ) : dbOffers.length === 0 ? (
                     <div className="col-span-full py-12 text-center">
                       <p className="text-zinc-500 font-bold uppercase tracking-widest">
-                        {language === 'fr' ? 'Aucune offre disponible pour ce service.' : (language === 'ar' ? 'لا توجد عروض متاحة لهذه الخدمة.' : 'No offers available for this service.')}
+                        {b.noOffers}
                       </p>
                     </div>
                   ) : dbOffers.map((offer) => {
@@ -547,7 +544,7 @@ const BookingPage = () => {
                       type="text"
                       name="fullname"
                       pattern="[A-Za-zÀ-ÿ\s\-\']+"
-                      title={language === 'fr' ? "Le nom ne doit contenir que des lettres et des espaces" : (language === 'ar' ? "يجب أن يحتوي الاسم على أحرف ومسافات فقط" : "Name should only contain letters and spaces")}
+                      title={b.validationName}
                       placeholder={b.form.placeholderName}
                       value={formData.fullname}
                       onChange={handleInputChange}
@@ -564,7 +561,7 @@ const BookingPage = () => {
                       type="tel"
                       name="phone"
                       pattern="\+?[0-9\s\-\(\)]{8,15}"
-                      title={language === 'fr' ? "Veuillez entrer un numéro de téléphone valide" : (language === 'ar' ? "يرجى إدخال رقم هاتف صحيح" : "Please enter a valid phone number")}
+                      title={b.validationPhone}
                       placeholder={b.form.placeholderPhone}
                       value={formData.phone}
                       onChange={handleInputChange}
@@ -615,9 +612,7 @@ const BookingPage = () => {
                       className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all appearance-none cursor-pointer disabled:opacity-50`}
                     >
                       <option value="" disabled>
-                        {isFetchingSlots
-                          ? (language === 'fr' ? 'Chargement...' : (language === 'ar' ? 'جاري التحميل...' : 'Loading...'))
-                          : (language === 'fr' ? 'Sélectionner l\'heure' : (language === 'ar' ? 'اختر الوقت' : 'Select time'))}
+                        {isFetchingSlots ? b.loading : b.selectTime}
                       </option>
                       {Array.from({ length: 16 * 4 + 1 }).map((_, i) => {
                         const totalMinutes = i * 15 + 8 * 60; // start at 8:00
@@ -640,7 +635,7 @@ const BookingPage = () => {
 
                         return (
                           <option key={timeString} value={timeString} disabled={isDisabled} className={isDisabled ? "text-red-500 bg-red-50" : ""}>
-                            {timeString} {isOccupied ? (language === 'fr' ? '(Occupé)' : language === 'ar' ? '(محجوز)' : '(Occupied)') : isPast ? (language === 'fr' ? '(Passé)' : language === 'ar' ? '(فائت)' : '(Past)') : ''}
+                            {timeString} {isOccupied ? b.occupied : isPast ? b.past : ''}
                           </option>
                         );
                       })}
@@ -664,7 +659,7 @@ const BookingPage = () => {
                   }}
                   className={`flex items-center gap-2 text-zinc-400 font-bold hover:text-zinc-950 transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
                 >
-                  <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> {selectedService?.booking_type === "direct" ? (language === 'fr' ? 'Retour aux services' : language === 'ar' ? 'العودة للخدمات' : 'Back to Services') : (language === 'fr' ? 'Retour aux offres' : language === 'ar' ? 'العودة للعروض' : 'Back to Offers')}
+                  <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> {selectedService?.booking_type === "direct" ? b.backServices : b.backOffers}
                 </button>
                 <button
                   type="button"
@@ -672,7 +667,7 @@ const BookingPage = () => {
                   disabled={!formData.fullname || !formData.phone || !formData.carModel || !formData.date || !formData.time}
                   className={`btn-primary group disabled:opacity-50 disabled:hover:scale-100 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
                 >
-                  {language === 'fr' ? 'Suivant' : (language === 'ar' ? 'التالي' : 'Next')}
+                  {b.next}
                   <ChevronRight size={20} className={`transition-transform ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
                 </button>
               </div>
@@ -708,7 +703,7 @@ const BookingPage = () => {
                 </div>
                 <div className="space-y-6">
                   <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{language === 'fr' ? 'Date & Heure' : (language === 'ar' ? 'التاريخ والوقت' : 'Date & Time')}</span>
+                    <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{b.dateTime}</span>
                     <span className="font-black text-sm uppercase">{formData.date} | {formData.time}</span>
                   </div>
                   <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
@@ -728,7 +723,7 @@ const BookingPage = () => {
                   <div className={`flex items-baseline gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                     <span className="text-5xl font-black tracking-tighter text-zinc-950">
                       {selectedOffer?.price === -1 ? (
-                        <span className="text-2xl">{language === 'fr' ? 'Sur Place' : language === 'ar' ? 'في الموقع' : 'On Site'}</span>
+                        <span className="text-2xl">{b.onSite}</span>
                       ) : (
                         selectedOffer && selectedOffer.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0 ? "0" : selectedOffer?.price || '0'
                       )}
@@ -762,7 +757,7 @@ const BookingPage = () => {
                   onClick={() => setStep(2)}
                   className={`flex items-center gap-2 text-zinc-400 font-bold hover:text-zinc-950 transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
                 >
-                  <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> {language === 'fr' ? 'Retour' : (language === 'ar' ? 'رجوع' : 'Back')}
+                  <ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /> {b.back}
                 </button>
                 <button
                   onClick={handleSubmit}
@@ -772,7 +767,7 @@ const BookingPage = () => {
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      {language === 'fr' ? 'Traitement...' : (language === 'ar' ? 'جاري المعالجة...' : 'Processing...')}
+                      {b.processing}
                     </>
                   ) : (
                     b.submit

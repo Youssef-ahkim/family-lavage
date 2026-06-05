@@ -7,6 +7,7 @@ import { getServiceOffers, deleteServiceOffer } from "../../service-actions";
 import { ServiceOfferRecord } from "../../service-types";
 import OfferForm from "./offer-form";
 import { useLanguage } from "@/context/LanguageContext";
+import { translations } from "@/lib/translations";
 import Link from "next/link";
 
 export default function AdminOffersPage() {
@@ -19,7 +20,9 @@ export default function AdminOffersPage() {
   const [editingOffer, setEditingOffer] = useState<ServiceOfferRecord | undefined>(undefined);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   
-  const { dir } = useLanguage();
+  const { language, dir } = useLanguage();
+  const t = translations[language];
+  const oTrans = t.admin.offers;
 
   const fetchOffers = useCallback(async () => {
     setLoading(true);
@@ -49,7 +52,7 @@ export default function AdminOffersPage() {
   }, [serviceId, fetchOffers]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this offer?")) return;
+    if (!confirm(oTrans.deleteConfirm)) return;
     setIsDeleting(id);
     try {
       await deleteServiceOffer(id, serviceId);
@@ -92,9 +95,9 @@ export default function AdminOffersPage() {
             <ArrowLeft size={20} />
           </Link>
           <div>
-            <h1 className="text-3xl font-black uppercase italic tracking-tighter text-white">Service Offers</h1>
+            <h1 className="text-3xl font-black uppercase italic tracking-tighter text-white">{oTrans.title}</h1>
             <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest mt-1">
-              Manage Pricing Plans
+              {oTrans.desc}
             </p>
           </div>
         </div>
@@ -106,7 +109,7 @@ export default function AdminOffersPage() {
           className="bg-brand-blue text-white px-6 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-brand-blue/20"
         >
           <Plus size={18} />
-          Add Offer
+          {oTrans.add}
         </button>
       </div>
 
@@ -115,10 +118,10 @@ export default function AdminOffersPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className={`border-b border-zinc-800/50 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">Offer Title</th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">Type</th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">Price</th>
-                <th className={`px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>Actions</th>
+                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">{oTrans.tableTitle}</th>
+                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">{oTrans.tableType}</th>
+                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">{oTrans.tablePrice}</th>
+                <th className={`px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>{t.admin.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/30">
@@ -126,13 +129,13 @@ export default function AdminOffersPage() {
                 <tr>
                   <td colSpan={4} className="px-8 py-20 text-center">
                     <Loader2 className="animate-spin mx-auto text-brand-blue mb-4" size={32} />
-                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Loading Offers...</p>
+                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">{oTrans.loading}</p>
                   </td>
                 </tr>
               ) : offers.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-8 py-20 text-center text-zinc-500 uppercase text-[10px] font-black tracking-widest">
-                    No Offers found for this service.
+                    {oTrans.noOffers}
                   </td>
                 </tr>
               ) : (
@@ -144,7 +147,7 @@ export default function AdminOffersPage() {
                     </td>
                     <td className="px-8 py-6 text-center">
                       <span className="inline-flex px-3 py-1 rounded-full bg-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-widest">
-                        {offer.category === 'subscription' ? 'Subscription' : 'One-time'}
+                        {offer.category === 'subscription' ? oTrans.categorySub : oTrans.categoryOnce}
                       </span>
                     </td>
                     <td className="px-8 py-6 text-center">

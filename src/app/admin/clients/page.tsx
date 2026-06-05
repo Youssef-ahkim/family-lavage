@@ -120,7 +120,7 @@ export default function AdminClientsPage() {
             type="submit"
             className="px-6 py-3.5 bg-brand-blue text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-brand-blue/80 transition-all shadow-lg shadow-brand-blue/20 shrink-0"
           >
-            {language === 'fr' ? 'Rechercher' : (language === 'ar' ? 'بحث' : 'Search')}
+            {adm.searchBtn}
           </button>
         </form>
       </div>
@@ -128,7 +128,7 @@ export default function AdminClientsPage() {
       {/* Results Count */}
       <div className={`flex items-center justify-between mb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
         <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
-          {totalItems} {cTrans.title} {language === 'fr' ? 'trouvé(s)' : ''}
+          {totalItems} {adm.clientsFound}
         </p>
       </div>
 
@@ -140,7 +140,7 @@ export default function AdminClientsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className={`border-b border-zinc-800/50 bg-zinc-900/50 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                  {[adm.customer, "Contact Info", adm.vehicle, cTrans.tableRole, cTrans.tableJoined].map(h => (
+                  {[adm.customer, adm.contactInfo, adm.vehicle, cTrans.tableRole, cTrans.tableJoined].map(h => (
                     <th key={h} className={`px-5 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest whitespace-nowrap ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
@@ -244,7 +244,7 @@ export default function AdminClientsPage() {
                     <span className="text-xs font-black text-brand-blue uppercase">{user.plate || "—"}</span>
                   </div>
                   <div className={`flex items-center justify-between ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{language === 'fr' ? 'Inscrit' : (language === 'ar' ? 'انضم' : 'Joined')}</span>
+                    <span className={`text-[10px] font-black text-zinc-500 uppercase tracking-widest`}>{adm.joined}</span>
                     <span className="text-xs font-bold text-zinc-500">{formatDate(user.created)}</span>
                   </div>
                 </div>
@@ -265,7 +265,7 @@ export default function AdminClientsPage() {
             <ChevronLeft className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
           </button>
           <span className="px-6 py-2 text-xs font-black uppercase tracking-widest text-zinc-500">
-            {language === 'fr' ? 'Page' : (language === 'ar' ? 'صفحة' : 'Page')} {page} / {totalPages}
+            {adm.page} {page} / {totalPages}
           </span>
           <button
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}

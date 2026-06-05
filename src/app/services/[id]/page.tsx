@@ -68,7 +68,7 @@ export default function ServiceDetailsPage() {
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <div className="w-16 h-16 border-4 border-brand-blue border-t-transparent rounded-full animate-spin mb-4" />
           <p className="text-zinc-400 font-bold uppercase tracking-widest animate-pulse">
-            {language === 'fr' ? 'Chargement...' : (language === 'ar' ? 'جاري التحميل...' : 'Loading...')}
+            {t.booking.loading}
           </p>
         </div>
       </div>
@@ -81,11 +81,11 @@ export default function ServiceDetailsPage() {
         <Navbar />
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <h1 className="text-4xl font-black uppercase italic tracking-tighter mb-4">
-            {language === 'fr' ? 'Service Introuvable' : (language === 'ar' ? 'الخدمة غير موجودة' : 'Service Not Found')}
+            {t.services.serviceNotFound}
           </h1>
           <button onClick={() => router.push('/services')} className="text-brand-blue font-bold flex items-center gap-2">
             <ArrowLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} />
-            {language === 'fr' ? 'Retour aux services' : (language === 'ar' ? 'العودة إلى الخدمات' : 'Back to services')}
+            {t.booking.backServices}
           </button>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default function ServiceDetailsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <Link href="/services" className="inline-flex items-center gap-2 text-zinc-500 hover:text-brand-blue font-bold uppercase tracking-widest text-xs mb-12 transition-colors">
             <ArrowLeft size={16} className={dir === 'rtl' ? 'rotate-180' : ''} />
-            {language === 'fr' ? 'Retour aux services' : (language === 'ar' ? 'العودة إلى الخدمات' : 'Back to services')}
+            {t.booking.backServices}
           </Link>
 
           {service.booking_type === "has_children" ? (
@@ -115,7 +115,7 @@ export default function ServiceDetailsPage() {
                   {title}
                 </h1>
                 <p className="text-zinc-500 font-medium text-lg">
-                  {language === 'fr' ? 'Choisissez une option ci-dessous' : (language === 'ar' ? 'اختر خياراً أدناه' : 'Choose an option below')}
+                  {t.services.chooseOptionBelow}
                 </p>
               </div>
 
@@ -172,7 +172,7 @@ export default function ServiceDetailsPage() {
                               ? 'bg-brand-gold/10 text-brand-gold group-hover:bg-brand-gold group-hover:text-black' 
                               : 'bg-zinc-50 text-brand-blue group-hover:bg-brand-blue group-hover:text-white ring-1 ring-zinc-100 group-hover:ring-brand-blue group-hover:shadow-lg group-hover:shadow-brand-blue/20'
                             }`}>
-                              {language === 'fr' ? 'Voir Détails' : (language === 'ar' ? 'عرض التفاصيل' : 'View Details')}
+                              {t.services.viewDetails}
                               <ArrowRight size={16} className={`transition-transform group-hover:translate-x-1 ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
                             </div>
                           </div>
@@ -237,7 +237,7 @@ export default function ServiceDetailsPage() {
                     )}
                     <div className="absolute top-6 right-6 z-20">
                       <span className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-xl ${isGold ? 'bg-brand-gold text-black' : 'bg-white text-brand-blue'}`}>
-                        {isGold ? t.pricing.badges.luxe : (language === 'fr' ? 'Premium' : (language === 'ar' ? 'ممتاز' : 'Premium'))}
+                        {isGold ? t.pricing.badges.luxe : t.services.premium}
                       </span>
                     </div>
                   </div>
@@ -279,8 +279,8 @@ export default function ServiceDetailsPage() {
                       : 'bg-brand-blue text-white hover:bg-zinc-900 shadow-brand-blue/20'
                     }`}>
                       {service.booking_type === "direct" 
-                        ? (language === 'fr' ? 'Réserver' : (language === 'ar' ? 'احجز' : 'Reserve'))
-                        : (language === 'fr' ? 'Voir les Offres' : (language === 'ar' ? 'عرض العروض' : 'View Offers'))
+                        ? t.booking.reserve
+                        : t.booking.viewOffers
                       }
                       <ArrowRight size={20} className={dir === 'rtl' ? 'rotate-180' : 'rotate-90'} />
                     </button>
@@ -293,10 +293,10 @@ export default function ServiceDetailsPage() {
                 <div id="offers-section" className="pt-12 reveal">
                   <div className={`text-center mb-16 ${dir === 'rtl' ? 'md:text-right' : 'md:text-left'}`}>
                     <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter mb-4 text-zinc-900">
-                      {language === 'fr' ? 'Offres Disponibles' : (language === 'ar' ? 'العروض المتاحة' : 'Available Offers')}
+                      {t.services.availableOffers}
                     </h2>
                     <p className="text-zinc-500 font-medium text-lg">
-                      {language === 'fr' ? 'Sélectionnez une offre pour voir les détails.' : (language === 'ar' ? 'اختر عرضاً لرؤية التفاصيل.' : 'Select an offer to view details.')}
+                      {t.services.selectOfferDetails}
                     </p>
                   </div>
 
@@ -304,7 +304,7 @@ export default function ServiceDetailsPage() {
                     <div className="bg-zinc-50 p-12 rounded-[3rem] text-center border border-zinc-100">
                       <Sparkles className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
                       <p className="text-zinc-500 font-bold uppercase tracking-widest">
-                        {language === 'fr' ? 'Aucune offre pour le moment' : (language === 'ar' ? 'لا توجد عروض حاليا' : 'No offers available at the moment')}
+                        {t.services.noOffersAvailable}
                       </p>
                     </div>
                   ) : (
@@ -352,7 +352,7 @@ export default function ServiceDetailsPage() {
                                 {offerTitle}
                               </h3>
                               <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-400 group-hover:text-brand-blue transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                                <span>{language === 'fr' ? 'Voir les détails' : (language === 'ar' ? 'عرض التفاصيل' : 'View Details')}</span>
+                                <span>{t.services.viewDetailsBtn}</span>
                                 <ArrowRight size={14} className={`transition-transform ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
                               </div>
                             </div>

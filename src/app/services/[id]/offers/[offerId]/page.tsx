@@ -48,7 +48,7 @@ export default function OfferDetailsPage() {
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <div className="w-16 h-16 border-4 border-brand-blue border-t-transparent rounded-full animate-spin mb-4" />
           <p className="text-zinc-400 font-bold uppercase tracking-widest animate-pulse">
-            {language === 'fr' ? 'Chargement...' : (language === 'ar' ? 'جاري التحميل...' : 'Loading...')}
+            {t.booking.loading}
           </p>
         </div>
       </div>
@@ -61,11 +61,11 @@ export default function OfferDetailsPage() {
         <Navbar />
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <h1 className="text-4xl font-black uppercase italic tracking-tighter mb-4">
-            {language === 'fr' ? 'Offre Introuvable' : (language === 'ar' ? 'العرض غير موجود' : 'Offer Not Found')}
+            {t.services.offerNotFound}
           </h1>
           <button onClick={() => router.push(`/services/${serviceId}`)} className="text-brand-blue font-bold flex items-center gap-2">
             <ArrowLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} />
-            {language === 'fr' ? 'Retour' : (language === 'ar' ? 'رجوع' : 'Back')}
+            {t.services.backBtn}
           </button>
         </div>
       </div>
@@ -90,7 +90,7 @@ export default function OfferDetailsPage() {
             className="inline-flex items-center gap-2 text-zinc-500 hover:text-brand-blue font-bold uppercase tracking-widest text-xs mb-10 transition-colors"
           >
             <ArrowLeft size={16} className={dir === 'rtl' ? 'rotate-180' : ''} />
-            {language === 'fr' ? 'Retour aux offres' : (language === 'ar' ? 'العودة إلى العروض' : 'Back to offers')}
+            {t.booking.backOffers}
           </Link>
 
           <div className={`flex flex-col lg:flex-row gap-12 lg:gap-20 ${dir === 'rtl' ? 'lg:flex-row-reverse text-right' : 'text-left'}`}>
@@ -132,7 +132,7 @@ export default function OfferDetailsPage() {
                     <span className="text-sm font-bold text-zinc-400 uppercase">DH</span>
                     {offer.category === 'subscription' && (
                       <span className="text-[10px] text-brand-blue font-black uppercase tracking-widest mt-1">
-                        {offer.washes_count} {language === 'fr' ? 'LAVAGES' : (language === 'ar' ? 'غسلات' : 'WASHES')} {offer.plan_type === 'monthly' ? t.pricing.perMonth : t.pricing.perYear}
+                        {offer.washes_count} {t.services.washes} {offer.plan_type === 'monthly' ? t.pricing.perMonth : t.pricing.perYear}
                       </span>
                     )}
                   </div>
@@ -141,7 +141,7 @@ export default function OfferDetailsPage() {
 
               <div className="mb-12">
                 <h2 className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-6">
-                  {language === 'fr' ? 'Ce qui est inclus' : (language === 'ar' ? 'ما يتضمنه العرض' : 'What\'s included')}
+                  {t.services.whatIsIncluded}
                 </h2>
                 <ul className="space-y-4">
                   {Array.isArray(offerFeatures) && offerFeatures.map((f: string, i: number) => (
@@ -170,9 +170,7 @@ export default function OfferDetailsPage() {
                 
                 {offer.category === 'once' && (
                   <p className="mt-4 text-center text-xs text-zinc-400 font-medium leading-relaxed">
-                    {language === 'fr' 
-                      ? 'Réservez maintenant, payez sur place.' 
-                      : (language === 'ar' ? 'احجز الآن، وادفع في عين المكان.' : 'Book now, pay on site.')}
+                    {t.services.bookNowPayOnSite}
                   </p>
                 )}
               </div>

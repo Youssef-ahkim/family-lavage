@@ -81,6 +81,12 @@ export default function AdminDashboardPage() {
     cancelled: adm.cancelled,
   };
 
+  const getServiceTitle = (service_type: string) => {
+    if (service_type === 'VIP') return t.pricing.plans.vip.name;
+    if (service_type === 'basic') return t.hero.btnSimple;
+    return service_type;
+  };
+
   if (loading && !refreshing) {
     return (
       <div className="py-20 flex items-center justify-center">
@@ -95,7 +101,7 @@ export default function AdminDashboardPage() {
         <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
           <h1 className="text-4xl font-black uppercase italic tracking-tighter">{adm.title}</h1>
           <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest mt-1">
-            {adm.dashboard?.overview || "Overview"}
+            {adm.dashboard.overview}
           </p>
         </div>
         <button 
@@ -160,7 +166,7 @@ export default function AdminDashboardPage() {
                       <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
                         <p className="font-bold text-sm text-white">{booking.full_name}</p>
                         <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">
-                          {booking.service_type} • {booking.price} DH
+                          {getServiceTitle(booking.service_type)} • {booking.price} DH
                         </p>
                       </div>
                     </div>

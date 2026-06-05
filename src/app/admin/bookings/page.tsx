@@ -32,6 +32,12 @@ export default function AdminBookingsPage() {
   const t = translations[language];
   const adm = t.admin;
 
+  const getServiceTitle = (service_type: string) => {
+    if (service_type === 'VIP') return t.pricing.plans.vip.name;
+    if (service_type === 'basic') return t.hero.btnSimple;
+    return service_type;
+  };
+
   const [bookings, setBookings] = useState<BookingItem[]>([]);
   const [services, setServices] = useState<ServiceRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -190,7 +196,7 @@ export default function AdminBookingsPage() {
           <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
             <h1 className="text-3xl font-black uppercase italic tracking-tighter">{adm.bookings}</h1>
             <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest mt-1">
-              {language === 'fr' ? 'Gérer toutes les réservations de lavage de voiture' : (language === 'ar' ? 'إدارة جميع حجوزات غسيل السيارات' : 'Manage all car wash reservations')}
+              {adm.bookingsSubtitle}
             </p>
           </div>
           <button 
@@ -219,7 +225,7 @@ export default function AdminBookingsPage() {
               type="submit"
               className="px-6 py-3.5 bg-brand-blue text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-brand-blue/80 transition-all shadow-lg shadow-brand-blue/20 shrink-0"
             >
-              {language === 'fr' ? 'Rechercher' : (language === 'ar' ? 'بحث' : 'Search')}
+              {adm.searchBtn}
             </button>
           </form>
 
@@ -234,7 +240,7 @@ export default function AdminBookingsPage() {
                   }`}
               >
                 <Tags size={14} />
-                {language === 'fr' ? 'Tous les Services' : (language === 'ar' ? 'جميع الخدمات' : 'All Services')}
+                {adm.allServices}
               </button>
               {services.map((s) => (
                 <button
@@ -284,7 +290,7 @@ export default function AdminBookingsPage() {
         {/* Results Count */}
         <div className={`flex items-center justify-between mb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
           <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
-            {totalItems} {adm.bookings} {language === 'fr' ? 'trouvées' : ''}
+            {totalItems} {adm.bookingsFound}
           </p>
         </div>
 
@@ -332,14 +338,14 @@ export default function AdminBookingsPage() {
                         <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">{booking.plate_number}</td>
                         <td className="px-5 py-4">
                           <span className={`text-xs font-black uppercase ${booking.service_type === 'VIP' ? 'text-brand-gold' : 'text-zinc-400'}`}>
-                            {booking.service_type === 'VIP' ? 'VIP' : (booking.service_type === 'basic' ? 'Basic Wash' : booking.service_type)}
+                            {getServiceTitle(booking.service_type)}
                           </span>
                         </td>
                         <td className="px-5 py-4 whitespace-nowrap">
                           <p className="text-zinc-300 font-medium text-xs">{formatDate(booking.date)}</p>
                           <p className="text-zinc-500 text-xs">{formatTime(booking.date)}</p>
                         </td>
-                        <td className="px-5 py-4 font-black text-white">{booking.price === -1 ? (language === 'fr' ? 'Sur place' : (language === 'ar' ? 'في عين المكان' : 'On site')) : `${booking.price} DH`}</td>
+                        <td className="px-5 py-4 font-black text-white">{booking.price === -1 ? adm.onSite : `${booking.price} DH`}</td>
                         <td className="px-5 py-4">
                           <div className={`flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                             {booking.status === 'pending' && (
@@ -432,7 +438,7 @@ export default function AdminBookingsPage() {
                     <div>
                       <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{adm.service}</p>
                       <p className={`text-sm font-black uppercase ${booking.service_type === 'VIP' ? 'text-brand-gold' : 'text-zinc-300'}`}>
-                        {booking.service_type}
+                        {getServiceTitle(booking.service_type)}
                       </p>
                     </div>
                     <div>
@@ -442,7 +448,7 @@ export default function AdminBookingsPage() {
                     </div>
                     <div>
                       <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{adm.price}</p>
-                      <p className="text-base font-black text-white">{booking.price === -1 ? (language === 'fr' ? 'Sur place' : (language === 'ar' ? 'في عين المكان' : 'On site')) : `${booking.price} DH`}</p>
+                      <p className="text-base font-black text-white">{booking.price === -1 ? adm.onSite : `${booking.price} DH`}</p>
                     </div>
                   </div>
 
@@ -453,7 +459,7 @@ export default function AdminBookingsPage() {
                         className="flex items-center gap-2 px-4 py-2 bg-zinc-800 rounded-xl text-zinc-400 font-black uppercase text-[10px] tracking-widest hover:text-white transition-all"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        {language === 'fr' ? 'Détails' : (language === 'ar' ? 'تفاصيل' : 'Details')}
+                        {adm.details}
                       </button>
                     </div>
 
@@ -510,7 +516,7 @@ export default function AdminBookingsPage() {
               <ChevronLeft className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
             </button>
             <span className="px-6 py-2 text-xs font-black uppercase tracking-widest text-zinc-500">
-              {language === 'fr' ? 'Page' : (language === 'ar' ? 'صفحة' : 'Page')} {page} / {totalPages}
+              {adm.page} {page} / {totalPages}
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
@@ -549,8 +555,8 @@ export default function AdminBookingsPage() {
                 { label: adm.status, value: statusText[selectedBooking.status], highlight: true },
                 { label: adm.phone, value: selectedBooking.phone },
                 { label: adm.vehicle, value: selectedBooking.plate_number },
-                { label: adm.service, value: selectedBooking.service_type },
-                { label: adm.price, value: selectedBooking.price === -1 ? (language === 'fr' ? 'Sur place' : (language === 'ar' ? 'في عين المكان' : 'On site')) : `${selectedBooking.price} DH` },
+                { label: adm.service, value: getServiceTitle(selectedBooking.service_type) },
+                { label: adm.price, value: selectedBooking.price === -1 ? adm.onSite : `${selectedBooking.price} DH` },
                 { label: t.booking.form.date, value: formatDate(selectedBooking.date) },
                 { label: t.booking.form.time, value: formatTime(selectedBooking.date) },
                 { label: adm.notes, value: selectedBooking.notes || "—" },
@@ -593,7 +599,7 @@ export default function AdminBookingsPage() {
         onConfirm={() => confirmCancel.id && handleStatusChange(confirmCancel.id, 'cancelled')}
         title={adm.confirmBtn}
         message={adm.cancelConfirm}
-        confirmText={language === 'fr' ? "Confirmer l'annulation" : (language === 'ar' ? 'تأكيد الإلغاء' : 'Confirm Cancellation')}
+        confirmText={adm.confirmCancelBtn}
         cancelText={adm.cancelBtn}
         variant="warning"
         isLoading={isActionLoading}

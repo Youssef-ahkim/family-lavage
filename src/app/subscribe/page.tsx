@@ -146,7 +146,7 @@ export default function SubscribePage() {
           {isFetchingPlans ? (
             <div className="col-span-full flex flex-col items-center justify-center py-20">
               <Loader2 className="w-10 h-10 text-brand-blue animate-spin mb-4" />
-              <p className="text-zinc-400 font-bold uppercase tracking-widest">{language === 'fr' ? 'Chargement des plans...' : (language === 'ar' ? 'جاري تحميل الخطط...' : 'Loading plans...')}</p>
+              <p className="text-zinc-400 font-bold uppercase tracking-widest">{s.loadingPlans}</p>
             </div>
           ) : dbPlans.map((plan) => {
             const name = language === 'fr' ? plan.title_fr : (language === 'ar' ? plan.title_ar : plan.title_en);
@@ -170,7 +170,7 @@ export default function SubscribePage() {
                   <div className="flex flex-col items-start leading-none">
                     <span className="text-xs font-bold text-zinc-400 uppercase">DH</span>
                     <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">
-                      {plan.washes_count} {language === 'fr' ? 'LAVAGES' : (language === 'ar' ? 'غسلات' : 'WASHES')} {isMonthly ? t.pricing.perMonth : t.pricing.perYear}
+                      {plan.washes_count} {s.washes} {isMonthly ? t.pricing.perMonth : t.pricing.perYear}
                     </span>
                   </div>
                 </div>
@@ -189,12 +189,12 @@ export default function SubscribePage() {
                 {hasActive && activeReq && (
                   <div className="mb-8 p-5 bg-green-500/10 rounded-2xl border border-green-500/20 flex flex-col gap-3">
                     <div className={`flex justify-between items-center text-xs ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                      <span className="font-bold text-green-600 uppercase tracking-widest">{language === 'fr' ? 'Lavages restants :' : (language === 'ar' ? 'الغسلات المتبقية:' : 'Washes remaining:')}</span>
+                      <span className="font-bold text-green-600 uppercase tracking-widest">{s.washesRemaining}</span>
                       <span className="font-black text-green-600 text-sm bg-green-500/20 px-2 py-0.5 rounded-md">{activeReq.washes_remaining ?? 0}</span>
                     </div>
                     {activeReq.expiry_date && (
                       <div className={`flex justify-between items-center text-xs ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                        <span className="font-bold text-green-600 uppercase tracking-widest">{language === 'fr' ? 'Expire le :' : (language === 'ar' ? 'ينتهي في:' : 'Expires:')}</span>
+                        <span className="font-bold text-green-600 uppercase tracking-widest">{s.expiresOn}</span>
                         <span className="font-black text-green-600">{new Date(activeReq.expiry_date).toLocaleDateString(language === 'fr' ? 'fr-FR' : (language === 'ar' ? 'ar-MA' : 'en-US'))}</span>
                       </div>
                     )}
@@ -215,9 +215,9 @@ export default function SubscribePage() {
                   {loading && !hasActive && !hasPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : hasActive ? (
-                    <><CheckCircle2 size={18} /> {language === 'fr' ? 'Abonnement Actif' : (language === 'ar' ? 'اشتراك نشط' : 'Active Subscription')}</>
+                    <><CheckCircle2 size={18} /> {s.activeSubscription}</>
                   ) : hasPending ? (
-                    <><Clock size={18} /> {language === 'fr' ? 'Demande en cours' : (language === 'ar' ? 'طلب قيد الانتظار' : 'Request Pending')}</>
+                    <><Clock size={18} /> {s.requestPending}</>
                   ) : (
                     <>
                       {s.requestBtn}
@@ -236,7 +236,7 @@ export default function SubscribePage() {
             <div className={`flex items-center gap-3 mb-8 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
               <History className="text-brand-blue" />
               <h2 className="text-2xl font-black uppercase italic tracking-tight">
-                {language === 'fr' ? 'Historique des demandes' : (language === 'ar' ? 'سجل الطلبات' : 'Request History')}
+                {s.requestHistory}
               </h2>
             </div>
 
@@ -246,13 +246,13 @@ export default function SubscribePage() {
                   <thead>
                     <tr className={`border-b border-zinc-200 bg-zinc-100/50 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
                       <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-zinc-500">
-                        {language === 'fr' ? 'Plan' : (language === 'ar' ? 'الاشتراك' : 'Plan')}
+                        {s.plan}
                       </th>
                       <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-zinc-500">
                         {t.admin.status}
                       </th>
                       <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-zinc-500">
-                        {language === 'fr' ? 'Date' : (language === 'ar' ? 'التاريخ' : 'Date')}
+                        {s.date}
                       </th>
                       <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-zinc-500">
                         {t.admin.price}
