@@ -1,19 +1,17 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Plus, Edit2, Trash2, ArrowLeft, Loader2, DollarSign } from "lucide-react";
+import { useParams } from "next/navigation";
+import { Plus, Edit2, Trash2, ArrowLeft, Loader2 } from "lucide-react";
 import { getServiceOffers, deleteServiceOffer } from "../../service-actions";
 import { ServiceOfferRecord } from "../../service-types";
 import OfferForm from "./offer-form";
 import { useLanguage } from "@/context/LanguageContext";
-import { translations } from "@/lib/translations";
 import Link from "next/link";
 
 export default function AdminOffersPage() {
   const params = useParams();
   const serviceId = params.id as string;
-  const router = useRouter();
 
   const [offers, setOffers] = useState<ServiceOfferRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,8 +19,7 @@ export default function AdminOffersPage() {
   const [editingOffer, setEditingOffer] = useState<ServiceOfferRecord | undefined>(undefined);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   
-  const { language, dir } = useLanguage();
-  const t = translations[language];
+  const { dir } = useLanguage();
 
   const fetchOffers = useCallback(async () => {
     setLoading(true);

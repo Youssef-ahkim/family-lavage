@@ -152,7 +152,7 @@ export async function logout() {
         invalidateCache(`profile:${pb.authStore.model.id}`);
         invalidateCache(`bookings:${pb.authStore.model.id}`);
       }
-    } catch (_) {}
+    } catch {}
   }
 
   cookieStore.delete('pb_auth');
@@ -214,7 +214,7 @@ export async function getProfile() {
             subscription_expiry,
             washes_remaining,
           };
-        } catch (e) {
+        } catch {
           // Fallback to cookie model if admin fetch fails
           const model = pb.authStore.model!;
 

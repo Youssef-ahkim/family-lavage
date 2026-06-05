@@ -223,7 +223,7 @@ function prepareOfferData(formData: FormData) {
     if (key.startsWith("features_")) {
       try {
         data[key] = JSON.parse(value as string);
-      } catch (e) {
+      } catch {
         data[key] = [];
       }
       return;

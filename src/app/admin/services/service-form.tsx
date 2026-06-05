@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, Upload, X, Globe, Save, Loader2 } from "lucide-react";
+import { Upload, X, Save, Loader2 } from "lucide-react";
+import Image from "next/image";
 import { serviceSchema, ServiceFormData, ServiceRecord } from "./service-types";
 import { createService, updateService, getServices } from "./service-actions";
 import { useLanguage } from "@/context/LanguageContext";
@@ -303,7 +304,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
           <div className={`flex items-center gap-6 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
             <div className="w-24 h-24 rounded-3xl bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden group relative flex-shrink-0">
               {preview ? (
-                <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                <Image src={preview} alt="Preview" fill className="object-cover" />
               ) : (
                 <Upload className="text-zinc-700 group-hover:text-brand-blue transition-colors" />
               )}
@@ -352,7 +353,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
                 <div className={`flex flex-wrap gap-3 ${dir === 'rtl' ? 'justify-end' : 'justify-start'}`}>
                   {galleryPreviews.map((src, i) => (
                     <div key={i} className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden relative">
-                      <img src={src} alt={`Gallery preview ${i}`} className="w-full h-full object-cover" />
+                      <Image src={src} alt={`Gallery preview ${i}`} fill className="object-cover" />
                     </div>
                   ))}
                 </div>

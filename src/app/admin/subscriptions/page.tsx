@@ -8,8 +8,6 @@ import {
   RefreshCw, 
   ChevronLeft, 
   ChevronRight, 
-  Mail, 
-  Phone, 
   Check, 
   X,
   CreditCard,
@@ -48,7 +46,6 @@ export default function AdminSubscriptionsPage() {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   const [statusFilter, setStatusFilter] = useState('pending');
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -61,7 +58,6 @@ export default function AdminSubscriptionsPage() {
       if (res.success) {
         setItems(res.items as SubscriptionItem[]);
         setTotalPages(res.totalPages);
-        setTotalItems(res.totalItems);
       }
     } catch (err) {
       console.error("Error fetching subscriptions:", err);
@@ -100,7 +96,7 @@ export default function AdminSubscriptionsPage() {
       } else {
         alert(res.error);
       }
-    } catch (err) {
+    } catch {
       alert("Error approving subscription");
     } finally {
       setProcessingId(null);
@@ -118,7 +114,7 @@ export default function AdminSubscriptionsPage() {
       } else {
         alert(res.error);
       }
-    } catch (err) {
+    } catch {
       alert("Error rejecting subscription");
     } finally {
       setProcessingId(null);

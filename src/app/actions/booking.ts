@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { getAdminPB, getPublicPB } from '@/lib/pocketbase';
-import { cached, invalidateCache, CACHE_TTL } from '@/lib/cache';
+import { invalidateCache } from '@/lib/cache';
 
 export async function submitBooking(formData: Record<string, unknown>) {
   try {

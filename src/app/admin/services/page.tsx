@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { 
-  Plus, Edit2, Trash2, Search, Filter, 
-  MoreVertical, CheckCircle2, XCircle, 
-  Package, DollarSign, Info, Loader2, List
+  Plus, Edit2, Trash2, Search, 
+  CheckCircle2, XCircle, 
+  Package, Info, Loader2, List
 } from "lucide-react";
+import Image from "next/image";
 import { getServices, deleteService } from "./service-actions";
 import { ServiceRecord } from "./service-types";
 import ServiceForm from "./service-form";
@@ -184,9 +185,9 @@ export default function AdminServicesPage() {
                   <tr key={service.id} className="group hover:bg-zinc-800/20 transition-colors">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl bg-zinc-800 overflow-hidden border border-zinc-700 group-hover:border-brand-blue/30 transition-all ${dir === 'rtl' ? 'order-2' : ''}`}>
+                        <div className={`w-12 h-12 rounded-xl bg-zinc-800 overflow-hidden border border-zinc-700 group-hover:border-brand-blue/30 transition-all relative ${dir === 'rtl' ? 'order-2' : ''}`}>
                           {service.photo ? (
-                            <img src={service.photo} alt={service.title_en} className="w-full h-full object-cover" />
+                            <Image src={service.photo} alt={service.title_en} fill className="object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-zinc-600">
                               <Package size={20} />

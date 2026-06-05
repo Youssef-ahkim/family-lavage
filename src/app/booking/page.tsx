@@ -10,7 +10,8 @@ import { translations } from "@/lib/translations";
 import { submitBooking, getBookedTimes } from "@/app/actions/booking";
 import { getServices, getServiceOffers } from "../admin/services/service-actions";
 import { ServiceRecord, ServiceOfferRecord } from "../admin/services/service-types";
-import { ChevronLeft, ChevronRight, CheckCircle2, Car, Sparkles, Droplets, Clock, Calendar, User, Phone, ClipboardCheck, AlertCircle, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Car, Droplets, Clock, Calendar, User, Phone, ClipboardCheck, AlertCircle, Loader2 } from "lucide-react";
+import Image from "next/image";
 
 const BookingPage = () => {
   const { language, dir } = useLanguage();
@@ -379,7 +380,7 @@ const BookingPage = () => {
                     >
                       {service.photo && (
                         <div className="w-full h-32 rounded-2xl overflow-hidden mb-6 relative">
-                          <img src={service.photo} alt={title} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
+                          <Image src={service.photo} alt={title} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
                         </div>
                       )}
                       <h3 className="text-2xl font-black uppercase italic tracking-tight mb-2">{title}</h3>
@@ -427,7 +428,7 @@ const BookingPage = () => {
                       >
                         {service.photo && (
                           <div className="w-full h-32 rounded-2xl overflow-hidden mb-6 relative">
-                            <img src={service.photo} alt={title} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
+                            <Image src={service.photo} alt={title} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
                           </div>
                         )}
                         <h3 className="text-2xl font-black uppercase italic tracking-tight mb-2">{title}</h3>

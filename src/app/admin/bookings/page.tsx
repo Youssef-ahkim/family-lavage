@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { getAllBookings, updateBookingStatus, deleteBooking } from "@/app/actions/admin";
 import { getServices } from "@/app/admin/services/service-actions";
@@ -9,7 +9,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import ConfirmModal from "@/components/ConfirmModal";
 import {
-  Loader2, Calendar, Clock, Car, User, CheckCircle2, XCircle, 
+  Loader2, Calendar, Car, User, CheckCircle2, XCircle, 
   Trash2, ChevronLeft, ChevronRight, Search, RefreshCw, Eye, Tags
 } from "lucide-react";
 

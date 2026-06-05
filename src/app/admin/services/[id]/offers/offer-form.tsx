@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useForm, useFieldArray, useWatch, UseFieldArrayReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import { Plus, Trash2, X, Save, Loader2, Upload } from "lucide-react";
 import { serviceOfferSchema, ServiceOfferFormData, ServiceOfferRecord } from "../../service-types";
 import { createServiceOffer, updateServiceOffer } from "../../service-actions";
 import { useLanguage } from "@/context/LanguageContext";
-import { translations } from "@/lib/translations";
 
 interface OfferFormProps {
   serviceId: string;
@@ -22,8 +22,6 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
   const [photo, setPhoto] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>(initialData?.photo || "");
   const { language, dir } = useLanguage();
-  const t = translations[language];
-  const sTrans = t.admin.services;
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -37,7 +35,6 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
     register,
     control,
     handleSubmit,
-    formState: { errors },
   } = useForm<ServiceOfferFormData>({
     resolver: zodResolver(serviceOfferSchema),
     defaultValues: {
@@ -258,7 +255,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
           <div className={`flex items-center gap-6 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
             <div className="w-24 h-24 rounded-3xl bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden group relative">
               {preview ? (
-                <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                <Image src={preview} alt="Preview" fill className="object-cover" />
               ) : (
                 <Upload className="text-zinc-700 group-hover:text-brand-blue transition-colors" />
               )}
