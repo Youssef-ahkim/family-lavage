@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, Upload, X, Globe, Save, Loader2 } from "lucide-react";
 import { serviceSchema, ServiceFormData, ServiceRecord } from "./service-types";
@@ -30,10 +30,10 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors },
   } = useForm<ServiceFormData>({
-    resolver: zodResolver(serviceSchema) as any,
+    resolver: zodResolver(serviceSchema) as unknown as undefined,
     defaultValues: {
       title_fr: initialData?.title_fr || "",
       title_ar: initialData?.title_ar || "",
@@ -48,7 +48,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
     },
   });
 
-  const selectedBookingType = watch("booking_type");
+  const selectedBookingType = useWatch({ control, name: "booking_type" });
 
   React.useEffect(() => {
     async function fetchTopLevelServices() {
@@ -142,7 +142,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-8 max-w-2xl mx-auto bg-zinc-950 p-8 rounded-[2.5rem] border border-zinc-900 shadow-2xl">
+    <form onSubmit={handleSubmit(onSubmit as Parameters<typeof handleSubmit>[0])} className="space-y-8 max-w-2xl mx-auto bg-zinc-950 p-8 rounded-[2.5rem] border border-zinc-900 shadow-2xl">
       <div className={`flex items-center justify-between mb-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
         <h2 className={`text-2xl font-black uppercase italic tracking-tighter text-white ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
           {initialData ? sTrans.edit : sTrans.add}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { getAllBookings, updateBookingStatus, deleteBooking } from "@/app/actions/admin";
 import { getServices } from "@/app/admin/services/service-actions";
@@ -54,11 +54,26 @@ export default function AdminBookingsPage() {
 
   const [selectedBooking, setSelectedBooking] = useState<BookingItem | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    getServices().then(setServices).catch(console.error);
+    let active = true;
+    const init = async () => {
+      await Promise.resolve();
+      if (!active) return;
+      setIsMounted(true);
+      try {
+        const s = await getServices();
+        if (!active) return;
+        setServices(s);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    init();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const fetchData = useCallback(async () => {
@@ -79,7 +94,16 @@ export default function AdminBookingsPage() {
   }, [page, statusFilter, searchQuery, dateFilter, serviceFilter]);
 
   useEffect(() => {
-    fetchData();
+    let active = true;
+    const load = async () => {
+      await Promise.resolve();
+      if (!active) return;
+      await fetchData();
+    };
+    load();
+    return () => {
+      active = false;
+    };
   }, [fetchData]);
 
   const handleStatusChange = async (bookingId: string, newStatus: string) => {
@@ -93,7 +117,7 @@ export default function AdminBookingsPage() {
       setConfirmConfirm({ isOpen: false, id: null });
       setConfirmComplete({ isOpen: false, id: null });
     } else {
-      alert((adm as any).updateError || "Error");
+      alert(adm.updateError || "Error");
     }
     setUpdatingId(null);
     setIsActionLoading(false);
@@ -500,7 +524,7 @@ export default function AdminBookingsPage() {
       </div>
 
       {/* Detail Modal */}
-      {selectedBooking && mounted && createPortal(
+      {selectedBooking && isMounted && createPortal(
         <div className="fixed inset-0 z-[900] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setSelectedBooking(null)} />
           <div className={`relative bg-zinc-900 border border-zinc-800 rounded-3xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
@@ -580,7 +604,7 @@ export default function AdminBookingsPage() {
         onClose={() => setConfirmConfirm({ isOpen: false, id: null })}
         onConfirm={() => confirmConfirm.id && handleStatusChange(confirmConfirm.id, 'confirmed')}
         title={adm.confirmBtn}
-        message={(adm as any).confirmConfirm}
+        message={adm.confirmConfirm}
         confirmText={adm.confirmBtn}
         cancelText={adm.cancelBtn}
         variant="info"
@@ -592,7 +616,7 @@ export default function AdminBookingsPage() {
         onClose={() => setConfirmComplete({ isOpen: false, id: null })}
         onConfirm={() => confirmComplete.id && handleStatusChange(confirmComplete.id, 'completed')}
         title={adm.confirmBtn}
-        message={(adm as any).completeConfirm}
+        message={adm.completeConfirm}
         confirmText={adm.confirmBtn}
         cancelText={adm.cancelBtn}
         variant="info"

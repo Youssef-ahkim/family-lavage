@@ -1,5 +1,5 @@
 import PocketBase from 'pocketbase';
-import { getCached, setCache, CACHE_TTL } from './cache';
+import { CACHE_TTL } from './cache';
 
 // ─────────────────────────────────────────────────────────
 // ADMIN PROXY PATTERN + CACHED AUTH
@@ -53,12 +53,13 @@ export async function getAdminPB(): Promise<PocketBase> {
     // Cache the token for 10 minutes
     _cachedAdminToken = pb.authStore.token;
     _cachedAdminTokenExpiry = Date.now() + CACHE_TTL.ADMIN_AUTH;
-  } catch (err: any) {
+  } catch (err) {
+    const errorObj = err as { response?: unknown; message?: string };
     console.error('Admin Proxy auth failed:', {
       url: POCKETBASE_URL,
       email: email,
       passwordLength: password.length,
-      error: err?.response || err?.message || err,
+      error: errorObj?.response || errorObj?.message || err,
     });
     throw new Error('Failed to authenticate as PocketBase superadmin. Check PB_ADMIN_EMAIL/PB_ADMIN_PASSWORD in .env.local');
   }

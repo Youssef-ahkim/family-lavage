@@ -18,7 +18,10 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   useEffect(() => {
     const savedLang = localStorage.getItem("language") as Language;
     if (savedLang && ["fr", "en", "ar"].includes(savedLang)) {
-      setLanguage(savedLang);
+      const timer = setTimeout(() => {
+        setLanguage(savedLang);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, []);
 

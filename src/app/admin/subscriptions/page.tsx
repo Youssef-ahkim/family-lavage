@@ -72,7 +72,16 @@ export default function AdminSubscriptionsPage() {
   }, [page, statusFilter, searchQuery]);
 
   useEffect(() => {
-    fetchData();
+    let active = true;
+    const load = async () => {
+      await Promise.resolve();
+      if (!active) return;
+      await fetchData();
+    };
+    load();
+    return () => {
+      active = false;
+    };
   }, [fetchData]);
 
   const handleSearch = (e: React.FormEvent) => {

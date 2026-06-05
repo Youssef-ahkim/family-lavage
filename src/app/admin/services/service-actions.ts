@@ -25,7 +25,7 @@ export async function getServices() {
 }
 
 function prepareServiceData(formData: FormData) {
-  const data: Record<string, any> = {};
+  const data: Record<string, unknown> = {};
 
   formData.forEach((value, key) => {
     if (value instanceof File && value.size > 0) return;
@@ -43,7 +43,7 @@ function prepareServiceData(formData: FormData) {
     }
 
     if (typeof value === "string") {
-      let val = value.trim();
+      const val = value.trim();
       if (val === "undefined" || val === "") {
         if (key === "parent_service") data[key] = "";
         return;
@@ -67,12 +67,16 @@ export async function createService(formData: FormData) {
     const photo = formData.get("photo");
     const gallery = formData.getAll("gallery");
     
-    let payload: any = data;
+    let payload: Record<string, unknown> | FormData = data;
     
     const fd = new FormData();
     Object.entries(data).forEach(([k, v]) => {
-      if (typeof v === 'object') fd.append(k, JSON.stringify(v));
-      else fd.append(k, v.toString());
+      if (v === undefined || v === null) return;
+      if (typeof v === 'object') {
+        fd.append(k, JSON.stringify(v));
+      } else {
+        fd.append(k, String(v));
+      }
     });
     
     let hasFiles = false;
@@ -100,7 +104,7 @@ export async function createService(formData: FormData) {
     revalidatePath("/");
     
     return JSON.parse(JSON.stringify(record));
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("❌ POCKETBASE CREATE FAILED", err);
     throw err;
   }
@@ -113,12 +117,16 @@ export async function updateService(id: string, formData: FormData) {
     const photo = formData.get("photo");
     const gallery = formData.getAll("gallery");
     
-    let payload: any = data;
+    let payload: Record<string, unknown> | FormData = data;
     
     const fd = new FormData();
     Object.entries(data).forEach(([k, v]) => {
-      if (typeof v === 'object') fd.append(k, JSON.stringify(v));
-      else fd.append(k, v.toString());
+      if (v === undefined || v === null) return;
+      if (typeof v === 'object') {
+        fd.append(k, JSON.stringify(v));
+      } else {
+        fd.append(k, String(v));
+      }
     });
     
     let hasFiles = false;
@@ -151,7 +159,7 @@ export async function updateService(id: string, formData: FormData) {
     revalidatePath("/");
     
     return JSON.parse(JSON.stringify(record));
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("❌ POCKETBASE UPDATE FAILED", err);
     throw err;
   }
@@ -195,7 +203,7 @@ export async function getServiceOffers(serviceId?: string) {
 }
 
 function prepareOfferData(formData: FormData) {
-  const data: Record<string, any> = {};
+  const data: Record<string, unknown> = {};
 
   formData.forEach((value, key) => {
     if (value instanceof File && value.size > 0) return;
@@ -244,11 +252,19 @@ export async function createServiceOffer(formData: FormData) {
     data.id = randomId.substring(0, 15);
 
     const photo = formData.get("photo");
-    let payload: any = data;
+    let payload: Record<string, unknown> | FormData = data;
     
     if (photo && photo instanceof File && photo.size > 0) {
       const formPayload = new FormData();
-      Object.keys(data).forEach(key => formPayload.append(key, data[key]));
+      Object.keys(data).forEach(key => {
+        const val = data[key];
+        if (val === undefined || val === null) return;
+        if (typeof val === 'object') {
+          formPayload.append(key, JSON.stringify(val));
+        } else {
+          formPayload.append(key, String(val));
+        }
+      });
       formPayload.append("photo", photo);
       payload = formPayload;
     }
@@ -260,7 +276,7 @@ export async function createServiceOffer(formData: FormData) {
     revalidatePath(`/admin/services/${data.service}/offers`);
     
     return JSON.parse(JSON.stringify(record));
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("❌ POCKETBASE CREATE OFFER FAILED", err);
     throw err;
   }
@@ -272,16 +288,17 @@ export async function updateServiceOffer(id: string, formData: FormData) {
     const data = prepareOfferData(formData);
     
     const photo = formData.get("photo");
-    let payload: any = data;
+    let payload: Record<string, unknown> | FormData = data;
     
     if (photo && photo instanceof File && photo.size > 0) {
       const formPayload = new FormData();
       Object.keys(data).forEach(key => {
         const val = data[key];
-        if (Array.isArray(val)) {
+        if (val === undefined || val === null) return;
+        if (typeof val === 'object') {
           formPayload.append(key, JSON.stringify(val));
         } else {
-          formPayload.append(key, val);
+          formPayload.append(key, String(val));
         }
       });
       formPayload.append("photo", photo);
@@ -295,7 +312,7 @@ export async function updateServiceOffer(id: string, formData: FormData) {
     revalidatePath(`/admin/services/${data.service}/offers`);
     
     return JSON.parse(JSON.stringify(record));
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("❌ POCKETBASE UPDATE OFFER FAILED", err);
     throw err;
   }

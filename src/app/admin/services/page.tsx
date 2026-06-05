@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { 
   Plus, Edit2, Trash2, Search, Filter, 
   MoreVertical, CheckCircle2, XCircle, 
@@ -24,7 +24,7 @@ export default function AdminServicesPage() {
   const t = translations[language];
   const sTrans = t.admin.services;
 
-  const fetchServices = async () => {
+  const fetchServices = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getServices();
@@ -34,11 +34,20 @@ export default function AdminServicesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchServices();
-  }, []);
+    let active = true;
+    const load = async () => {
+      await Promise.resolve();
+      if (!active) return;
+      await fetchServices();
+    };
+    load();
+    return () => {
+      active = false;
+    };
+  }, [fetchServices]);
 
   const handleDelete = async (id: string) => {
     if (!confirm(sTrans.deleteConfirm)) return;

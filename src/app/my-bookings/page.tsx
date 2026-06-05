@@ -21,13 +21,22 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+interface LocalBooking {
+  id: string;
+  status: string;
+  service_type: string;
+  date: string;
+  plate_number: string;
+  price: number;
+}
+
 const MyBookingsPage = () => {
   const router = useRouter();
   const { language, dir } = useLanguage();
   const t = translations[language];
   const m = t.myBookings;
 
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<LocalBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -45,8 +54,8 @@ const MyBookingsPage = () => {
     const fetchData = async () => {
       try {
         const bookingsData = await getMyBookings();
-        setBookings(bookingsData);
-      } catch (err: any) {
+        setBookings(bookingsData as LocalBooking[]);
+      } catch (err) {
         console.error("Error fetching bookings:", err);
       } finally {
         setLoading(false);
@@ -74,7 +83,7 @@ const MyBookingsPage = () => {
         setIsConfirmModalOpen(false);
       } else {
         const errorKey = result.error || "errors.general";
-        const errorMsg = errorKey.split('.').reduce((obj: any, key) => obj?.[key], t) || t.errors.general;
+        const errorMsg = errorKey.split('.').reduce((obj: unknown, key: string) => (obj as Record<string, unknown>)?.[key], t) as string || t.errors.general;
         alert(errorMsg);
       }
     } catch (err) {

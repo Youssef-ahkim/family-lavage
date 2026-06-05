@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
-import { Car, Sparkles, MapPin, Clock, Droplets, ShieldCheck, Zap, Star, MessageCircle, Phone, ArrowRight } from "lucide-react";
+import { Car, MapPin, Clock, Star, MessageCircle, Phone, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import { getServices } from "./admin/services/service-actions";
@@ -311,8 +311,8 @@ export default function Home() {
             <div className="reveal delay-100">
               <h4 className="font-black uppercase tracking-widest text-xs mb-8 text-zinc-900">{t.footer.menu}</h4>
               <ul className="space-y-4 text-sm text-zinc-500 font-medium">
-                <li><Link href="#services" className="hover:text-brand-blue transition-colors">{t.nav.services}</Link></li>
-                <li><Link href="#subscriptions" className="hover:text-brand-blue transition-colors">{t.nav.pricing}</Link></li>
+                <li><Link href="/services" className="hover:text-brand-blue transition-colors">{t.nav.services}</Link></li>
+                <li><Link href="/subscribe" className="hover:text-brand-blue transition-colors">{t.nav.pricing}</Link></li>
               </ul>
             </div>
 

@@ -9,7 +9,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import { getServices, getServiceOffers } from "@/app/admin/services/service-actions";
 import { ServiceRecord, ServiceOfferRecord } from "@/app/admin/services/service-types";
-import { ArrowLeft, Car, ArrowRight, CheckCircle2, Sparkles, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Car, ArrowRight, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ServiceDetailsPage() {
   const params = useParams();

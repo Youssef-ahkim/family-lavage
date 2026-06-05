@@ -53,7 +53,7 @@ export async function login(formData: FormData) {
     }
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Login Error:", error);
     return { success: false, error: "auth.errors.invalidCredentials" };
   }
@@ -133,7 +133,7 @@ export async function signup(formData: FormData) {
     });
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Signup Error:", error);
     return { success: false, error: "auth.errors.emailInUse" };
   }

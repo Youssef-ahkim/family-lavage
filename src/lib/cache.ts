@@ -5,7 +5,7 @@
 // server action calls within the same process.
 // ─────────────────────────────────────────────────────────
 
-interface CacheEntry<T = any> {
+interface CacheEntry<T = unknown> {
   data: T;
   expiry: number;
 }

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { getAdminPB, getPublicPB } from '@/lib/pocketbase';
 import { cached, invalidateCache, CACHE_TTL } from '@/lib/cache';
 
-export async function submitBooking(formData: any) {
+export async function submitBooking(formData: Record<string, unknown>) {
   try {
     // 1. Honeypot check
     if (formData.hp && formData.hp.length > 0) {
@@ -84,7 +84,7 @@ export async function submitBooking(formData: any) {
     // 6. Use ADMIN client for all database operations
     const adminPb = await getAdminPB();
 
-    const data: any = {
+    const data: Record<string, unknown> = {
       full_name: cleanName,
       phone: cleanPhone,
       plate_number: cleanPlate,
@@ -167,7 +167,7 @@ export async function submitBooking(formData: any) {
     revalidatePath('/admin/bookings');
 
     return { success: true, id: record.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Server Action Booking Error:", error);
     return {
       success: false,
@@ -220,8 +220,8 @@ export async function getMyBookings(fallbackIds?: string) {
       sort: '-created',
     });
     return JSON.parse(JSON.stringify(records.items));
-  } catch (error: any) {
-    if (error.status === 403 || error.status === 400) {
+  } catch (error: unknown) {
+    if ((error as Record<string, unknown>)?.status === 403 || (error as Record<string, unknown>)?.status === 400) {
       console.warn("PocketBase Permission Error — this should not happen with Admin Proxy. Check PB_ADMIN credentials.");
     }
     console.error("Error fetching my bookings:", error);
@@ -286,7 +286,7 @@ export async function cancelBooking(bookingId: string) {
     revalidatePath('/admin/bookings');
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error cancelling booking:", error);
     return { success: false, error: "errors.general" };
   }
@@ -312,7 +312,7 @@ export async function getBookedTimes(dateStr: string, serviceId?: string) {
     });
 
     return records.items.map(record => record.date);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching booked times:", error);
     return [];
   }

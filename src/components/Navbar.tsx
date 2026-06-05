@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, Car, Globe, User, LogOut, Shield } from "lucide-react";
+import { Menu, X, User, LogOut, Shield } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useProfile } from "@/context/ProfileContext";
 import { translations } from "@/lib/translations";
@@ -14,7 +14,7 @@ const Navbar = () => {
   const pathname = usePathname();
   const isBookingPage = pathname === "/booking";
 
-  const { language, setLanguage, dir } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const t = translations[language].nav;
 
   const { profile: userProfile, isLoading: isLoadingProfile, fetchProfile, clearProfile } = useProfile();
@@ -25,9 +25,12 @@ const Navbar = () => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const loggedIn = document.cookie.includes('pb_logged_in=true');
-    setIsAuthenticated(loggedIn);
+    
+    const timer = setTimeout(() => {
+      setMounted(true);
+      setIsAuthenticated(loggedIn);
+    }, 0);
 
     // Use shared ProfileContext — cached across navigations
     if (loggedIn) {
@@ -38,13 +41,16 @@ const Navbar = () => {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [fetchProfile]);
 
   const navLinks = [
     { name: t.services, href: "/services" },
     { name: t.pricing, href: "/subscribe" },
-    ...(!isAuthenticated ? [{ name: t.myBookings, href: "/my-bookings" }] : []),
+    { name: t.myBookings, href: "/my-bookings" },
   ];
 
   useEffect(() => {

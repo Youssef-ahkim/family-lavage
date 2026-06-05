@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Plus, Edit2, Trash2, ArrowLeft, Loader2, DollarSign } from "lucide-react";
 import { getServiceOffers, deleteServiceOffer } from "../../service-actions";
@@ -24,7 +24,7 @@ export default function AdminOffersPage() {
   const { language, dir } = useLanguage();
   const t = translations[language];
 
-  const fetchOffers = async () => {
+  const fetchOffers = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getServiceOffers(serviceId);
@@ -34,13 +34,22 @@ export default function AdminOffersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [serviceId]);
 
   useEffect(() => {
+    let active = true;
+    const load = async () => {
+      await Promise.resolve();
+      if (!active) return;
+      await fetchOffers();
+    };
     if (serviceId) {
-      fetchOffers();
+      load();
     }
-  }, [serviceId]);
+    return () => {
+      active = false;
+    };
+  }, [serviceId, fetchOffers]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this offer?")) return;

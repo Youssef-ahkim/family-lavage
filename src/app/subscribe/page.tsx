@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { useLanguage } from "@/context/LanguageContext";
@@ -13,12 +12,36 @@ import {
   ChevronRight, 
   Loader2, 
   AlertCircle, 
-  CreditCard, 
-  Calendar,
   History,
-  Clock,
-  Car
+  Clock
 } from "lucide-react";
+
+interface LocalSubscription {
+  id: string;
+  user: string;
+  expiry_date?: string;
+  plan: 'monthly' | 'yearly';
+  status: 'pending' | 'active' | 'rejected' | 'expired';
+  amount: number;
+  notes?: string;
+  created: string;
+  washes_remaining?: number;
+}
+
+interface LocalPlan {
+  id: string;
+  active: boolean;
+  category: string;
+  title_fr: string;
+  title_ar: string;
+  title_en: string;
+  features_fr: string[];
+  features_ar: string[];
+  features_en: string[];
+  plan_type: 'monthly' | 'yearly';
+  price: number;
+  washes_count: number;
+}
 
 export default function SubscribePage() {
   const { language, dir } = useLanguage();
@@ -28,43 +51,37 @@ export default function SubscribePage() {
   const s = t.subscription;
 
   const [loading, setLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [requests, setRequests] = useState<any[]>([]);
-  const [isFetchingRequests, setIsFetchingRequests] = useState(true);
-  const [dbPlans, setDbPlans] = useState<any[]>([]);
+  const [requests, setRequests] = useState<LocalSubscription[]>([]);
+  const [dbPlans, setDbPlans] = useState<LocalPlan[]>([]);
   const [isFetchingPlans, setIsFetchingPlans] = useState(true);
 
-  // Only redirect if they try to subscribe without being logged in
-  // Handled in handleSubscribe now
-
-
-  useEffect(() => {
-    if (profile) {
-      fetchRequests();
-    }
-    fetchPlans();
-  }, [profile]);
-
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     try {
       const { getServiceOffers } = await import("../admin/services/service-actions");
       const data = await getServiceOffers();
-      setDbPlans(data.filter((s: any) => s.active && s.category === 'subscription'));
+      setDbPlans(data.filter((s: { active: boolean; category: string }) => s.active && s.category === 'subscription') as LocalPlan[]);
     } catch (err) {
       console.error("Error fetching plans:", err);
     } finally {
       setIsFetchingPlans(false);
     }
-  };
+  }, []);
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     const data = await getMySubscriptionRequests();
-    setRequests(data);
-    setIsFetchingRequests(false);
-    
-    // We no longer block the whole page based on this.
-  };
+    setRequests(data as LocalSubscription[]);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (profile) {
+        fetchRequests();
+      }
+      fetchPlans();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [profile, fetchRequests, fetchPlans]);
 
   const handleSubscribe = async (planId: string) => {
     if (!profile) {
@@ -81,10 +98,10 @@ export default function SubscribePage() {
         fetchRequests();
       } else {
         const errorKey = result.error || "subscription.errors.general";
-        const errorMsg = errorKey.split('.').reduce((obj: any, key: string) => obj?.[key], t) || s.errors.general;
+        const errorMsg = errorKey.split('.').reduce((obj: unknown, key: string) => (obj as Record<string, unknown>)?.[key], t) as string || s.errors.general;
         setError(errorMsg);
       }
-    } catch (err) {
+    } catch {
       setError(s.errors.general);
     } finally {
       setLoading(false);

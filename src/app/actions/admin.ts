@@ -72,9 +72,10 @@ export async function getAllBookings(page = 1, perPage = 20, statusFilter = '', 
       totalPages: records.totalPages,
       page: records.page,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error("Admin getAllBookings error:", error);
-    return { success: false, error: error.message, items: [], totalItems: 0, totalPages: 0, page: 1 };
+    return { success: false, error: message, items: [], totalItems: 0, totalPages: 0, page: 1 };
   }
 }
 
@@ -101,7 +102,7 @@ export async function updateBookingStatus(bookingId: string, newStatus: string) 
             const sub = subs.items[0];
             if (sub.washes_remaining > 0) {
               const newWashes = sub.washes_remaining - 1;
-              const subUpdate: any = { washes_remaining: newWashes };
+              const subUpdate: Record<string, unknown> = { washes_remaining: newWashes };
 
               if (newWashes === 0) {
                 subUpdate.status = 'expired';
@@ -128,9 +129,10 @@ export async function updateBookingStatus(bookingId: string, newStatus: string) 
     revalidatePath('/profile');
     revalidatePath('/my-bookings');
     return { success: true };
-  } catch (error: any) {
-    console.error("Admin updateBookingStatus error:", error.response || error);
-    return { success: false, error: error.message, details: error.response };
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : { message: String(error) };
+    console.error("Admin updateBookingStatus error:", error);
+    return { success: false, error: err.message, details: (error as Record<string, unknown>)?.response };
   }
 }
 
@@ -149,9 +151,10 @@ export async function deleteBooking(bookingId: string) {
     revalidatePath('/profile');
     revalidatePath('/my-bookings');
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error("Admin deleteBooking error:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: message };
   }
 }
 
@@ -167,10 +170,10 @@ export async function getAllUsers(page = 1, perPage = 20, searchQuery = '') {
     }
     const filter = filters.join(' && ');
 
-    const options: any = {
+    const options: Record<string, unknown> = {
       sort: '-created',
       requestKey: null,
-      fetch: (url: string, config: any) => fetch(url, { ...config, cache: 'no-store' })
+      fetch: (url: string, config: RequestInit) => fetch(url, { ...config, cache: 'no-store' })
     };
     if (filter) options.filter = filter;
 
@@ -178,9 +181,9 @@ export async function getAllUsers(page = 1, perPage = 20, searchQuery = '') {
     const records = await cached(cacheKey, 30 * 1000, async () => {
       return await adminPb.collection('users').getList(page, perPage, options);
     });
-    const items = records.items.map((record: any) => ({
+    const items = records.items.map((record: Record<string, unknown>) => ({
       ...record,
-      plate: record.plate || record.default_plate || record.plate_number || record.carModel || ""
+      plate: (record.plate as string) || (record.default_plate as string) || (record.plate_number as string) || (record.carModel as string) || ""
     }));
 
     return {
@@ -190,9 +193,10 @@ export async function getAllUsers(page = 1, perPage = 20, searchQuery = '') {
       totalPages: records.totalPages,
       page: records.page,
     };
-  } catch (error: any) {
-    console.error("Admin getAllUsers error:", error.response || error);
-    return { success: false, error: error.message, details: error.response, items: [], totalItems: 0, totalPages: 0, page: 1 };
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : { message: String(error) };
+    console.error("Admin getAllUsers error:", error);
+    return { success: false, error: err.message, details: (error as Record<string, unknown>)?.response, items: [], totalItems: 0, totalPages: 0, page: 1 };
   }
 }
 
@@ -225,7 +229,7 @@ export async function getStats() {
           adminPb.collection('bookings').getList(1, 500, { filter: 'status != "cancelled"' }),
         ]);
 
-      const totalRevenue = revenueBookings.items.reduce((sum: number, b: any) => sum + (b.price || 0), 0);
+      const totalRevenue = revenueBookings.items.reduce((sum: number, b: Record<string, unknown>) => sum + ((b.price as number) || 0), 0);
 
       return {
         success: true,
@@ -239,9 +243,10 @@ export async function getStats() {
         },
       };
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error("Admin getStats error:", error);
-    return { success: false, error: error.message, stats: null };
+    return { success: false, error: message, stats: null };
   }
 }
 
@@ -274,9 +279,10 @@ export async function getAllSubscriptions(page = 1, perPage = 20, statusFilter =
       totalPages: records.totalPages,
       page: records.page,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error("Admin getAllSubscriptions error:", error);
-    return { success: false, error: error.message, items: [], totalItems: 0, totalPages: 0, page: 1 };
+    return { success: false, error: message, items: [], totalItems: 0, totalPages: 0, page: 1 };
   }
 }
 
@@ -337,9 +343,10 @@ export async function approveSubscription(subscriptionId: string) {
     revalidatePath('/profile');
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error("Admin approveSubscription error:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: message };
   }
 }
 
@@ -362,8 +369,9 @@ export async function rejectSubscription(subscriptionId: string, reason: string)
     revalidatePath('/profile');
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error("Admin rejectSubscription error:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: message };
   }
 }

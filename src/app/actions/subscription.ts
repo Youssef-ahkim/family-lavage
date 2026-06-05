@@ -71,7 +71,7 @@ export async function requestSubscription(planId: string) {
     revalidatePath('/admin/subscriptions');
     
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Subscription Request Error:", error);
     return { success: false, error: "errors.general" };
   }

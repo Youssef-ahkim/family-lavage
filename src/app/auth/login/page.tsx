@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
@@ -17,12 +17,16 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-
   useEffect(() => {
     if (document.cookie.includes('pb_logged_in=true')) {
       router.push('/profile');
     }
   }, [router]);
+
+  const signupUrl = useMemo(() => {
+    if (typeof window === 'undefined') return "/auth/signup";
+    return `/auth/signup${window.location.search || ""}`;
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,7 +43,7 @@ export default function LoginPage() {
       router.refresh();
     } else {
       const errorKey = result.error || "auth.error";
-      const errorMsg = errorKey.split('.').reduce((obj: any, key) => obj?.[key], t) || t.auth.error;
+      const errorMsg = errorKey.split('.').reduce((obj: unknown, key: string) => (obj as Record<string, unknown>)?.[key], t) as string || t.auth.error;
       setError(errorMsg);
       setLoading(false);
     }
@@ -133,7 +137,7 @@ export default function LoginPage() {
             <p className="text-center text-sm text-zinc-500 font-medium">
               {t.auth.noAccount}{" "}
               <Link 
-                href={`/auth/signup${typeof window !== 'undefined' ? window.location.search : ''}`} 
+                href={signupUrl} 
                 className="text-brand-blue font-bold hover:underline ml-1"
               >
                 {t.auth.signupBtn}

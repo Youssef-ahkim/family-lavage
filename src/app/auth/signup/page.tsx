@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
@@ -18,12 +18,16 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
   useEffect(() => {
     if (document.cookie.includes('pb_logged_in=true')) {
       router.push('/profile');
     }
   }, [router]);
+
+  const loginUrl = useMemo(() => {
+    if (typeof window === 'undefined') return "/auth/login";
+    return `/auth/login${window.location.search || ""}`;
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,7 +44,7 @@ export default function SignupPage() {
       router.refresh();
     } else {
       const errorKey = result.error || "auth.error";
-      const errorMsg = errorKey.split('.').reduce((obj: any, key) => obj?.[key], t) || t.auth.error;
+      const errorMsg = errorKey.split('.').reduce((obj: unknown, key: string) => (obj as Record<string, unknown>)?.[key], t) as string || t.auth.error;
       setError(errorMsg);
       setLoading(false);
     }
@@ -66,7 +70,7 @@ export default function SignupPage() {
             {t.auth.signupTitle}
           </h1>
           <p className="text-zinc-500 text-center mb-10 text-sm font-medium tracking-tight">
-            Rejoignez la famille Family Lavage dès aujourd'hui
+            Rejoignez la famille Family Lavage dès aujourd&apos;hui
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -215,7 +219,7 @@ export default function SignupPage() {
             <p className="text-center text-sm text-zinc-500 font-medium">
               {t.auth.hasAccount}{" "}
               <Link 
-                href={`/auth/login${typeof window !== 'undefined' ? window.location.search : ''}`} 
+                href={loginUrl} 
                 className="text-brand-blue font-bold hover:underline ml-1"
               >
                 {t.auth.loginBtn}

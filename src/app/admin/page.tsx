@@ -20,6 +20,15 @@ type Stats = {
   totalRevenue: number;
 };
 
+type RecentBooking = {
+  id: string;
+  full_name: string;
+  service_type: string;
+  price: number;
+  status: string;
+  date: string;
+};
+
 export default function AdminDashboardPage() {
   const { language, dir } = useLanguage();
   const t = translations[language];
@@ -27,7 +36,7 @@ export default function AdminDashboardPage() {
 
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [recentBookings, setRecentBookings] = useState<any[]>([]);
+  const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -42,7 +51,7 @@ export default function AdminDashboardPage() {
         setStats(statsRes.stats);
       }
       if (bookingsRes.success) {
-        setRecentBookings(bookingsRes.items);
+        setRecentBookings(bookingsRes.items as RecentBooking[]);
       }
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
@@ -53,7 +62,16 @@ export default function AdminDashboardPage() {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    let active = true;
+    const load = async () => {
+      await Promise.resolve();
+      if (!active) return;
+      await fetchData();
+    };
+    load();
+    return () => {
+      active = false;
+    };
   }, [fetchData]);
 
   const statusText: Record<string, string> = {

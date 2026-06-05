@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
@@ -10,7 +10,7 @@ import { translations } from "@/lib/translations";
 import { submitBooking, getBookedTimes } from "@/app/actions/booking";
 import { getServices, getServiceOffers } from "../admin/services/service-actions";
 import { ServiceRecord, ServiceOfferRecord } from "../admin/services/service-types";
-import { ChevronLeft, ChevronRight, CheckCircle2, Car, Sparkles, Droplets, Zap, ShieldCheck, Clock, Calendar, User, Phone, ClipboardCheck, AlertCircle, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Car, Sparkles, Droplets, Clock, Calendar, User, Phone, ClipboardCheck, AlertCircle, Loader2 } from "lucide-react";
 
 const BookingPage = () => {
   const { language, dir } = useLanguage();
@@ -40,7 +40,7 @@ const BookingPage = () => {
   const [isFetchingOffers, setIsFetchingOffers] = useState(false);
   
   const [hp, setHp] = useState(""); // Honeypot
-  const [startTime] = useState(Date.now()); // Load time for anti-spam
+  const [startTime] = useState(() => Date.now()); // Load time for anti-spam
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,8 +55,8 @@ const BookingPage = () => {
 
   useEffect(() => {
     if (!formData.date) {
-      setBookedSlots([]);
-      return;
+      const timer = setTimeout(() => setBookedSlots([]), 0);
+      return () => clearTimeout(timer);
     }
 
     const fetchSlots = async () => {
@@ -118,16 +118,7 @@ const BookingPage = () => {
 
   const offerIdParam = searchParams.get('offerId');
 
-  useEffect(() => {
-    if (serviceIdParam && dbServices.length > 0) {
-      const exists = dbServices.find(s => s.id === serviceIdParam);
-      if (exists && selectedService?.id !== exists.id) {
-        handleServiceSelect(exists, offerIdParam);
-      }
-    }
-  }, [serviceIdParam, dbServices, offerIdParam]);
-
-  const handleServiceSelect = async (service: ServiceRecord, initialOfferId?: string | null) => {
+  const handleServiceSelect = useCallback(async (service: ServiceRecord, initialOfferId?: string | null) => {
     if (service.booking_type === "has_children") {
       setSelectedParentService(service);
       return;
@@ -177,7 +168,19 @@ const BookingPage = () => {
     } finally {
       setIsFetchingOffers(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (serviceIdParam && dbServices.length > 0) {
+      const exists = dbServices.find(s => s.id === serviceIdParam);
+      if (exists && selectedService?.id !== exists.id) {
+        const timer = setTimeout(() => {
+          handleServiceSelect(exists, offerIdParam);
+        }, 0);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [serviceIdParam, dbServices, offerIdParam, selectedService?.id, handleServiceSelect]);
 
   const handleOfferSelect = (offer: ServiceOfferRecord) => {
     setSelectedOffer(offer);
@@ -253,10 +256,10 @@ const BookingPage = () => {
       } else {
         throw new Error(result.error);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Booking error:", err);
-      const errorKey = err.message || "errors.general";
-      const errorMsg = errorKey.split('.').reduce((obj: any, key: string) => obj?.[key], t) || t.errors.general;
+      const errorKey = (err as Error).message || "errors.general";
+      const errorMsg = errorKey.split('.').reduce((obj: unknown, key: string) => (obj as Record<string, unknown>)?.[key], t) as string || t.errors.general;
       setError(errorMsg);
     } finally {
       setLoading(false);
