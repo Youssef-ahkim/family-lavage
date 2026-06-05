@@ -8,13 +8,13 @@ import { invalidateCache } from '@/lib/cache';
 export async function submitBooking(formData: Record<string, unknown>) {
   try {
     // 1. Honeypot check
-    if (formData.hp && formData.hp.length > 0) {
+    if (typeof formData.hp === 'string' && formData.hp.length > 0) {
       console.warn("Spam detected: Honeypot filled");
       return { success: false, error: "errors.spam" };
     }
 
     // 2. Timestamp check (anti-bot speed)
-    const startTime = parseInt(formData.ts || "0");
+    const startTime = parseInt(typeof formData.ts === 'string' ? formData.ts : "0");
     const currentTime = Date.now();
     if (currentTime - startTime < 3000) { // Less than 3 seconds is suspicious
       console.warn("Spam detected: Too fast");
@@ -35,10 +35,10 @@ export async function submitBooking(formData: Record<string, unknown>) {
       );
     };
 
-    const cleanName = sanitizeHTML(formData.full_name || '').trim();
-    const cleanPhone = sanitizeHTML(formData.phone || '').trim();
-    const cleanPlate = sanitizeHTML(formData.plate_number || '').trim();
-    const cleanNotes = sanitizeHTML(formData.notes || '').trim();
+    const cleanName = sanitizeHTML(typeof formData.full_name === 'string' ? formData.full_name : '').trim();
+    const cleanPhone = sanitizeHTML(typeof formData.phone === 'string' ? formData.phone : '').trim();
+    const cleanPlate = sanitizeHTML(typeof formData.plate_number === 'string' ? formData.plate_number : '').trim();
+    const cleanNotes = sanitizeHTML(typeof formData.notes === 'string' ? formData.notes : '').trim();
 
     // Name should not contain numbers or special chars (letters, spaces, hyphens, apostrophes allowed)
     const nameRegex = /^[A-Za-zÀ-ÿ\s\-\']+$/;
@@ -58,7 +58,7 @@ export async function submitBooking(formData: Record<string, unknown>) {
     }
 
     // 4. Date validation (must not be in the past)
-    const bookingDate = new Date(formData.date);
+    const bookingDate = new Date(typeof formData.date === 'string' ? formData.date : '');
     const now = new Date();
     if (bookingDate < now) {
       return { success: false, error: "errors.pastDate" };
@@ -154,7 +154,7 @@ export async function submitBooking(formData: Record<string, unknown>) {
     if (userId) invalidateCache(`bookings:${userId}`);
     invalidateCache('bookings:guest');
     // Invalidate the booked-slots cache for the booking's date
-    const dateKey = formData.date?.split('T')[0];
+    const dateKey = typeof formData.date === 'string' ? formData.date.split('T')[0] : undefined;
     if (dateKey) invalidateCache(`slots:${dateKey}`);
 
     invalidateCache('bookings:admin:');
