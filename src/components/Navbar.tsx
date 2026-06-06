@@ -50,7 +50,7 @@ const Navbar = () => {
   const navLinks = [
     { name: t.services, href: "/services" },
     { name: t.pricing, href: "/subscribe" },
-    { name: t.myBookings, href: "/my-bookings" },
+    ...(!isAuthenticated ? [{ name: t.myBookings, href: "/my-bookings" }] : []),
   ];
 
   useEffect(() => {
