@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { getAllBookings, updateBookingStatus, deleteBooking } from "@/app/actions/admin";
+import { getAllBookings, updateBookingStatus, deleteBooking, updateBookingAdminNotes } from "@/app/actions/admin";
 import { getServices } from "@/app/admin/services/service-actions";
 import { ServiceRecord } from "@/app/admin/services/service-types";
 import { useLanguage } from "@/context/LanguageContext";
@@ -23,6 +23,7 @@ type BookingItem = {
   status: string;
   date: string;
   notes: string;
+  admin_notes?: string;
   user: string;
   created: string;
 };
@@ -61,6 +62,37 @@ export default function AdminBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<BookingItem | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  
+  const [adminNotes, setAdminNotes] = useState("");
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const triggerToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
+
+  useEffect(() => {
+    if (selectedBooking) {
+      setAdminNotes(selectedBooking.admin_notes || "");
+    }
+  }, [selectedBooking]);
+
+  const handleSaveAdminNotes = async () => {
+    if (!selectedBooking) return;
+    setSavingNotes(true);
+    const result = await updateBookingAdminNotes(selectedBooking.id, adminNotes);
+    if (result.success) {
+      setBookings(prev => prev.map(b => b.id === selectedBooking.id ? { ...b, admin_notes: adminNotes } : b));
+      setSelectedBooking(prev => prev ? { ...prev, admin_notes: adminNotes } : null);
+      triggerToast("Notes updated successfully!", "success");
+    } else {
+      triggerToast("Failed to save notes", "error");
+    }
+    setSavingNotes(false);
+  };
 
   useEffect(() => {
     let active = true;
@@ -118,12 +150,13 @@ export default function AdminBookingsPage() {
     const result = await updateBookingStatus(bookingId, newStatus);
     if (result.success) {
       setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
+      triggerToast(`Status updated to ${newStatus}!`, "success");
       // Close all status modals
       setConfirmCancel({ isOpen: false, id: null });
       setConfirmConfirm({ isOpen: false, id: null });
       setConfirmComplete({ isOpen: false, id: null });
     } else {
-      alert(adm.updateError || "Error");
+      triggerToast(adm.updateError || "Error updating status", "error");
     }
     setUpdatingId(null);
     setIsActionLoading(false);
@@ -135,7 +168,10 @@ export default function AdminBookingsPage() {
     const result = await deleteBooking(confirmDelete.id);
     if (result.success) {
       setBookings(prev => prev.filter(b => b.id !== confirmDelete.id));
+      triggerToast("Booking deleted successfully!", "success");
       setConfirmDelete({ isOpen: false, id: null });
+    } else {
+      triggerToast("Failed to delete booking", "error");
     }
     setIsActionLoading(false);
   };
@@ -317,84 +353,96 @@ export default function AdminBookingsPage() {
                     </tr>
                   ) : (
                     bookings.map((booking) => (
-                      <tr key={booking.id} className={`border-b border-zinc-800/30 hover:bg-zinc-800/20 transition-colors group ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                        <td className="px-5 py-4">
-                          <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusColors[booking.status] || statusColors.pending}`}>
-                            {statusText[booking.status]}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className={`flex items-center gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                            <div className="w-8 h-8 bg-zinc-800 rounded-full flex items-center justify-center text-zinc-400 shrink-0">
-                              <User className="w-4 h-4" />
+                      <React.Fragment key={booking.id}>
+                        <tr className={`border-b ${booking.admin_notes ? 'border-b-0' : 'border-zinc-800/30'} hover:bg-zinc-800/20 transition-colors group ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                          <td className="px-5 py-4">
+                            <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusColors[booking.status] || statusColors.pending}`}>
+                              {statusText[booking.status]}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4">
+                            <div className={`flex items-center gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                              <div className="w-8 h-8 bg-zinc-800 rounded-full flex items-center justify-center text-zinc-400 shrink-0">
+                                <User className="w-4 h-4" />
+                              </div>
+                              <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
+                                <p className="font-bold text-white text-sm">{booking.full_name}</p>
+                                <p className="text-zinc-600 text-[10px] font-mono">#{booking.id.slice(0, 8)}</p>
+                              </div>
                             </div>
-                            <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
-                              <p className="font-bold text-white text-sm">{booking.full_name}</p>
-                              <p className="text-zinc-600 text-[10px] font-mono">#{booking.id.slice(0, 8)}</p>
+                          </td>
+                          <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">{booking.phone}</td>
+                          <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">{booking.plate_number}</td>
+                          <td className="px-5 py-4">
+                            <span className={`text-xs font-black uppercase ${booking.service_type === 'VIP' ? 'text-brand-gold' : 'text-zinc-400'}`}>
+                              {getServiceTitle(booking.service_type)}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap">
+                            <p className="text-zinc-300 font-medium text-xs">{formatDate(booking.date)}</p>
+                            <p className="text-zinc-500 text-xs">{formatTime(booking.date)}</p>
+                          </td>
+                          <td className="px-5 py-4 font-black text-white">{booking.price === -1 ? adm.onSite : `${booking.price} DH`}</td>
+                          <td className="px-5 py-4">
+                            <div className={`flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                              {booking.status === 'pending' && (
+                                <button
+                                  onClick={() => setConfirmConfirm({ isOpen: true, id: booking.id })}
+                                  disabled={updatingId === booking.id}
+                                  className="p-2 rounded-lg hover:bg-emerald-500/10 text-emerald-400 transition-all disabled:opacity-50"
+                                  title="Confirm"
+                                >
+                                  <CheckCircle2 className="w-4 h-4" />
+                                </button>
+                              )}
+                              {booking.status === 'confirmed' && (
+                                <button
+                                  onClick={() => setConfirmComplete({ isOpen: true, id: booking.id })}
+                                  disabled={updatingId === booking.id}
+                                  className="p-2 rounded-lg hover:bg-blue-500/10 text-blue-400 transition-all disabled:opacity-50"
+                                  title="Complete"
+                                >
+                                  <CheckCircle2 className="w-4 h-4" />
+                                </button>
+                              )}
+                              {(booking.status !== 'cancelled' && booking.status !== 'completed') && (
+                                <button
+                                  onClick={() => setConfirmCancel({ isOpen: true, id: booking.id })}
+                                  disabled={updatingId === booking.id}
+                                  className="p-2 rounded-lg hover:bg-amber-500/10 text-amber-400 transition-all disabled:opacity-50"
+                                  title="Cancel"
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => setSelectedBooking(booking)}
+                                className="p-2 rounded-lg hover:bg-blue-500/10 text-blue-400 transition-all"
+                                title="View Details"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => setConfirmDelete({ isOpen: true, id: booking.id })}
+                                className="p-2 rounded-lg hover:bg-red-500/10 text-red-400 transition-all disabled:opacity-50"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">{booking.phone}</td>
-                        <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">{booking.plate_number}</td>
-                        <td className="px-5 py-4">
-                          <span className={`text-xs font-black uppercase ${booking.service_type === 'VIP' ? 'text-brand-gold' : 'text-zinc-400'}`}>
-                            {getServiceTitle(booking.service_type)}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4 whitespace-nowrap">
-                          <p className="text-zinc-300 font-medium text-xs">{formatDate(booking.date)}</p>
-                          <p className="text-zinc-500 text-xs">{formatTime(booking.date)}</p>
-                        </td>
-                        <td className="px-5 py-4 font-black text-white">{booking.price === -1 ? adm.onSite : `${booking.price} DH`}</td>
-                        <td className="px-5 py-4">
-                          <div className={`flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                            {booking.status === 'pending' && (
-                              <button
-                                onClick={() => setConfirmConfirm({ isOpen: true, id: booking.id })}
-                                disabled={updatingId === booking.id}
-                                className="p-2 rounded-lg hover:bg-emerald-500/10 text-emerald-400 transition-all disabled:opacity-50"
-                                title="Confirm"
-                              >
-                                <CheckCircle2 className="w-4 h-4" />
-                              </button>
-                            )}
-                            {booking.status === 'confirmed' && (
-                              <button
-                                onClick={() => setConfirmComplete({ isOpen: true, id: booking.id })}
-                                disabled={updatingId === booking.id}
-                                className="p-2 rounded-lg hover:bg-blue-500/10 text-blue-400 transition-all disabled:opacity-50"
-                                title="Complete"
-                              >
-                                <CheckCircle2 className="w-4 h-4" />
-                              </button>
-                            )}
-                            {(booking.status !== 'cancelled' && booking.status !== 'completed') && (
-                              <button
-                                onClick={() => setConfirmCancel({ isOpen: true, id: booking.id })}
-                                disabled={updatingId === booking.id}
-                                className="p-2 rounded-lg hover:bg-amber-500/10 text-amber-400 transition-all disabled:opacity-50"
-                                title="Cancel"
-                              >
-                                <XCircle className="w-4 h-4" />
-                              </button>
-                            )}
-                            <button
-                              onClick={() => setSelectedBooking(booking)}
-                              className="p-2 rounded-lg hover:bg-blue-500/10 text-blue-400 transition-all"
-                              title="View Details"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => setConfirmDelete({ isOpen: true, id: booking.id })}
-                              className="p-2 rounded-lg hover:bg-red-500/10 text-red-400 transition-all disabled:opacity-50"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
+                          </td>
+                        </tr>
+                        {booking.admin_notes && (
+                          <tr className="border-b border-zinc-800/30 bg-zinc-950/20 hover:bg-zinc-800/20 transition-colors">
+                            <td colSpan={8} className="px-5 py-2.5 text-xs text-brand-gold italic">
+                              <div className={`flex items-center gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                                <span className="font-black uppercase tracking-widest text-[8px] px-2 py-0.5 rounded bg-brand-gold/10 border border-brand-gold/20 shrink-0">Note:</span>
+                                <span className="truncate">{booking.admin_notes}</span>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))
                   )}
                 </tbody>
@@ -451,6 +499,13 @@ export default function AdminBookingsPage() {
                       <p className="text-base font-black text-white">{booking.price === -1 ? adm.onSite : `${booking.price} DH`}</p>
                     </div>
                   </div>
+
+                  {booking.admin_notes && (
+                    <div className={`p-3 rounded-xl bg-brand-gold/5 border border-brand-gold/10 text-xs text-brand-gold italic flex items-center gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                      <span className="font-black uppercase tracking-widest text-[8px] px-2 py-0.5 rounded bg-brand-gold/10 border border-brand-gold/20 shrink-0">Note:</span>
+                      <span className="truncate">{booking.admin_notes}</span>
+                    </div>
+                  )}
 
                   <div className={`flex items-center justify-between gap-2 pt-1 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                     <div className={`flex items-center gap-1 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
@@ -574,6 +629,26 @@ export default function AdminBookingsPage() {
                   )}
                 </div>
               ))}
+              
+              <div className={`flex flex-col gap-3 py-5 border-t border-zinc-800/50 mt-4`}>
+                <label className={`text-[9px] font-black text-brand-gold uppercase tracking-[0.2em] ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                  Admin Notes (Internal Only)
+                </label>
+                <textarea
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  placeholder="Add private notes for this reservation..."
+                  className={`w-full bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-4 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-gold/30 transition-all min-h-[100px] resize-y ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
+                />
+                <button
+                  onClick={handleSaveAdminNotes}
+                  disabled={savingNotes}
+                  className={`flex items-center justify-center gap-2 px-6 py-3 bg-brand-gold text-black rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-brand-gold/80 transition-all disabled:opacity-50 self-end`}
+                >
+                  {savingNotes ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  Save Notes
+                </button>
+              </div>
             </div>
           </div>
         </div>,
@@ -628,6 +703,30 @@ export default function AdminBookingsPage() {
         variant="info"
         isLoading={isActionLoading}
       />
+
+      {toast && (
+        <div 
+          className="fixed bottom-6 right-6 z-[999] pointer-events-none"
+          style={{
+            animation: 'slideUp 0.3s ease-out forwards'
+          }}
+        >
+          <style>{`
+            @keyframes slideUp {
+              from { transform: translateY(1rem); opacity: 0; }
+              to { transform: translateY(0); opacity: 1; }
+            }
+          `}</style>
+          <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl border backdrop-blur-md shadow-2xl ${
+            toast.type === 'success' 
+              ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-400' 
+              : 'bg-red-950/90 border-red-500/30 text-red-400'
+          }`}>
+            {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <XCircle className="w-4 h-4 shrink-0" />}
+            <span className="text-xs font-bold tracking-wide">{toast.message}</span>
+          </div>
+        </div>
+      )}
     </>
   );
 }

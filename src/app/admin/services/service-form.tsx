@@ -20,8 +20,11 @@ interface ServiceFormProps {
 export default function ServiceForm({ initialData, topLevelServices, onSuccess, onCancel }: ServiceFormProps) {
   const [activeTab, setActiveTab] = useState<"fr" | "ar" | "en">("en");
   const [preview, setPreview] = useState<string | null>(initialData?.photo || null);
-  const [galleryPreviews, setGalleryPreviews] = useState<string[]>(initialData?.gallery || []);
-  const [clearGallery, setClearGallery] = useState(false);
+  // Gallery states
+  const [existingGallery, setExistingGallery] = useState<string[]>(initialData?.gallery || []);
+  const [deletedExisting, setDeletedExisting] = useState<string[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [newPreviews, setNewPreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { language, dir } = useLanguage();
   const t = translations[language];
@@ -66,16 +69,15 @@ export default function ServiceForm({ initialData, topLevelServices, onSuccess, 
   const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
-      setValue("gallery", files);
-      setClearGallery(false);
+      setNewFiles(prev => [...prev, ...files]);
       
-      const newPreviews: string[] = [];
+      const newPreviewsTemp: string[] = [];
       files.forEach(file => {
         const reader = new FileReader();
         reader.onloadend = () => {
-          newPreviews.push(reader.result as string);
-          if (newPreviews.length === files.length) {
-            setGalleryPreviews(newPreviews);
+          newPreviewsTemp.push(reader.result as string);
+          if (newPreviewsTemp.length === files.length) {
+            setNewPreviews(prev => [...prev, ...newPreviewsTemp]);
           }
         };
         reader.readAsDataURL(file);
@@ -83,10 +85,19 @@ export default function ServiceForm({ initialData, topLevelServices, onSuccess, 
     }
   };
 
+  const handleRemoveExisting = (url: string) => {
+    setDeletedExisting(prev => [...prev, url]);
+  };
+
+  const handleRemoveNew = (index: number) => {
+    setNewFiles(prev => prev.filter((_, i) => i !== index));
+    setNewPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleClearGallery = () => {
-    setGalleryPreviews([]);
-    setValue("gallery", []);
-    setClearGallery(true);
+    setDeletedExisting([...existingGallery]);
+    setNewFiles([]);
+    setNewPreviews([]);
   };
 
   const onSubmit = async (data: ServiceFormData) => {
@@ -108,19 +119,30 @@ export default function ServiceForm({ initialData, topLevelServices, onSuccess, 
         formData.append("photo", data.photo);
       }
 
-      if (Array.isArray(data.gallery)) {
-        data.gallery.forEach((file: File) => {
-          formData.append("gallery", file);
-        });
-      }
-
-      if (clearGallery) {
-        formData.append("clear_gallery", "true");
-      }
+      const activeExisting = existingGallery.filter(url => !deletedExisting.includes(url));
 
       if (initialData?.id) {
+        if (activeExisting.length === 0 && newFiles.length === 0) {
+          formData.append("clear_gallery", "true");
+        } else {
+          // Send only new files under 'gallery+'
+          newFiles.forEach((file: File) => {
+            formData.append("gallery+", file);
+          });
+          // Send specific deleted filenames under 'gallery-'
+          deletedExisting.forEach(url => {
+            const filename = url.split('/').pop();
+            if (filename) {
+              formData.append("gallery-", filename);
+            }
+          });
+        }
         await updateService(initialData.id, formData);
       } else {
+        // Create mode: send files as 'gallery'
+        newFiles.forEach((file: File) => {
+          formData.append("gallery", file);
+        });
         await createService(formData);
       }
       onSuccess();
@@ -337,24 +359,53 @@ export default function ServiceForm({ initialData, topLevelServices, onSuccess, 
                 </p>
               </div>
             </div>
-            {galleryPreviews.length > 0 && (
-              <div className={`mt-4 space-y-4 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                <div className={`flex flex-wrap gap-3 ${dir === 'rtl' ? 'justify-end' : 'justify-start'}`}>
-                  {galleryPreviews.map((src, i) => (
-                    <div key={i} className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden relative">
-                      <Image src={src} alt={`Gallery preview ${i}`} fill sizes="64px" className="object-cover" />
-                    </div>
-                  ))}
+            {(() => {
+              const activeExisting = existingGallery.filter(url => !deletedExisting.includes(url));
+              const hasImages = activeExisting.length > 0 || newPreviews.length > 0;
+              if (!hasImages) return null;
+              
+              return (
+                <div className={`mt-4 space-y-4 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+                  <div className={`flex flex-wrap gap-3 ${dir === 'rtl' ? 'justify-end' : 'justify-start'}`}>
+                    {/* Active existing files */}
+                    {activeExisting.map((src, i) => (
+                      <div key={`existing-${i}`} className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden relative group">
+                        <Image src={src} alt={`Existing gallery ${i}`} fill sizes="64px" className="object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveExisting(src)}
+                          className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-200 text-red-500 hover:text-red-400 backdrop-blur-sm"
+                          title="Remove image"
+                        >
+                          <X size={18} className="transform scale-90 hover:scale-110 transition-transform" />
+                        </button>
+                      </div>
+                    ))}
+                    {/* Newly added files */}
+                    {newPreviews.map((src, i) => (
+                      <div key={`new-${i}`} className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden relative group">
+                        <Image src={src} alt={`New gallery preview ${i}`} fill sizes="64px" className="object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveNew(i)}
+                          className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-200 text-red-500 hover:text-red-400 backdrop-blur-sm"
+                          title="Remove image"
+                        >
+                          <X size={18} className="transform scale-90 hover:scale-110 transition-transform" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleClearGallery}
+                    className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-white hover:bg-red-500 px-4 py-2 rounded-xl transition-colors border border-red-500/20"
+                  >
+                    {sTrans.clearGallery}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleClearGallery}
-                  className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-white hover:bg-red-500 px-4 py-2 rounded-xl transition-colors border border-red-500/20"
-                >
-                  {sTrans.clearGallery}
-                </button>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
       </div>

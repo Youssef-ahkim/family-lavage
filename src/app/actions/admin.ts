@@ -375,3 +375,24 @@ export async function rejectSubscription(subscriptionId: string, reason: string)
     return { success: false, error: message };
   }
 }
+
+export async function updateBookingAdminNotes(bookingId: string, notes: string) {
+  try {
+    await authenticateAdmin();
+    const adminPb = await getAdminPB();
+
+    await adminPb.collection('bookings').update(bookingId, { admin_notes: notes });
+
+    // Invalidate caches
+    invalidateCache('bookings:');
+    invalidateCache('admin_stats');
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/bookings');
+    return { success: true };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Admin updateBookingAdminNotes error:", error);
+    return { success: false, error: message };
+  }
+}

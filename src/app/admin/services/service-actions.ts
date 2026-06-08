@@ -29,7 +29,7 @@ function prepareServiceData(formData: FormData) {
 
   formData.forEach((value, key) => {
     if (value instanceof File && value.size > 0) return;
-    if (key === "photo" || key === "gallery" || key === "clear_gallery") return;
+    if (key === "photo" || key === "gallery" || key === "gallery+" || key === "gallery-" || key === "clear_gallery") return;
 
     if (key === "active") {
       data[key] = value === "true" || value === "1";
@@ -115,6 +115,8 @@ export async function updateService(id: string, formData: FormData) {
   try {
     const data = prepareServiceData(formData);
     const photo = formData.get("photo");
+    const galleryNew = formData.getAll("gallery+");
+    const galleryDelete = formData.getAll("gallery-");
     const gallery = formData.getAll("gallery");
     
     let payload: Record<string, unknown> | FormData = data;
@@ -140,6 +142,19 @@ export async function updateService(id: string, formData: FormData) {
       fd.append("gallery", "");
       hasFiles = true;
     } else {
+      // Append selective delete files
+      galleryDelete.forEach(filename => {
+        fd.append("gallery-", String(filename));
+        hasFiles = true;
+      });
+      // Append new files
+      galleryNew.forEach(file => {
+        if (file instanceof File && file.size > 0) {
+          fd.append("gallery+", file);
+          hasFiles = true;
+        }
+      });
+      // Allow general replace if needed
       gallery.forEach(file => {
         if (file instanceof File && file.size > 0) {
           fd.append("gallery", file);
