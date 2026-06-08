@@ -22,8 +22,7 @@ export default function Home() {
 
 
   const activeServices = dbServices
-    .filter(s => s.active && !s.parent_service)
-    .slice(0, 4);
+    .filter(s => s.active && !s.parent_service);
 
   return (
     <div className="min-h-screen bg-white text-zinc-950 font-sans overflow-x-hidden">
