@@ -30,6 +30,7 @@ interface LocalSubscription {
 
 interface LocalPlan {
   id: string;
+  service: string;
   active: boolean;
   category: string;
   title_fr: string;
@@ -152,6 +153,7 @@ export default function SubscribePage() {
             const name = language === 'fr' ? plan.title_fr : (language === 'ar' ? plan.title_ar : plan.title_en);
             const features = language === 'fr' ? plan.features_fr : (language === 'ar' ? plan.features_ar : plan.features_en);
             const isMonthly = plan.plan_type === 'monthly';
+            const isPremiumPlan = !!name?.toLowerCase().includes('vip');
             
             const activeReq = requests.find(r => r.status === 'active' && r.plan === plan.plan_type && r.amount === plan.price);
             const hasActive = !!activeReq;
@@ -160,27 +162,45 @@ export default function SubscribePage() {
             return (
               <div 
                 key={plan.id}
-                className={`card-premium relative flex flex-col p-10 rounded-[3rem] border-2 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-blue/5 bg-zinc-50 border-zinc-100 hover:border-brand-blue reveal`}
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).closest('button')) return;
+                  router.push(`/services/${plan.service}/offers/${plan.id}`);
+                }}
+                className={`card-premium cursor-pointer relative flex flex-col p-10 rounded-[3rem] border-2 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl reveal ${
+                  isPremiumPlan 
+                  ? 'bg-zinc-950 text-white border-brand-gold/30 hover:border-brand-gold shadow-[0_0_30px_rgba(197,160,89,0.15)] hover:shadow-[0_0_40px_rgba(197,160,89,0.35)] ring-1 ring-white/5' 
+                  : 'bg-zinc-50 text-zinc-950 border-zinc-100 hover:border-brand-blue shadow-brand-blue/5'
+                }`}
               >
-                <h3 className="text-2xl font-black mb-6 uppercase tracking-tight italic text-zinc-900">
+                {isPremiumPlan && (
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
+                )}
+
+                <h3 className={`text-2xl font-black mb-6 uppercase tracking-tight italic ${
+                  isPremiumPlan ? 'text-brand-gold' : 'text-zinc-900'
+                }`}>
                   {name}
                 </h3>
                 <div className="flex items-baseline gap-1 mb-10">
-                  <span className="text-6xl font-black tracking-tighter text-zinc-900">{plan.price}</span>
+                  <span className={`text-6xl font-black tracking-tighter ${isPremiumPlan ? 'text-white' : 'text-zinc-900'}`}>{plan.price}</span>
                   <div className="flex flex-col items-start leading-none">
                     <span className="text-xs font-bold text-zinc-400 uppercase">DH</span>
-                    <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">
+                    <span className={`text-[10px] font-medium uppercase tracking-widest ${
+                      isPremiumPlan ? 'text-brand-gold' : 'text-zinc-500'
+                    }`}>
                       {plan.washes_count} {s.washes} {isMonthly ? t.pricing.perMonth : t.pricing.perYear}
                     </span>
                   </div>
                 </div>
 
-                <div className="h-px w-full bg-zinc-200 mb-10" />
+                <div className={`h-px w-full mb-10 ${isPremiumPlan ? 'bg-zinc-800' : 'bg-zinc-200'}`} />
 
                 <ul className="space-y-5 mb-12 flex-grow">
                   {Array.isArray(features) && features.map((feature: string, fIdx: number) => (
-                    <li key={fIdx} className={`flex items-center gap-3 text-base text-zinc-600 font-medium ${dir === 'rtl' ? 'flex-row-reverse text-right' : ''}`}>
-                      <CheckCircle2 size={18} className="text-brand-blue shrink-0" />
+                    <li key={fIdx} className={`flex items-center gap-3 text-base font-medium ${
+                      isPremiumPlan ? 'text-zinc-300' : 'text-zinc-600'
+                    } ${dir === 'rtl' ? 'flex-row-reverse text-right' : ''}`}>
+                      <CheckCircle2 size={18} className={`shrink-0 ${isPremiumPlan ? 'text-brand-gold animate-pulse' : 'text-brand-blue'}`} />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -204,12 +224,14 @@ export default function SubscribePage() {
                 <button
                   onClick={() => handleSubscribe(plan.id)}
                   disabled={loading || hasActive || hasPending}
-                  className={`w-full py-5 text-white font-black uppercase tracking-[0.2em] text-sm rounded-2xl transition-all shadow-md flex items-center justify-center gap-3 ${
+                  className={`w-full py-5 font-black uppercase tracking-[0.2em] text-sm rounded-2xl transition-all shadow-md flex items-center justify-center gap-3 ${
                     hasActive 
-                      ? 'bg-green-500 shadow-green-500/20' 
+                      ? 'bg-green-500 text-white shadow-green-500/20' 
                       : hasPending 
-                        ? 'bg-amber-500 shadow-amber-500/20' 
-                        : 'bg-brand-blue hover:bg-brand-blue/80 hover:-translate-y-1 active:scale-[0.98] shadow-brand-blue/10 disabled:opacity-50'
+                        ? 'bg-amber-500 text-white shadow-amber-500/20' 
+                        : isPremiumPlan 
+                          ? 'bg-brand-gold text-black hover:bg-brand-gold-light hover:-translate-y-1 active:scale-[0.98] shadow-brand-gold/20 disabled:opacity-50'
+                          : 'bg-brand-blue text-white hover:bg-brand-blue/80 hover:-translate-y-1 active:scale-[0.98] shadow-brand-blue/10 disabled:opacity-50'
                   }`}
                 >
                   {loading && !hasActive && !hasPending ? (

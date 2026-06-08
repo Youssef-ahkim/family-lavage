@@ -113,8 +113,9 @@ export default function ServicesPage() {
                           <>
                             <Image 
                               src={service.photo} 
-                              alt={title} 
+                              alt={title || "Service"} 
                               fill 
+                              sizes="(max-width: 768px) 100vw, 50vw"
                               unoptimized={true}
                               className="object-cover transition-transform duration-700 group-hover:scale-105"
                             />

@@ -12,17 +12,17 @@ import { translations } from "@/lib/translations";
 
 interface ServiceFormProps {
   initialData?: ServiceRecord;
+  topLevelServices: ServiceRecord[];
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-export default function ServiceForm({ initialData, onSuccess, onCancel }: ServiceFormProps) {
+export default function ServiceForm({ initialData, topLevelServices, onSuccess, onCancel }: ServiceFormProps) {
   const [activeTab, setActiveTab] = useState<"fr" | "ar" | "en">("en");
   const [preview, setPreview] = useState<string | null>(initialData?.photo || null);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>(initialData?.gallery || []);
   const [clearGallery, setClearGallery] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [topLevelServices, setTopLevelServices] = useState<ServiceRecord[]>([]);
   const { language, dir } = useLanguage();
   const t = translations[language];
   const sTrans = t.admin.services;
@@ -51,18 +51,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
 
   const selectedBookingType = useWatch({ control, name: "booking_type" });
 
-  React.useEffect(() => {
-    async function fetchTopLevelServices() {
-      try {
-        const allServices = await getServices();
-        const topLevel = allServices.filter(s => !s.parent_service && s.id !== initialData?.id);
-        setTopLevelServices(topLevel);
-      } catch (err) {
-        console.error("Failed to fetch top level services", err);
-      }
-    }
-    fetchTopLevelServices();
-  }, [initialData?.id]);
+
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -143,7 +132,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit as Parameters<typeof handleSubmit>[0])} className="space-y-8 max-w-2xl mx-auto bg-zinc-950 p-8 rounded-[2.5rem] border border-zinc-900 shadow-2xl">
+    <form onSubmit={handleSubmit(onSubmit as Parameters<typeof handleSubmit>[0])} className="space-y-8 max-w-2xl mx-auto bg-zinc-950 p-4 md:p-8 rounded-3xl md:rounded-[2.5rem] border border-zinc-900 shadow-2xl">
       <div className={`flex items-center justify-between mb-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
         <h2 className={`text-2xl font-black uppercase italic tracking-tighter text-white ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
           {initialData ? sTrans.edit : sTrans.add}
@@ -250,7 +239,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
         </div>
 
         {/* Configuration */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-900/50 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-zinc-800">
           <div>
             <label className={`block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
               {sTrans.bookingType}
@@ -304,7 +293,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
           <div className={`flex items-center gap-6 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
             <div className="w-24 h-24 rounded-3xl bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden group relative flex-shrink-0">
               {preview ? (
-                <Image src={preview} alt="Preview" fill className="object-cover" />
+                <Image src={preview} alt="Preview" fill sizes="96px" className="object-cover" />
               ) : (
                 <Upload className="text-zinc-700 group-hover:text-brand-blue transition-colors" />
               )}
@@ -353,7 +342,7 @@ export default function ServiceForm({ initialData, onSuccess, onCancel }: Servic
                 <div className={`flex flex-wrap gap-3 ${dir === 'rtl' ? 'justify-end' : 'justify-start'}`}>
                   {galleryPreviews.map((src, i) => (
                     <div key={i} className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden relative">
-                      <Image src={src} alt={`Gallery preview ${i}`} fill className="object-cover" />
+                      <Image src={src} alt={`Gallery preview ${i}`} fill sizes="64px" className="object-cover" />
                     </div>
                   ))}
                 </div>

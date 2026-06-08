@@ -311,20 +311,24 @@ export default function ServiceDetailsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                       {offers.map((offer) => {
                         const offerTitle = language === 'fr' ? offer.title_fr : (language === 'ar' ? offer.title_ar : offer.title_en);
-                        const isPremiumOffer = offer.price >= 500;
+                        const isPremiumOffer = !!offerTitle?.toLowerCase().includes('vip');
                         
                         return (
                           <Link 
                             href={`/services/${service.id}/offers/${offer.id}`}
                             key={offer.id}
-                            className={`card-premium cursor-pointer flex flex-col relative bg-white rounded-[2.5rem] border-2 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl overflow-hidden group ${
+                            className={`card-premium cursor-pointer flex flex-col relative rounded-[2.5rem] border-2 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl overflow-hidden group ${
                               isPremiumOffer 
-                              ? 'border-brand-gold/20 hover:border-brand-gold shadow-brand-gold/10' 
-                              : 'border-zinc-100 hover:border-brand-blue shadow-brand-blue/5'
+                              ? 'bg-zinc-950 text-white border-brand-gold/30 hover:border-brand-gold shadow-[0_0_30px_rgba(197,160,89,0.15)] hover:shadow-[0_0_40px_rgba(197,160,89,0.35)] ring-1 ring-white/5' 
+                              : 'bg-white text-zinc-950 border-zinc-100 hover:border-brand-blue shadow-brand-blue/5'
                             } ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
                           >
+                            {isPremiumOffer && (
+                              <div className="absolute top-0 right-0 w-64 h-64 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
+                            )}
+
                             {/* Image Thumbnail */}
-                            <div className="relative h-48 w-full bg-zinc-100">
+                            <div className={`relative h-48 w-full ${isPremiumOffer ? 'bg-zinc-900' : 'bg-zinc-100'}`}>
                               {offer.photo || service.photo ? (
                                 <Image 
                                   src={(offer.photo || service.photo) as string} 
@@ -340,18 +344,26 @@ export default function ServiceDetailsPage() {
                               )}
                               <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/60 to-transparent" />
                               {isPremiumOffer && (
-                                <div className={`absolute top-4 ${dir === 'rtl' ? 'left-4' : 'right-4'} px-3 py-1 bg-brand-gold text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg`}>
+                                <div className={`absolute top-4 ${dir === 'rtl' ? 'left-4' : 'right-4'} px-3 py-1 bg-brand-gold text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-brand-gold/30 animate-pulse`}>
                                   {t.pricing.badges.mostChosen}
                                 </div>
                               )}
                             </div>
                             
                             {/* Title & Action Hint */}
-                            <div className="p-6 bg-white">
-                              <h3 className={`text-xl font-black uppercase italic tracking-tight mb-4 group-hover:text-brand-blue transition-colors duration-300 ${isPremiumOffer ? 'text-brand-gold' : 'text-zinc-900'}`}>
+                            <div className={`p-6 ${isPremiumOffer ? 'bg-zinc-950' : 'bg-white'}`}>
+                              <h3 className={`text-xl font-black uppercase italic tracking-tight mb-4 transition-colors duration-300 ${
+                                isPremiumOffer 
+                                  ? 'text-brand-gold group-hover:text-brand-gold-light' 
+                                  : 'text-zinc-900 group-hover:text-brand-blue'
+                              }`}>
                                 {offerTitle}
                               </h3>
-                              <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-400 group-hover:text-brand-blue transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                              <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest transition-colors ${
+                                isPremiumOffer 
+                                  ? 'text-brand-gold/60 group-hover:text-brand-gold' 
+                                  : 'text-zinc-400 group-hover:text-brand-blue'
+                              } ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                                 <span>{t.services.viewDetailsBtn}</span>
                                 <ArrowRight size={14} className={`transition-transform ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
                               </div>

@@ -9,7 +9,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import { getServices, getServiceOffers } from "@/app/admin/services/service-actions";
 import { ServiceRecord, ServiceOfferRecord } from "@/app/admin/services/service-types";
-import { ArrowLeft, Car, CheckCircle2, ArrowRight } from "lucide-react";
+import { ArrowLeft, Car, CheckCircle2, ArrowRight, Loader2, AlertCircle, Clock } from "lucide-react";
+import { useProfile } from "@/context/ProfileContext";
+import { requestSubscription, getMySubscriptionRequests } from "@/app/actions/subscription";
 
 export default function OfferDetailsPage() {
   const params = useParams();
@@ -20,9 +22,40 @@ export default function OfferDetailsPage() {
   const { language, dir } = useLanguage();
   const t = translations[language];
   
+  const { profile } = useProfile();
+  
   const [service, setService] = useState<ServiceRecord | null>(null);
   const [offer, setOffer] = useState<ServiceOfferRecord | null>(null);
   const [loading, setLoading] = useState(true);
+  const [requests, setRequests] = useState<any[]>([]);
+
+  const [subscribing, setSubscribing] = useState(false);
+  const [subError, setSubError] = useState<string | null>(null);
+  const [subSuccess, setSubSuccess] = useState(false);
+
+  const handleSubscribe = async () => {
+    if (!profile) {
+      router.push(`/auth/login?redirect=/services/${serviceId}/offers/${offerId}`);
+      return;
+    }
+    setSubscribing(true);
+    setSubError(null);
+
+    try {
+      const result = await requestSubscription(offerId);
+      if (result.success) {
+        setSubSuccess(true);
+      } else {
+        const errorKey = result.error || "subscription.errors.general";
+        const errorMsg = errorKey.split('.').reduce((obj: unknown, key: string) => (obj as Record<string, unknown>)?.[key], t) as string || t.subscription.errors.general;
+        setSubError(errorMsg);
+      }
+    } catch {
+      setSubError(t.subscription.errors.general);
+    } finally {
+      setSubscribing(false);
+    }
+  };
 
   useEffect(() => {
     Promise.all([getServices(), getServiceOffers(serviceId)])
@@ -40,6 +73,12 @@ export default function OfferDetailsPage() {
         setLoading(false);
       });
   }, [serviceId, offerId]);
+
+  useEffect(() => {
+    if (profile) {
+      getMySubscriptionRequests().then(data => setRequests(data));
+    }
+  }, [profile]);
 
   if (loading) {
     return (
@@ -74,9 +113,13 @@ export default function OfferDetailsPage() {
 
   const offerTitle = language === 'fr' ? offer.title_fr : (language === 'ar' ? offer.title_ar : offer.title_en);
   const offerFeatures = language === 'fr' ? offer.features_fr : (language === 'ar' ? offer.features_ar : offer.features_en);
-  const isPremiumOffer = offer.price >= 500;
+  const isPremiumOffer = !!offerTitle?.toLowerCase().includes('vip');
   
   const displayPhoto = offer.photo || service.photo;
+
+  const activeReq = requests.find(r => r.status === 'active' && r.plan === offer.plan_type && r.amount === offer.price);
+  const hasActive = !!activeReq;
+  const hasPending = requests.some(r => r.status === 'pending' && r.plan === offer.plan_type && r.amount === offer.price);
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-zinc-950 font-sans overflow-x-hidden">
@@ -96,8 +139,15 @@ export default function OfferDetailsPage() {
           <div className={`flex flex-col lg:flex-row gap-12 lg:gap-20 ${dir === 'rtl' ? 'lg:flex-row-reverse text-right' : 'text-left'}`}>
             
             {/* Image Column */}
-            <div className="w-full lg:w-1/2">
-              <div className="relative aspect-square md:aspect-[4/3] rounded-[3rem] overflow-hidden shadow-2xl shadow-zinc-200/50 border border-zinc-100">
+            <div className="w-full lg:w-1/2 relative group">
+              {isPremiumOffer && (
+                <div className="absolute -inset-4 bg-gradient-to-br from-brand-gold/25 to-yellow-500/5 rounded-[3.5rem] blur-2xl opacity-100 transition-opacity duration-700 pointer-events-none" />
+              )}
+              <div className={`relative aspect-square md:aspect-[4/3] rounded-[3rem] overflow-hidden shadow-2xl border ${
+                isPremiumOffer 
+                  ? 'border-brand-gold/30 shadow-brand-gold/10' 
+                  : 'border-zinc-100 shadow-zinc-200/50'
+              }`}>
                 {displayPhoto ? (
                   <Image 
                     src={displayPhoto as string} 
@@ -112,7 +162,7 @@ export default function OfferDetailsPage() {
                   </div>
                 )}
                 {isPremiumOffer && (
-                  <div className={`absolute top-6 ${dir === 'rtl' ? 'left-6' : 'right-6'} px-4 py-2 bg-brand-gold text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg`}>
+                  <div className={`absolute top-6 ${dir === 'rtl' ? 'left-6' : 'right-6'} px-4 py-2 bg-brand-gold text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-brand-gold/30 animate-pulse`}>
                     {t.pricing.badges.mostChosen}
                   </div>
                 )}
@@ -122,16 +172,20 @@ export default function OfferDetailsPage() {
             {/* Content Column */}
             <div className="w-full lg:w-1/2 flex flex-col justify-center">
               <div className="mb-4">
-                <h1 className={`text-4xl md:text-5xl font-black uppercase italic tracking-tighter leading-tight mb-6 ${isPremiumOffer ? 'text-brand-gold' : 'text-zinc-900'}`}>
+                <h1 className={`text-4xl md:text-5xl font-black uppercase italic tracking-tighter leading-tight mb-6 ${
+                  isPremiumOffer 
+                    ? 'bg-gradient-to-r from-brand-gold via-brand-gold-light to-yellow-600 bg-clip-text text-transparent' 
+                    : 'text-zinc-900'
+                }`}>
                   {offerTitle}
                 </h1>
                 
                 <div className="flex items-baseline gap-2 mb-10">
-                  <span className="text-6xl font-black tracking-tighter text-zinc-900">{offer.price}</span>
+                  <span className={`text-6xl font-black tracking-tighter ${isPremiumOffer ? 'text-brand-gold' : 'text-zinc-900'}`}>{offer.price}</span>
                   <div className="flex flex-col leading-none">
                     <span className="text-sm font-bold text-zinc-400 uppercase">DH</span>
                     {offer.category === 'subscription' && (
-                      <span className="text-[10px] text-brand-blue font-black uppercase tracking-widest mt-1">
+                      <span className={`text-[10px] font-black uppercase tracking-widest mt-1 ${isPremiumOffer ? 'text-brand-gold' : 'text-brand-blue'}`}>
                         {offer.washes_count} {t.services.washes} {offer.plan_type === 'monthly' ? t.pricing.perMonth : t.pricing.perYear}
                       </span>
                     )}
@@ -146,7 +200,7 @@ export default function OfferDetailsPage() {
                 <ul className="space-y-4">
                   {Array.isArray(offerFeatures) && offerFeatures.map((f: string, i: number) => (
                     <li key={i} className={`flex items-start gap-4 text-lg text-zinc-700 font-medium ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                      <CheckCircle2 size={24} className={`shrink-0 mt-0.5 ${isPremiumOffer ? 'text-brand-gold' : 'text-brand-blue'}`} />
+                      <CheckCircle2 size={24} className={`shrink-0 mt-0.5 ${isPremiumOffer ? 'text-brand-gold animate-pulse' : 'text-brand-blue'}`} />
                       <span>{f}</span>
                     </li>
                   ))}
@@ -154,19 +208,52 @@ export default function OfferDetailsPage() {
               </div>
 
               <div className="mt-auto pt-8 border-t border-zinc-100">
-                <Link 
-                  href={offer.category === 'subscription' ? '/subscribe' : `/booking?serviceId=${serviceId}&offerId=${offerId}`} 
-                  className="block"
-                >
-                  <button className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm transition-all flex items-center justify-center gap-3 group shadow-xl hover:-translate-y-1 ${
-                    isPremiumOffer 
-                    ? 'bg-brand-gold text-black shadow-brand-gold/20 hover:bg-zinc-900 hover:text-brand-gold' 
-                    : 'bg-brand-blue text-white shadow-brand-blue/20 hover:bg-zinc-900'
-                  }`}>
-                    {offer.category === 'subscription' ? t.subscription.requestBtn : t.nav.book}
-                    <ArrowRight size={20} className={`transition-transform ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
+                {subError && (
+                  <div className={`mb-4 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm font-medium flex items-center gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                    <AlertCircle size={18} className="shrink-0" />
+                    <p>{subError}</p>
+                  </div>
+                )}
+                {offer.category === 'subscription' ? (
+                  <button 
+                    onClick={handleSubscribe}
+                    disabled={subscribing || subSuccess || hasActive || hasPending}
+                    className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm transition-all flex items-center justify-center gap-3 group shadow-xl ${
+                      hasActive
+                      ? 'bg-green-500 text-white shadow-green-500/20 hover:bg-green-600'
+                      : (hasPending || subSuccess)
+                        ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600'
+                        : isPremiumOffer 
+                          ? 'bg-brand-gold text-black shadow-brand-gold/20 hover:bg-zinc-900 hover:text-brand-gold hover:-translate-y-1' 
+                          : 'bg-brand-blue text-white shadow-brand-blue/20 hover:bg-zinc-900 hover:-translate-y-1'
+                    } disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed`}
+                  >
+                    {subscribing && !hasActive && !hasPending && !subSuccess ? (
+                      <Loader2 size={20} className="animate-spin" />
+                    ) : hasActive ? (
+                      <><CheckCircle2 size={20} /> {t.subscription.activeSubscription}</>
+                    ) : (hasPending || subSuccess) ? (
+                      <><Clock size={20} /> {t.subscription.requestPending}</>
+                    ) : (
+                      t.subscription.requestBtn
+                    )}
+                    {!subscribing && !subSuccess && !hasActive && !hasPending && <ArrowRight size={20} className={`transition-transform ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />}
                   </button>
-                </Link>
+                ) : (
+                  <Link 
+                    href={`/booking?serviceId=${serviceId}&offerId=${offerId}`} 
+                    className="block"
+                  >
+                    <button className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm transition-all flex items-center justify-center gap-3 group shadow-xl hover:-translate-y-1 ${
+                      isPremiumOffer 
+                      ? 'bg-brand-gold text-black shadow-brand-gold/20 hover:bg-zinc-900 hover:text-brand-gold' 
+                      : 'bg-brand-blue text-white shadow-brand-blue/20 hover:bg-zinc-900'
+                    }`}>
+                      {t.nav.book}
+                      <ArrowRight size={20} className={`transition-transform ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
+                    </button>
+                  </Link>
+                )}
                 
                 {offer.category === 'once' && (
                   <p className="mt-4 text-center text-xs text-zinc-400 font-medium leading-relaxed">

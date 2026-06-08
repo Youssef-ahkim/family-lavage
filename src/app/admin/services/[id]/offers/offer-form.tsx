@@ -258,7 +258,7 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
           <div className={`flex items-center gap-6 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
             <div className="w-24 h-24 rounded-3xl bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden group relative">
               {preview ? (
-                <Image src={preview} alt="Preview" fill className="object-cover" />
+                <Image src={preview} alt="Preview" fill sizes="96px" className="object-cover" />
               ) : (
                 <Upload className="text-zinc-700 group-hover:text-brand-blue transition-colors" />
               )}

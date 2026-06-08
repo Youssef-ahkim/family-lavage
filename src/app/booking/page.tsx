@@ -380,7 +380,7 @@ const BookingPage = () => {
                     >
                       {service.photo && (
                         <div className="w-full h-32 rounded-2xl overflow-hidden mb-6 relative">
-                          <Image src={service.photo} alt={title} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                          <Image src={service.photo} alt={title} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-110 transition-transform duration-700" />
                         </div>
                       )}
                       <h3 className="text-2xl font-black uppercase italic tracking-tight mb-2">{title}</h3>
@@ -428,7 +428,7 @@ const BookingPage = () => {
                       >
                         {service.photo && (
                           <div className="w-full h-32 rounded-2xl overflow-hidden mb-6 relative">
-                            <Image src={service.photo} alt={title} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                            <Image src={service.photo} alt={title} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-110 transition-transform duration-700" />
                           </div>
                         )}
                         <h3 className="text-2xl font-black uppercase italic tracking-tight mb-2">{title}</h3>

@@ -73,6 +73,7 @@ export default function AdminServicesPage() {
       <div className="reveal p-4 md:p-8">
         <ServiceForm 
           initialData={editingService} 
+          topLevelServices={services.filter(s => !s.parent_service && s.id !== editingService?.id)}
           onSuccess={() => {
             setIsFormOpen(false);
             setEditingService(undefined);
@@ -102,7 +103,7 @@ export default function AdminServicesPage() {
             setEditingService(undefined);
             setIsFormOpen(true);
           }}
-          className="bg-brand-blue text-white px-6 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-brand-blue/20"
+          className="w-full md:w-auto bg-brand-blue text-white px-6 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-brand-blue/20"
         >
           <Plus size={18} />
           {sTrans.add}
@@ -110,9 +111,9 @@ export default function AdminServicesPage() {
       </div>
 
       {/* Stats/Info */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-zinc-900/30 border border-zinc-800/50 p-6 rounded-3xl flex items-center gap-4">
-          <div className="w-12 h-12 bg-brand-blue/10 rounded-2xl flex items-center justify-center text-brand-blue">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+        <div className="bg-zinc-900/30 border border-zinc-800/50 p-4 md:p-6 rounded-2xl md:rounded-3xl flex items-center gap-4">
+          <div className="w-12 h-12 bg-brand-blue/10 rounded-2xl flex items-center justify-center text-brand-blue shrink-0">
             <Package size={24} />
           </div>
           <div>
@@ -120,8 +121,8 @@ export default function AdminServicesPage() {
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{sTrans.totalServices}</p>
           </div>
         </div>
-        <div className="bg-zinc-900/30 border border-zinc-800/50 p-6 rounded-3xl flex items-center gap-4">
-          <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500">
+        <div className="bg-zinc-900/30 border border-zinc-800/50 p-4 md:p-6 rounded-2xl md:rounded-3xl flex items-center gap-4">
+          <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 shrink-0">
             <CheckCircle2 size={24} />
           </div>
           <div>
@@ -129,8 +130,8 @@ export default function AdminServicesPage() {
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{sTrans.activeServices}</p>
           </div>
         </div>
-        <div className="bg-zinc-900/30 border border-zinc-800/50 p-6 rounded-3xl flex items-center gap-4">
-          <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500">
+        <div className="bg-zinc-900/30 border border-zinc-800/50 p-4 md:p-6 rounded-2xl md:rounded-3xl flex items-center gap-4">
+          <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 shrink-0">
             <Info size={24} />
           </div>
           <div>
@@ -141,10 +142,10 @@ export default function AdminServicesPage() {
       </div>
 
       {/* Table Section */}
-      <div className="bg-zinc-900/20 border border-zinc-800/50 rounded-[2.5rem] overflow-hidden">
+      <div className="bg-zinc-900/20 border border-zinc-800/50 rounded-3xl md:rounded-[2.5rem] overflow-hidden">
         {/* Table Controls */}
-        <div className="p-6 border-b border-zinc-800/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="relative flex-1 max-w-md">
+        <div className="p-4 md:p-6 border-b border-zinc-800/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="relative flex-1 w-full max-w-full md:max-w-md">
             <Search className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-zinc-600`} size={18} />
             <input 
               type="text"
@@ -161,33 +162,33 @@ export default function AdminServicesPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className={`border-b border-zinc-800/50 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">{sTrans.tableTitle}</th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">{sTrans.tableStatus}</th>
-                <th className={`px-8 py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>{t.admin.actions}</th>
+                <th className="px-4 md:px-8 py-4 md:py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 whitespace-nowrap">{sTrans.tableTitle}</th>
+                <th className="px-4 md:px-8 py-4 md:py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center whitespace-nowrap">{sTrans.tableStatus}</th>
+                <th className={`px-4 md:px-8 py-4 md:py-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 whitespace-nowrap ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>{t.admin.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/30">
               {loading ? (
                 <tr>
-                  <td colSpan={3} className="px-8 py-20 text-center">
+                  <td colSpan={3} className="px-4 md:px-8 py-10 md:py-20 text-center">
                     <Loader2 className="animate-spin mx-auto text-brand-blue mb-4" size={32} />
                     <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">{sTrans.synchronizingCatalog}</p>
                   </td>
                 </tr>
               ) : filteredServices.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-8 py-20 text-center text-zinc-500 uppercase text-[10px] font-black tracking-widest">
+                  <td colSpan={3} className="px-4 md:px-8 py-10 md:py-20 text-center text-zinc-500 uppercase text-[10px] font-black tracking-widest">
                     {sTrans.noServices}
                   </td>
                 </tr>
               ) : (
                 filteredServices.map((service) => (
                   <tr key={service.id} className="group hover:bg-zinc-800/20 transition-colors">
-                    <td className="px-8 py-6">
+                    <td className="px-4 md:px-8 py-4 md:py-6">
                       <div className="flex items-center gap-4">
                         <div className={`w-12 h-12 rounded-xl bg-zinc-800 overflow-hidden border border-zinc-700 group-hover:border-brand-blue/30 transition-all relative ${dir === 'rtl' ? 'order-2' : ''}`}>
                           {service.photo ? (
-                            <Image src={service.photo} alt={service.title_en} fill className="object-cover" />
+                            <Image src={service.photo} alt={service.title_en} fill sizes="48px" className="object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-zinc-600">
                               <Package size={20} />
@@ -200,7 +201,7 @@ export default function AdminServicesPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-6 text-center">
+                    <td className="px-4 md:px-8 py-4 md:py-6 text-center whitespace-nowrap">
                       {service.active ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
                           <CheckCircle2 size={12} />
@@ -213,8 +214,8 @@ export default function AdminServicesPage() {
                         </span>
                       )}
                     </td>
-                    <td className={`px-8 py-6 ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>
-                      <div className={`flex items-center ${dir === 'rtl' ? 'justify-start' : 'justify-end'} gap-2`}>
+                    <td className={`px-4 md:px-8 py-4 md:py-6 ${dir === 'rtl' ? 'text-left' : 'text-right'}`}>
+                      <div className={`flex items-center ${dir === 'rtl' ? 'justify-start' : 'justify-end'} gap-2 whitespace-nowrap`}>
                         {service.booking_type === "has_offers" && (
                           <Link 
                             href={`/admin/services/${service.id}/offers`}
