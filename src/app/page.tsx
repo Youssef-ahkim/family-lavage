@@ -30,7 +30,7 @@ export default function Home() {
 
       {/* WhatsApp Button */}
       <a
-        href="https://wa.me/212600000000"
+        href="https://wa.me/212655571251"
         target="_blank"
         rel="noopener noreferrer"
         className={`fixed bottom-8 ${dir === 'rtl' ? 'left-8' : 'right-8'} z-[60] bg-[#25D366] p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all group animate-float`}
@@ -270,12 +270,15 @@ export default function Home() {
                     </div>
                     <span className="font-bold">{t.contact.open}</span>
                   </div>
-                  <div className={`flex items-center gap-4 text-white/90 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                  <a 
+                    href="tel:+212655571251"
+                    className={`flex items-center gap-4 text-white/90 hover:text-white transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
+                  >
                     <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
                       <Phone className="text-white w-5 h-5" />
                     </div>
-                    <span className="font-bold">+212 600-000000</span>
-                  </div>
+                    <span className="font-bold">+212 655-571251</span>
+                  </a>
                 </div>
               </div>
               <div className="flex flex-col gap-6">
