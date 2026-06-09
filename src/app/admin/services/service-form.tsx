@@ -9,6 +9,7 @@ import { serviceSchema, ServiceFormData, ServiceRecord } from "./service-types";
 import { createService, updateService, getServices } from "./service-actions";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
+import { compressImage } from "@/lib/image";
 
 interface ServiceFormProps {
   initialData?: ServiceRecord;
@@ -56,32 +57,52 @@ export default function ServiceForm({ initialData, topLevelServices, onSuccess, 
 
 
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setValue("photo", file);
-      const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result as string);
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file);
+        setValue("photo", compressed);
+        const reader = new FileReader();
+        reader.onloadend = () => setPreview(reader.result as string);
+        reader.readAsDataURL(compressed);
+      } catch (err) {
+        console.error("Image compression failed, using original:", err);
+        setValue("photo", file);
+        const reader = new FileReader();
+        reader.onloadend = () => setPreview(reader.result as string);
+        reader.readAsDataURL(file);
+      }
     }
   };
 
-  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGalleryChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
-      setNewFiles(prev => [...prev, ...files]);
-      
-      const newPreviewsTemp: string[] = [];
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          newPreviewsTemp.push(reader.result as string);
-          if (newPreviewsTemp.length === files.length) {
-            setNewPreviews(prev => [...prev, ...newPreviewsTemp]);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+      try {
+        const compressedFiles = await Promise.all(
+          files.map(file => compressImage(file).catch(err => {
+            console.error("Gallery image compression failed, using original:", file.name, err);
+            return file;
+          }))
+        );
+        
+        setNewFiles(prev => [...prev, ...compressedFiles]);
+        
+        const newPreviewsTemp: string[] = [];
+        compressedFiles.forEach(file => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            newPreviewsTemp.push(reader.result as string);
+            if (newPreviewsTemp.length === compressedFiles.length) {
+              setNewPreviews(prev => [...prev, ...newPreviewsTemp]);
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      } catch (err) {
+        console.error("Gallery processing failed:", err);
+      }
     }
   };
 

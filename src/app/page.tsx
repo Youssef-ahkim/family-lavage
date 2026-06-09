@@ -22,7 +22,7 @@ export default function Home() {
 
 
   const activeServices = dbServices
-    .filter(s => s.active && !s.parent_service);
+    .filter(s => !s.parent_service);
 
   return (
     <div className="min-h-screen bg-white text-zinc-950 font-sans overflow-x-hidden">
@@ -161,16 +161,19 @@ export default function Home() {
               return (
                 <div 
                   key={service.id} 
-                  className="flex flex-col reveal group cursor-pointer h-full"
+                  className={`flex flex-col reveal group h-full ${!service.active ? 'opacity-65 grayscale' : 'cursor-pointer'}`}
                   style={{ animationDelay: `${idx * 150}ms` }}
                 >
                   <Link 
-                    href={`/services/${service.id}`} 
+                    href={service.active ? `/services/${service.id}` : '#'} 
+                    onClick={(e) => {
+                      if (!service.active) e.preventDefault();
+                    }}
                     className={`card-premium block h-full relative p-3 rounded-[2rem] transition-all duration-500 overflow-hidden ${
                       isGold 
                       ? 'bg-zinc-950 shadow-xl hover:shadow-2xl hover:shadow-brand-gold/20 ring-1 ring-white/10 hover:ring-brand-gold/50' 
-                      : 'bg-white shadow-sm hover:shadow-2xl hover:shadow-brand-blue/10 ring-1 ring-zinc-200/60 hover:ring-brand-blue/30 hover:-translate-y-2'
-                    }`}
+                      : 'bg-white shadow-sm hover:shadow-2xl hover:shadow-brand-blue/10 ring-1 ring-zinc-200/60 hover:ring-brand-blue/30'
+                    } ${service.active ? 'hover:-translate-y-2' : 'cursor-not-allowed'}`}
                   >
                     {/* Inner Glow for Gold */}
                     {isGold && (
@@ -217,14 +220,20 @@ export default function Home() {
                       </h3>
                       
                       <div className="mt-auto pt-6">
-                        <div className={`w-full px-6 py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 ${
-                          isGold 
-                          ? 'bg-brand-gold/10 text-brand-gold group-hover:bg-brand-gold group-hover:text-black' 
-                          : 'bg-zinc-50 text-brand-blue group-hover:bg-brand-blue group-hover:text-white ring-1 ring-zinc-100 group-hover:ring-brand-blue group-hover:shadow-lg group-hover:shadow-brand-blue/20'
-                        }`}>
-                          {language === 'fr' ? 'Voir Détails' : (language === 'ar' ? 'عرض التفاصيل' : 'View Details')}
-                          <ArrowRight size={16} className={`transition-transform group-hover:translate-x-1 ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
-                        </div>
+                        {!service.active ? (
+                          <div className="w-full px-6 py-4 rounded-xl font-black uppercase tracking-widest text-[9px] bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center gap-2">
+                            {translations[language].booking.notAvailable}
+                          </div>
+                        ) : (
+                          <div className={`w-full px-6 py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 ${
+                            isGold 
+                            ? 'bg-brand-gold/10 text-brand-gold group-hover:bg-brand-gold group-hover:text-black' 
+                            : 'bg-zinc-50 text-brand-blue group-hover:bg-brand-blue group-hover:text-white ring-1 ring-zinc-100 group-hover:ring-brand-blue group-hover:shadow-lg group-hover:shadow-brand-blue/20'
+                          }`}>
+                            {language === 'fr' ? 'Voir Détails' : (language === 'ar' ? 'عرض التفاصيل' : 'View Details')}
+                            <ArrowRight size={16} className={`transition-transform group-hover:translate-x-1 ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Link>

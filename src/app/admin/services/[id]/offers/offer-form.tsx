@@ -9,6 +9,7 @@ import { serviceOfferSchema, ServiceOfferFormData, ServiceOfferRecord } from "..
 import { createServiceOffer, updateServiceOffer } from "../../service-actions";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
+import { compressImage } from "@/lib/image";
 
 interface OfferFormProps {
   serviceId: string;
@@ -26,11 +27,18 @@ export default function OfferForm({ serviceId, initialData, onSuccess, onCancel 
   const t = translations[language];
   const oTrans = t.admin.offers;
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setPhoto(file);
-      setPreview(URL.createObjectURL(file));
+      try {
+        const compressed = await compressImage(file);
+        setPhoto(compressed);
+        setPreview(URL.createObjectURL(compressed));
+      } catch (err) {
+        console.error("Offer photo compression failed, using original:", err);
+        setPhoto(file);
+        setPreview(URL.createObjectURL(file));
+      }
     }
   };
 

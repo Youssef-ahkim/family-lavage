@@ -160,6 +160,7 @@ export const translations = {
       rights: "TOUS DROITS RÉSERVÉS.",
     },
     booking: {
+      notAvailable: "Ce service n'est pas disponible pour le moment",
       title: "RÉSERVER VOTRE",
       titleAccent: "LAVAGE.",
       subtitle: "Choisissez votre service et l'heure qui vous convient.",
@@ -621,6 +622,7 @@ export const translations = {
       rights: "ALL RIGHTS RESERVED.",
     },
     booking: {
+      notAvailable: "This service is not available for now",
       title: "BOOK YOUR",
       titleAccent: "WASH.",
       subtitle: "Choose your service and the time that suits you best.",
@@ -1082,6 +1084,7 @@ export const translations = {
       rights: "جميع الحقوق محفوظة.",
     },
     booking: {
+      notAvailable: "هذه الخدمة غير متوفرة حالياً",
       title: "احجز",
       titleAccent: "غسيلك الآن.",
       subtitle: "اختر الخدمة والوقت المناسب لك.",

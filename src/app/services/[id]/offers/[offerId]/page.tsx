@@ -214,7 +214,12 @@ export default function OfferDetailsPage() {
                     <p>{subError}</p>
                   </div>
                 )}
-                {offer.category === 'subscription' ? (
+                {!service.active ? (
+                  <div className={`w-full p-5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                    <AlertCircle size={18} className="shrink-0 animate-pulse" />
+                    <p>{t.booking.notAvailable}</p>
+                  </div>
+                ) : offer.category === 'subscription' ? (
                   <button 
                     onClick={handleSubscribe}
                     disabled={subscribing || subSuccess || hasActive || hasPending}

@@ -9,7 +9,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import { getServices, getServiceOffers } from "@/app/admin/services/service-actions";
 import { ServiceRecord, ServiceOfferRecord } from "@/app/admin/services/service-types";
-import { ArrowLeft, Car, ArrowRight, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Car, ArrowRight, Sparkles, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 
 export default function ServiceDetailsPage() {
   const params = useParams();
@@ -127,16 +127,19 @@ export default function ServiceDetailsPage() {
                   return (
                     <div 
                       key={sub.id} 
-                      className="flex flex-col reveal group cursor-pointer h-full"
+                      className={`flex flex-col reveal group h-full ${!sub.active ? 'opacity-65 grayscale' : 'cursor-pointer'}`}
                       style={{ animationDelay: `${idx * 100}ms` }}
                     >
                       <Link 
-                        href={`/services/${sub.id}`} 
+                        href={sub.active ? `/services/${sub.id}` : '#'} 
+                        onClick={(e) => {
+                          if (!sub.active) e.preventDefault();
+                        }}
                         className={`card-premium block h-full relative p-3 rounded-[2rem] transition-all duration-500 overflow-hidden ${
                           isSubGold 
                           ? 'bg-zinc-950 shadow-xl hover:shadow-2xl hover:shadow-brand-gold/20 ring-1 ring-white/10 hover:ring-brand-gold/50' 
                           : 'bg-white shadow-sm hover:shadow-2xl hover:shadow-brand-blue/10 ring-1 ring-zinc-200/60 hover:ring-brand-blue/30'
-                        }`}
+                        } ${sub.active ? 'hover:-translate-y-2' : 'cursor-not-allowed'}`}
                       >
                         {isSubGold && (
                           <div className="absolute top-0 right-0 w-64 h-64 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
@@ -167,14 +170,20 @@ export default function ServiceDetailsPage() {
                           </h2>
                           
                           <div className="mt-auto pt-6">
-                            <div className={`w-full px-6 py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 ${
-                              isSubGold 
-                              ? 'bg-brand-gold/10 text-brand-gold group-hover:bg-brand-gold group-hover:text-black' 
-                              : 'bg-zinc-50 text-brand-blue group-hover:bg-brand-blue group-hover:text-white ring-1 ring-zinc-100 group-hover:ring-brand-blue group-hover:shadow-lg group-hover:shadow-brand-blue/20'
-                            }`}>
-                              {t.services.viewDetails}
-                              <ArrowRight size={16} className={`transition-transform group-hover:translate-x-1 ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
-                            </div>
+                            {!sub.active ? (
+                               <div className="w-full px-6 py-4 rounded-xl font-black uppercase tracking-widest text-[9px] bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center gap-2">
+                                 {t.booking.notAvailable}
+                               </div>
+                             ) : (
+                               <div className={`w-full px-6 py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 ${
+                                 isSubGold 
+                                 ? 'bg-brand-gold/10 text-brand-gold group-hover:bg-brand-gold group-hover:text-black' 
+                                 : 'bg-zinc-50 text-brand-blue group-hover:bg-brand-blue group-hover:text-white ring-1 ring-zinc-100 group-hover:ring-brand-blue group-hover:shadow-lg group-hover:shadow-brand-blue/20'
+                               }`}>
+                                 {t.services.viewDetails}
+                                 <ArrowRight size={16} className={`transition-transform group-hover:translate-x-1 ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
+                               </div>
+                             )}
                           </div>
                         </div>
                       </Link>
@@ -264,26 +273,33 @@ export default function ServiceDetailsPage() {
                     </p>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <button 
-                      onClick={() => {
-                        if (service.booking_type === "direct") {
-                          router.push(`/booking?serviceId=${service.id}`);
-                        } else {
-                          document.getElementById('offers-section')?.scrollIntoView({ behavior: 'smooth' });
+                  <div className="flex flex-col gap-4">
+                    {!service.active ? (
+                      <div className="w-full p-5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3">
+                        <AlertCircle className="w-5 h-5 shrink-0 animate-pulse" />
+                        {t.booking.notAvailable}
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => {
+                          if (service.booking_type === "direct") {
+                            router.push(`/booking?serviceId=${service.id}`);
+                          } else {
+                            document.getElementById('offers-section')?.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                        className={`w-full sm:w-auto px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-xl flex items-center justify-center gap-3 ${
+                        isGold 
+                        ? 'bg-brand-gold text-black hover:bg-zinc-900 hover:text-brand-gold shadow-brand-gold/20' 
+                        : 'bg-brand-blue text-white hover:bg-zinc-900 shadow-brand-blue/20'
+                      }`}>
+                        {service.booking_type === "direct" 
+                          ? t.booking.reserve
+                          : t.booking.viewOffers
                         }
-                      }}
-                      className={`w-full sm:w-auto px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-xl flex items-center justify-center gap-3 ${
-                      isGold 
-                      ? 'bg-brand-gold text-black hover:bg-zinc-900 hover:text-brand-gold shadow-brand-gold/20' 
-                      : 'bg-brand-blue text-white hover:bg-zinc-900 shadow-brand-blue/20'
-                    }`}>
-                      {service.booking_type === "direct" 
-                        ? t.booking.reserve
-                        : t.booking.viewOffers
-                      }
-                      <ArrowRight size={20} className={dir === 'rtl' ? 'rotate-180' : 'rotate-90'} />
-                    </button>
+                        <ArrowRight size={20} className={dir === 'rtl' ? 'rotate-180' : 'rotate-90'} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

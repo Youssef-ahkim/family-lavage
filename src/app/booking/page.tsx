@@ -107,7 +107,7 @@ const BookingPage = () => {
     const fetchServicesData = async () => {
       try {
         const data = await getServices();
-        setDbServices(data.filter(s => s.active));
+        setDbServices(data);
       } catch (err) {
         console.error("Error fetching services:", err);
       } finally {
@@ -375,8 +375,13 @@ const BookingPage = () => {
                   return (
                     <button
                       key={service.id}
-                      onClick={() => handleServiceSelect(service)}
-                      className={`relative p-8 rounded-[2rem] border-2 border-zinc-100 bg-zinc-50 text-left transition-all duration-500 hover:border-brand-blue/30 group ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
+                      onClick={() => service.active && handleServiceSelect(service)}
+                      disabled={!service.active}
+                      className={`relative p-8 rounded-[2rem] border-2 text-left transition-all duration-500 group ${dir === 'rtl' ? 'text-right' : 'text-left'} ${
+                        !service.active 
+                        ? 'border-zinc-100 bg-zinc-100/40 opacity-60 cursor-not-allowed' 
+                        : 'border-zinc-100 bg-zinc-50 hover:border-brand-blue/30'
+                      }`}
                     >
                       {service.photo && (
                         <div className="w-full h-32 rounded-2xl overflow-hidden mb-6 relative">
@@ -385,15 +390,22 @@ const BookingPage = () => {
                       )}
                       <h3 className="text-2xl font-black uppercase italic tracking-tight mb-2">{title}</h3>
                       <p className="text-zinc-500 text-sm line-clamp-2">{desc}</p>
-                      <div className={`mt-6 flex items-center gap-2 text-brand-blue font-bold uppercase tracking-widest text-[10px] ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                        {service.booking_type === "has_children" 
-                          ? b.viewOptions
-                          : service.booking_type === "direct"
-                          ? b.reserve
-                          : b.viewOffers
-                        }
-                        <ChevronRight size={14} className={dir === 'rtl' ? 'rotate-180' : ''} />
-                      </div>
+                      {!service.active ? (
+                        <div className={`mt-6 flex items-center gap-2 text-red-500 font-black uppercase tracking-widest text-[9px] ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                          <AlertCircle size={14} className="shrink-0" />
+                          {b.notAvailable}
+                        </div>
+                      ) : (
+                        <div className={`mt-6 flex items-center gap-2 text-brand-blue font-bold uppercase tracking-widest text-[10px] ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                          {service.booking_type === "has_children" 
+                            ? b.viewOptions
+                            : service.booking_type === "direct"
+                            ? b.reserve
+                            : b.viewOffers
+                          }
+                          <ChevronRight size={14} className={dir === 'rtl' ? 'rotate-180' : ''} />
+                        </div>
+                      )}
                     </button>
                   );
                 })}
@@ -423,8 +435,13 @@ const BookingPage = () => {
                     return (
                       <button
                         key={service.id}
-                        onClick={() => handleServiceSelect(service)}
-                        className={`relative p-8 rounded-[2rem] border-2 border-zinc-100 bg-zinc-50 text-left transition-all duration-500 hover:border-brand-blue/30 group ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
+                        onClick={() => service.active && handleServiceSelect(service)}
+                        disabled={!service.active}
+                        className={`relative p-8 rounded-[2rem] border-2 text-left transition-all duration-500 group ${dir === 'rtl' ? 'text-right' : 'text-left'} ${
+                          !service.active 
+                          ? 'border-zinc-100 bg-zinc-100/40 opacity-60 cursor-not-allowed' 
+                          : 'border-zinc-100 bg-zinc-50 hover:border-brand-blue/30'
+                        }`}
                       >
                         {service.photo && (
                           <div className="w-full h-32 rounded-2xl overflow-hidden mb-6 relative">
@@ -433,10 +450,17 @@ const BookingPage = () => {
                         )}
                         <h3 className="text-2xl font-black uppercase italic tracking-tight mb-2">{title}</h3>
                         <p className="text-zinc-500 text-sm line-clamp-2">{desc}</p>
-                        <div className={`mt-6 flex items-center gap-2 text-brand-blue font-bold uppercase tracking-widest text-[10px] ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                          {service.booking_type === "direct" ? b.reserve : b.viewOffers}
-                          <ChevronRight size={14} className={dir === 'rtl' ? 'rotate-180' : ''} />
-                        </div>
+                        {!service.active ? (
+                          <div className={`mt-6 flex items-center gap-2 text-red-500 font-black uppercase tracking-widest text-[9px] ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                            <AlertCircle size={14} className="shrink-0" />
+                            {b.notAvailable}
+                          </div>
+                        ) : (
+                          <div className={`mt-6 flex items-center gap-2 text-brand-blue font-bold uppercase tracking-widest text-[10px] ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                            {service.booking_type === "direct" ? b.reserve : b.viewOffers}
+                            <ChevronRight size={14} className={dir === 'rtl' ? 'rotate-180' : ''} />
+                          </div>
+                        )}
                       </button>
                     );
                   })}
