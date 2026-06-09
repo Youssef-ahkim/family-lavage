@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import PwaInstall from "@/components/PwaInstall";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import { getServices } from "../admin/services/service-actions";
@@ -213,6 +214,9 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
+
+      {/* PWA Install Section */}
+      <PwaInstall />
 
       {/* Footer */}
       <footer className="py-12 bg-white border-t border-zinc-100 relative">

@@ -3,7 +3,6 @@ import "./globals.css";
 
 import { LanguageProvider } from "@/context/LanguageContext";
 import { ProfileProvider } from "@/context/ProfileContext";
-import PwaInstall from "@/components/PwaInstall";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -94,7 +93,6 @@ export default function RootLayout({
         <LanguageProvider>
           <ProfileProvider>
             {children}
-            <PwaInstall />
           </ProfileProvider>
         </LanguageProvider>
       </body>

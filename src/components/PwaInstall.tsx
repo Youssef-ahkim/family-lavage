@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Smartphone, ArrowRight, Share2, PlusSquare } from "lucide-react";
+import { Smartphone, ArrowRight, Share2, PlusSquare } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -21,7 +21,6 @@ const translations = {
     iosTitle: "How to Install on iOS",
     iosStep1: "1. Tap the Share button in Safari (at the bottom or top of your screen).",
     iosStep2: "2. Scroll down and tap 'Add to Home Screen'.",
-    close: "Dismiss",
   },
   fr: {
     title: "Gardez FML à vos côtés",
@@ -30,7 +29,6 @@ const translations = {
     iosTitle: "Comment installer sur iOS",
     iosStep1: "1. Appuyez sur le bouton Partager dans Safari (en bas ou en haut de l'écran).",
     iosStep2: "2. Faites défiler vers le bas et appuyez sur 'Sur l'écran d'accueil'.",
-    close: "Ignorer",
   },
   ar: {
     title: "اجعل FML دائماً بجانبك",
@@ -39,7 +37,6 @@ const translations = {
     iosTitle: "كيفية التثبيت على iOS",
     iosStep1: "1. اضغط على زر المشاركة في Safari (في أسفل الشاشة أو أعلاها).",
     iosStep2: "2. اسحب لأسفل واضغط على 'إضافة إلى الشاشة الرئيسية'.",
-    close: "إغلاق",
   },
 };
 
@@ -67,35 +64,27 @@ export default function PwaInstall() {
       (window.navigator as any).standalone === true;
 
     if (isStandalone) {
-      return; // Already installed, do not show banner
+      return; // Already installed, hide section
     }
 
     // 3. Detect iOS
     const userAgent = window.navigator.userAgent.toLowerCase();
-    const ios = /iphone|ipad|ipod/.test(userAgent) && !/lkx/.test(userAgent); // Exclude inside webviews if possible
+    const ios = /iphone|ipad|ipod/.test(userAgent) && !/lkx/.test(userAgent);
     setIsIOS(ios);
 
     // 4. Handle BeforeInstallPrompt event for Android/Chrome/Edge
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-
-      // Check if user dismissed it previously in localStorage
-      const dismissed = localStorage.getItem("fml_pwa_dismissed");
-      if (!dismissed) {
-        setIsVisible(true);
-      }
+      setIsVisible(true);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstall);
 
     // For iOS, beforeinstallprompt is never fired.
-    // Show banner if iOS is detected and not dismissed.
+    // Display the install section for iOS immediately if not installed.
     if (ios) {
-      const dismissed = localStorage.getItem("fml_pwa_dismissed");
-      if (!dismissed) {
-        setIsVisible(true);
-      }
+      setIsVisible(true);
     }
 
     return () => {
@@ -123,83 +112,74 @@ export default function PwaInstall() {
     setIsVisible(false);
   };
 
-  const handleDismiss = () => {
-    // Save dismissal in localStorage so we don't prompt on every page reload
-    localStorage.setItem("fml_pwa_dismissed", "true");
-    setIsVisible(false);
-  };
-
   if (!isVisible) return null;
 
   return (
-    <div
-      dir={dir}
-      className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] w-[92%] sm:w-full sm:max-w-md bg-zinc-950/95 backdrop-blur-xl border border-zinc-800 rounded-3xl p-5 md:p-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] transition-all duration-300 animate-float`}
+    <section 
+      dir={dir} 
+      className="bg-zinc-950 border-t border-zinc-900 relative overflow-hidden py-16 text-white"
     >
-      {/* Close Button */}
-      <button
-        onClick={handleDismiss}
-        className={`absolute top-4 ${dir === "rtl" ? "left-4" : "right-4"} p-1.5 text-zinc-500 hover:text-white bg-zinc-900/50 hover:bg-zinc-800 rounded-full transition-colors`}
-        aria-label={t.close}
-      >
-        <X size={16} />
-      </button>
+      {/* Background blobs for premium feel */}
+      <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[350px] h-[350px] bg-brand-blue/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[350px] h-[350px] bg-brand-blue/5 rounded-full blur-[100px] pointer-events-none" />
 
-      {!showIosInstructions ? (
-        <div className="flex items-start gap-4 pr-6 pl-1">
-          {/* App Icon Styling */}
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-blue to-brand-blue-light flex items-center justify-center text-white shrink-0 shadow-lg shadow-brand-blue/30">
-            <Smartphone className="w-6 h-6 animate-pulse" />
-          </div>
-          
-          <div className={`flex flex-col ${dir === "rtl" ? "text-right" : "text-left"}`}>
-            <h3 className="text-sm font-black uppercase italic tracking-wider text-white">
-              {t.title}
-            </h3>
-            <p className="text-zinc-400 text-xs mt-1.5 leading-relaxed font-semibold">
-              {t.desc}
-            </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {!showIosInstructions ? (
+          <div className={`flex flex-col md:flex-row items-center justify-between gap-8 ${dir === 'rtl' ? 'md:flex-row-reverse' : ''}`}>
+            <div className={`flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left ${dir === 'rtl' ? 'md:flex-row-reverse md:text-right' : ''}`}>
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-blue to-brand-blue-light flex items-center justify-center text-white shrink-0 shadow-lg shadow-brand-blue/30 animate-pulse">
+                <Smartphone className="w-8 h-8" />
+              </div>
+              <div className="flex flex-col">
+                <h2 className="text-2xl sm:text-3xl font-black uppercase italic tracking-tighter text-white">
+                  {t.title}
+                </h2>
+                <p className="text-zinc-400 text-sm mt-2 max-w-xl font-medium leading-relaxed">
+                  {t.desc}
+                </p>
+              </div>
+            </div>
             
             <button
               onClick={handleInstallClick}
-              className="mt-4 w-full bg-brand-blue text-white font-black uppercase text-[10px] tracking-widest px-5 py-3 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-brand-blue/20 flex items-center justify-center gap-2"
+              className="w-full md:w-auto bg-brand-blue text-white font-black uppercase text-xs tracking-widest px-8 py-5 rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-3 shrink-0 cursor-pointer"
             >
               {t.installBtn}
-              <ArrowRight size={14} className={dir === "rtl" ? "rotate-180" : ""} />
+              <ArrowRight size={16} className={dir === "rtl" ? "rotate-180" : ""} />
             </button>
           </div>
-        </div>
-      ) : (
-        <div className={`flex flex-col ${dir === "rtl" ? "text-right" : "text-left"} pr-4 pl-1`}>
-          <h3 className="text-sm font-black uppercase italic tracking-wider text-white flex items-center gap-2">
-            <Smartphone className="w-5 h-5 text-brand-blue" />
-            {t.iosTitle}
-          </h3>
-          
-          <div className="mt-4 space-y-3.5 text-zinc-300 text-xs font-semibold leading-relaxed">
-            <div className="flex items-start gap-2.5">
-              <span className="p-1 rounded bg-zinc-900 text-brand-blue shrink-0 flex items-center justify-center">
-                <Share2 size={16} />
-              </span>
-              <p className="mt-0.5">{t.iosStep1}</p>
-            </div>
+        ) : (
+          <div className={`flex flex-col ${dir === "rtl" ? "text-right" : "text-left"} max-w-2xl mx-auto`}>
+            <h3 className="text-xl font-black uppercase italic tracking-wider text-white flex items-center gap-3 justify-center md:justify-start">
+              <Smartphone className="w-6 h-6 text-brand-blue" />
+              {t.iosTitle}
+            </h3>
             
-            <div className="flex items-start gap-2.5">
-              <span className="p-1 rounded bg-zinc-900 text-brand-blue shrink-0 flex items-center justify-center">
-                <PlusSquare size={16} />
-              </span>
-              <p className="mt-0.5">{t.iosStep2}</p>
+            <div className="mt-6 space-y-4 text-zinc-300 text-sm font-semibold leading-relaxed">
+              <div className={`flex items-start gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                <span className="p-1.5 rounded bg-zinc-900 text-brand-blue shrink-0 flex items-center justify-center">
+                  <Share2 size={18} />
+                </span>
+                <p className="mt-1">{t.iosStep1}</p>
+              </div>
+              
+              <div className={`flex items-start gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                <span className="p-1.5 rounded bg-zinc-900 text-brand-blue shrink-0 flex items-center justify-center">
+                  <PlusSquare size={18} />
+                </span>
+                <p className="mt-1">{t.iosStep2}</p>
+              </div>
             </div>
-          </div>
 
-          <button
-            onClick={() => setShowIosInstructions(false)}
-            className="mt-5 text-[10px] text-zinc-400 hover:text-white uppercase tracking-widest font-black text-center"
-          >
-            ← Back
-          </button>
-        </div>
-      )}
-    </div>
+            <button
+              onClick={() => setShowIosInstructions(false)}
+              className="mt-6 text-xs text-brand-blue hover:text-white uppercase tracking-widest font-black text-center md:text-left self-center md:self-start cursor-pointer"
+            >
+              {dir === 'rtl' ? 'الرجوع ←' : '← Back'}
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

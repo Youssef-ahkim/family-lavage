@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import PwaInstall from "@/components/PwaInstall";
 import { Car, MapPin, Clock, Star, MessageCircle, Phone, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
@@ -295,6 +296,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* PWA Install Section */}
+      <PwaInstall />
 
       {/* Footer */}
       <footer className="py-16 border-t border-zinc-100 bg-white relative">

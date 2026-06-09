@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import PwaInstall from "@/components/PwaInstall";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import { getServices, getServiceOffers } from "@/app/admin/services/service-actions";
@@ -272,6 +273,9 @@ export default function OfferDetailsPage() {
         </div>
       </main>
       
+      {/* PWA Install Section */}
+      <PwaInstall />
+
       {/* Footer */}
       <footer className="py-16 border-t border-zinc-100 bg-zinc-50 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
