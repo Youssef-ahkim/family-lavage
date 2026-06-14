@@ -8,6 +8,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useProfile } from "@/context/ProfileContext";
 import { translations } from "@/lib/translations";
 import { submitBooking, getBookedTimes } from "@/app/actions/booking";
+import { getMySubscriptionRequests } from "@/app/actions/subscription";
 import { getServices, getServiceOffers } from "../admin/services/service-actions";
 import { ServiceRecord, ServiceOfferRecord } from "../admin/services/service-types";
 import { ChevronLeft, ChevronRight, CheckCircle2, Car, Droplets, Clock, Calendar, User, Phone, ClipboardCheck, AlertCircle, Loader2 } from "lucide-react";
@@ -46,6 +47,7 @@ const BookingPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCheckingActive, setIsCheckingActive] = useState(true);
+  const [userRequests, setUserRequests] = useState<any[]>([]);
 
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [isFetchingSlots, setIsFetchingSlots] = useState(false);
@@ -93,6 +95,8 @@ const BookingPage = () => {
             phone: profile.phone || prev.phone,
             carModel: profile.plate || prev.carModel,
           }));
+          const reqs = await getMySubscriptionRequests();
+          setUserRequests(reqs);
         }
 
         // Removed global hasActiveBooking check to allow multiple different service bookings
@@ -157,7 +161,8 @@ const BookingPage = () => {
       const activeOffers = offers.filter(o => o.active);
       const filteredOffers = activeOffers.filter(o => {
         if (o.category === "subscription") {
-          return cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0;
+          const activeReq = userRequests.find(r => r.status === 'active' && r.plan === o.plan_type && r.amount === o.price);
+          return !!activeReq && (activeReq.washes_remaining || 0) > 0;
         }
         return true;
       });
@@ -175,7 +180,7 @@ const BookingPage = () => {
     } finally {
       setIsFetchingOffers(false);
     }
-  }, []);
+  }, [userRequests]);
 
   useEffect(() => {
     if (serviceIdParam && dbServices.length > 0) {

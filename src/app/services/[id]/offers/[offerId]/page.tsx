@@ -220,30 +220,47 @@ export default function OfferDetailsPage() {
                     <p>{t.booking.notAvailable}</p>
                   </div>
                 ) : offer.category === 'subscription' ? (
-                  <button 
-                    onClick={handleSubscribe}
-                    disabled={subscribing || subSuccess || hasActive || hasPending}
-                    className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm transition-all flex items-center justify-center gap-3 group shadow-xl ${
-                      hasActive
-                      ? 'bg-green-500 text-white shadow-green-500/20 hover:bg-green-600'
-                      : (hasPending || subSuccess)
-                        ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600'
-                        : isPremiumOffer 
-                          ? 'bg-brand-gold text-black shadow-brand-gold/20 hover:bg-zinc-900 hover:text-brand-gold hover:-translate-y-1' 
-                          : 'bg-brand-blue text-white shadow-brand-blue/20 hover:bg-zinc-900 hover:-translate-y-1'
-                    } disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed`}
-                  >
-                    {subscribing && !hasActive && !hasPending && !subSuccess ? (
-                      <Loader2 size={20} className="animate-spin" />
-                    ) : hasActive ? (
-                      <><CheckCircle2 size={20} /> {t.subscription.activeSubscription}</>
-                    ) : (hasPending || subSuccess) ? (
-                      <><Clock size={20} /> {t.subscription.requestPending}</>
-                    ) : (
-                      t.subscription.requestBtn
+                  <div className="flex flex-col gap-4">
+                    <button 
+                      onClick={handleSubscribe}
+                      disabled={subscribing || subSuccess || hasActive || hasPending}
+                      className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm transition-all flex items-center justify-center gap-3 group shadow-xl ${
+                        hasActive
+                        ? 'bg-green-500 text-white shadow-green-500/20 hover:bg-green-600'
+                        : (hasPending || subSuccess)
+                          ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600'
+                          : isPremiumOffer 
+                            ? 'bg-brand-gold text-black shadow-brand-gold/20 hover:bg-zinc-900 hover:text-brand-gold hover:-translate-y-1' 
+                            : 'bg-brand-blue text-white shadow-brand-blue/20 hover:bg-zinc-900 hover:-translate-y-1'
+                      } disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed`}
+                    >
+                      {subscribing && !hasActive && !hasPending && !subSuccess ? (
+                        <Loader2 size={20} className="animate-spin" />
+                      ) : hasActive ? (
+                        <><CheckCircle2 size={20} /> {t.subscription.activeSubscription}</>
+                      ) : (hasPending || subSuccess) ? (
+                        <><Clock size={20} /> {t.subscription.requestPending}</>
+                      ) : (
+                        t.subscription.requestBtn
+                      )}
+                      {!subscribing && !subSuccess && !hasActive && !hasPending && <ArrowRight size={20} className={`transition-transform ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />}
+                    </button>
+                    {hasActive && (
+                      <Link 
+                        href={`/booking?serviceId=${serviceId}&offerId=${offerId}`} 
+                        className="block"
+                      >
+                        <button className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm transition-all flex items-center justify-center gap-3 group shadow-xl hover:-translate-y-1 ${
+                          isPremiumOffer 
+                          ? 'bg-brand-gold text-black shadow-brand-gold/20 hover:bg-zinc-900 hover:text-brand-gold' 
+                          : 'bg-brand-blue text-white shadow-brand-blue/20 hover:bg-zinc-900'
+                        }`}>
+                          {t.booking.reserve}
+                          <ArrowRight size={20} className={`transition-transform ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
+                        </button>
+                      </Link>
                     )}
-                    {!subscribing && !subSuccess && !hasActive && !hasPending && <ArrowRight size={20} className={`transition-transform ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />}
-                  </button>
+                  </div>
                 ) : (
                   <Link 
                     href={`/booking?serviceId=${serviceId}&offerId=${offerId}`} 
