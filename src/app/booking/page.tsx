@@ -155,10 +155,16 @@ const BookingPage = () => {
     try {
       const offers = await getServiceOffers(service.id);
       const activeOffers = offers.filter(o => o.active);
-      setDbOffers(activeOffers);
+      const filteredOffers = activeOffers.filter(o => {
+        if (o.category === "subscription") {
+          return cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0;
+        }
+        return true;
+      });
+      setDbOffers(filteredOffers);
       
       if (initialOfferId) {
-        const targetOffer = activeOffers.find(o => o.id === initialOfferId);
+        const targetOffer = filteredOffers.find(o => o.id === initialOfferId);
         if (targetOffer) {
           setSelectedOffer(targetOffer);
           setStep(2);
@@ -227,7 +233,7 @@ const BookingPage = () => {
         bookingTitle = serviceTitle || "Lavage";
       }
 
-      const isSubWash = selectedOffer.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0;
+      const isSubWash = selectedOffer.category === 'subscription' && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0;
       const finalPrice = isSubWash ? 0 : selectedOffer.price;
 
       const result = await submitBooking({
@@ -498,7 +504,7 @@ const BookingPage = () => {
                   ) : dbOffers.map((offer) => {
                     const title = language === 'fr' ? offer.title_fr : (language === 'ar' ? offer.title_ar : offer.title_en);
                     const features = language === 'fr' ? offer.features_fr : (language === 'ar' ? offer.features_ar : offer.features_en);
-                    const isSubWash = offer.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0;
+                    const isSubWash = offer.category === 'subscription' && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0;
                     const finalPrice = isSubWash ? "0" : offer.price.toString();
                     const isRecommended = offer.price >= 500;
 
@@ -515,11 +521,17 @@ const BookingPage = () => {
                         )}
                         <h3 className="text-xl font-black uppercase italic tracking-tight mb-2">{title}</h3>
                         <div className="flex flex-col mb-6">
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-3xl font-black">{finalPrice}</span>
-                            <span className="text-xs font-bold text-zinc-400 uppercase">DH</span>
-                          </div>
-                          {finalPrice === "0" && (
+                          {isSubWash ? (
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-3xl font-black">{b.subscriptionWash || 'Subscription'}</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-3xl font-black">{finalPrice}</span>
+                              <span className="text-xs font-bold text-zinc-400 uppercase">DH</span>
+                            </div>
+                          )}
+                          {isSubWash && (
                             <p className="text-[9px] font-black text-brand-blue uppercase tracking-widest mt-1">
                               {b.summary.deductNotice}
                             </p>
@@ -745,18 +757,18 @@ const BookingPage = () => {
                 <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
                   <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">{b.summary.total}</p>
                   <div className={`flex items-baseline gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-5xl font-black tracking-tighter text-zinc-950">
-                      {selectedOffer?.price === -1 ? (
-                        <span className="text-2xl">{b.onSite}</span>
-                      ) : (
-                        selectedOffer && selectedOffer.price <= 100 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0 ? "0" : selectedOffer?.price || '0'
-                      )}
-                    </span>
-                    {selectedOffer?.price !== -1 && (
-                      <span className="text-sm font-black text-zinc-400 uppercase">DH</span>
+                    {selectedOffer?.price === -1 ? (
+                      <span className="text-3xl font-black tracking-tighter text-zinc-950">{b.onSite}</span>
+                    ) : selectedOffer && selectedOffer.category === 'subscription' && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0 ? (
+                      <span className="text-3xl font-black tracking-tighter text-zinc-950">{b.subscriptionWash || 'Subscription'}</span>
+                    ) : (
+                      <>
+                        <span className="text-5xl font-black tracking-tighter text-zinc-950">{selectedOffer?.price || '0'}</span>
+                        <span className="text-sm font-black text-zinc-400 uppercase">DH</span>
+                      </>
                     )}
                   </div>
-                  {(selectedOffer && selectedOffer.price <= 100 && selectedOffer.price !== -1 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) && (
+                  {(selectedOffer && selectedOffer.category === 'subscription' && selectedOffer.price !== -1 && cachedProfile?.subscription_status === 'active' && (cachedProfile?.washes_remaining || 0) > 0) && (
                     <p className="text-[10px] font-bold text-brand-blue uppercase tracking-wider mt-1">
                       {b.summary.deductNotice}
                     </p>

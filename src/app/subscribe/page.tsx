@@ -218,6 +218,15 @@ export default function SubscribePage() {
                         <span className="font-black text-green-600">{new Date(activeReq.expiry_date).toLocaleDateString(language === 'fr' ? 'fr-FR' : (language === 'ar' ? 'ar-MA' : 'en-US'))}</span>
                       </div>
                     )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/booking?serviceId=${plan.service}&offerId=${plan.id}`);
+                      }}
+                      className="mt-2 w-full py-3 bg-green-500 text-white font-black uppercase tracking-widest rounded-xl hover:bg-green-600 transition-colors shadow-md shadow-green-500/20 flex items-center justify-center gap-2 text-xs"
+                    >
+                      {t.booking.reserve} <ChevronRight size={16} className={dir === 'rtl' ? 'rotate-180' : ''} />
+                    </button>
                   </div>
                 )}
 
