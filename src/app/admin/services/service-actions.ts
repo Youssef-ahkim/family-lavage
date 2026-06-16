@@ -31,7 +31,7 @@ function prepareServiceData(formData: FormData) {
     if (value instanceof File && value.size > 0) return;
     if (key === "photo" || key === "gallery" || key === "gallery+" || key === "gallery-" || key === "clear_gallery") return;
 
-    if (key === "active") {
+    if (["active", "requires_location", "requires_matricule"].includes(key)) {
       data[key] = value === "true" || value === "1";
       return;
     }

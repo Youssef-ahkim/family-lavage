@@ -11,7 +11,7 @@ import { submitBooking, getBookedTimes } from "@/app/actions/booking";
 import { getMySubscriptionRequests } from "@/app/actions/subscription";
 import { getServices, getServiceOffers } from "../admin/services/service-actions";
 import { ServiceRecord, ServiceOfferRecord } from "../admin/services/service-types";
-import { ChevronLeft, ChevronRight, CheckCircle2, Car, Droplets, Clock, Calendar, User, Phone, ClipboardCheck, AlertCircle, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Car, Droplets, Clock, Calendar, User, Phone, ClipboardCheck, AlertCircle, Loader2, MapPin } from "lucide-react";
 import Image from "next/image";
 
 const BookingPage = () => {
@@ -31,6 +31,7 @@ const BookingPage = () => {
     fullname: "",
     phone: "",
     carModel: "",
+    location: "",
     date: "",
     time: "",
   });
@@ -245,6 +246,7 @@ const BookingPage = () => {
         full_name: formData.fullname,
         phone: formData.phone,
         plate_number: formData.carModel,
+        location: formData.location,
         service_type: bookingTitle,
         service_id: selectedService?.id, // NEW: pass the service ID
         price: finalPrice,
@@ -277,6 +279,9 @@ const BookingPage = () => {
       setLoading(false);
     }
   };
+
+  const requiresLocation = selectedService ? !!selectedService.requires_location : false;
+  const requiresMatricule = selectedService ? (selectedService.requires_matricule !== undefined ? !!selectedService.requires_matricule : true) : true;
 
   if (isCheckingActive) {
     return (
@@ -610,21 +615,40 @@ const BookingPage = () => {
                     />
                   </div>
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{b.form.carModel}</label>
-                  <div className="relative">
-                    <Car className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
-                    <input
-                      required
-                      type="text"
-                      name="carModel"
-                      placeholder={b.form.placeholderCar}
-                      value={formData.carModel}
-                      onChange={handleInputChange}
-                      className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all`}
-                    />
+                {requiresLocation && (
+                  <div className="space-y-2 md:col-span-2">
+                    <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{b.form.location}</label>
+                    <div className="relative">
+                      <MapPin className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
+                      <input
+                        required
+                        type="text"
+                        name="location"
+                        placeholder={b.form.placeholderLocation}
+                        value={formData.location}
+                        onChange={handleInputChange}
+                        className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all`}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
+                {requiresMatricule && (
+                  <div className="space-y-2 md:col-span-2">
+                    <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{b.form.carModel}</label>
+                    <div className="relative">
+                      <Car className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-brand-blue w-5 h-5`} />
+                      <input
+                        required
+                        type="text"
+                        name="carModel"
+                        placeholder={b.form.placeholderCar}
+                        value={formData.carModel}
+                        onChange={handleInputChange}
+                        className={`w-full ${dir === 'rtl' ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} py-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white transition-all`}
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{b.form.date}</label>
                   <div className="relative">
@@ -705,7 +729,14 @@ const BookingPage = () => {
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  disabled={!formData.fullname || !formData.phone || !formData.carModel || !formData.date || !formData.time}
+                  disabled={
+                    !formData.fullname || 
+                    !formData.phone || 
+                    (requiresMatricule && !formData.carModel) || 
+                    (requiresLocation && !formData.location) || 
+                    !formData.date || 
+                    !formData.time
+                  }
                   className={`btn-primary group disabled:opacity-50 disabled:hover:scale-100 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
                 >
                   {b.next}
@@ -737,10 +768,18 @@ const BookingPage = () => {
                     <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{b.form.phone}</span>
                     <span className="font-black text-sm uppercase">{formData.phone}</span>
                   </div>
-                  <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{b.vehicle}</span>
-                    <span className="font-black text-sm uppercase">{formData.carModel}</span>
-                  </div>
+                  {requiresMatricule && (
+                    <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                      <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{b.vehicle}</span>
+                      <span className="font-black text-sm uppercase">{formData.carModel}</span>
+                    </div>
+                  )}
+                  {requiresLocation && (
+                    <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                      <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">{b.locationLabel}</span>
+                      <span className="font-black text-sm uppercase">{formData.location}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-6">
                   <div className={`flex justify-between border-b border-zinc-200 pb-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>

@@ -53,8 +53,34 @@ export async function submitBooking(formData: Record<string, unknown>) {
       return { success: false, error: "errors.invalidPhone" };
     }
 
-    if (!cleanPlate || cleanPlate.length > 100) {
-      return { success: false, error: "errors.invalidPlate" };
+    // Use ADMIN client for all database operations
+    const adminPb = await getAdminPB();
+
+    // Check service requirements (matricule and/or location)
+    let requiresLocation = false;
+    let requiresMatricule = true; // Default to true (standard car washes)
+    if (formData.service_id && typeof formData.service_id === 'string') {
+      try {
+        const service = await adminPb.collection('services').getOne(formData.service_id);
+        requiresLocation = !!service.requires_location;
+        requiresMatricule = service.requires_matricule !== undefined ? !!service.requires_matricule : true;
+      } catch (err) {
+        console.error("Error fetching service to check requirements:", err);
+      }
+    }
+
+    const cleanLocation = sanitizeHTML(typeof formData.location === 'string' ? formData.location : '').trim();
+
+    if (requiresLocation) {
+      if (!cleanLocation || cleanLocation.length > 250) {
+        return { success: false, error: "errors.invalidLocation" };
+      }
+    }
+
+    if (requiresMatricule) {
+      if (!cleanPlate || cleanPlate.length > 100) {
+        return { success: false, error: "errors.invalidPlate" };
+      }
     }
 
     // 4. Date validation (must not be in the past)
@@ -81,13 +107,11 @@ export async function submitBooking(formData: Record<string, unknown>) {
       }
     }
 
-    // 6. Use ADMIN client for all database operations
-    const adminPb = await getAdminPB();
-
     const data: Record<string, unknown> = {
       full_name: cleanName,
       phone: cleanPhone,
-      plate_number: cleanPlate,
+      plate_number: requiresMatricule ? cleanPlate : "",
+      location: requiresLocation ? cleanLocation : "",
       service_type: formData.service_type,
       service: formData.service_id || null, // Link to the specific service
       price: formData.price,

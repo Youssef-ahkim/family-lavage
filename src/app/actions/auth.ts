@@ -65,7 +65,7 @@ export async function signup(formData: FormData) {
   const passwordConfirm = formData.get('passwordConfirm') as string;
   const name = formData.get('name') as string;
   const phone = formData.get('phone') as string;
-  const plate = formData.get('plate') as string;
+  const plate = (formData.get('plate') as string || '').trim();
 
   // Rate Limiting
   const { success: rateLimitOk } = await checkRateLimit('signup');

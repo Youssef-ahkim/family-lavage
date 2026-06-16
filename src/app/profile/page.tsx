@@ -24,7 +24,8 @@ import {
   Phone,
   Hash,
   LogOut,
-  History
+  History,
+  MapPin
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -34,6 +35,7 @@ interface LocalBooking {
   service_type: string;
   date: string;
   plate_number: string;
+  location?: string;
   price: number;
 }
 
@@ -269,9 +271,25 @@ const ProfilePage = () => {
                             <Clock size={14} className="text-brand-blue shrink-0" />
                             <span className="text-xs font-bold">{formatTime(booking.date)}</span>
                           </div>
-                          <div className={`flex items-center gap-2 text-zinc-500 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                            <Car size={14} className="text-brand-blue shrink-0" />
-                            <span className="text-xs font-bold">{booking.plate_number}</span>
+                           <div className="flex flex-col gap-1.5">
+                            {booking.plate_number && (
+                              <div className={`flex items-center gap-2 text-zinc-500 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                                <Car size={14} className="text-brand-blue shrink-0" />
+                                <span className="text-xs font-bold">{booking.plate_number}</span>
+                              </div>
+                            )}
+                            {booking.location && (
+                              <div className={`flex items-center gap-2 text-zinc-500 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                                <MapPin size={14} className="text-brand-blue shrink-0" />
+                                <span className="text-xs font-bold truncate max-w-[200px]" title={booking.location}>{booking.location}</span>
+                              </div>
+                            )}
+                            {!booking.plate_number && !booking.location && (
+                              <div className={`flex items-center gap-2 text-zinc-400 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                                <Car size={14} className="shrink-0" />
+                                <span className="text-xs font-bold">—</span>
+                              </div>
+                            )}
                           </div>
                           <div className={`flex items-center gap-2 text-zinc-950 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
                             <span className="text-xs font-black px-2 py-0.5 bg-zinc-50 rounded border border-zinc-100">

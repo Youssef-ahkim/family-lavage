@@ -134,7 +134,6 @@ export default function SignupPage() {
                 <div className="group relative">
                   <Car className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-brand-blue transition-colors w-5 h-5`} />
                   <input
-                    required
                     type="text"
                     name="plate"
                     placeholder={t.booking.form.placeholderCar}

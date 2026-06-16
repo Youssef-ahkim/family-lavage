@@ -10,7 +10,7 @@ import { translations } from "@/lib/translations";
 import ConfirmModal from "@/components/ConfirmModal";
 import {
   Loader2, Calendar, Car, User, CheckCircle2, XCircle, 
-  Trash2, ChevronLeft, ChevronRight, Search, RefreshCw, Eye, Tags
+  Trash2, ChevronLeft, ChevronRight, Search, RefreshCw, Eye, Tags, MapPin
 } from "lucide-react";
 
 type BookingItem = {
@@ -18,6 +18,7 @@ type BookingItem = {
   full_name: string;
   phone: string;
   plate_number: string;
+  location?: string;
   service_type: string;
   price: number;
   status: string;
@@ -372,7 +373,18 @@ export default function AdminBookingsPage() {
                             </div>
                           </td>
                           <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">{booking.phone}</td>
-                          <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">{booking.plate_number}</td>
+                           <td className="px-5 py-4 text-zinc-400 font-medium whitespace-nowrap">
+                            <div className="flex flex-col gap-0.5">
+                              {booking.plate_number && <span className="text-white font-bold">{booking.plate_number}</span>}
+                              {booking.location && (
+                                <span className="text-[11px] text-zinc-500 truncate max-w-[150px] flex items-center gap-1" title={booking.location}>
+                                  <MapPin size={10} className="text-brand-gold shrink-0" />
+                                  {booking.location}
+                                </span>
+                              )}
+                              {!booking.plate_number && !booking.location && "—"}
+                            </div>
+                          </td>
                           <td className="px-5 py-4">
                             <span className={`text-xs font-black uppercase ${booking.service_type === 'VIP' ? 'text-brand-gold' : 'text-zinc-400'}`}>
                               {getServiceTitle(booking.service_type)}
@@ -476,12 +488,31 @@ export default function AdminBookingsPage() {
                   </div>
 
                   <div className={`grid grid-cols-2 gap-4 py-4 border-y border-zinc-800/30 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                    <div>
-                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{adm.vehicle}</p>
-                      <p className="text-sm font-bold text-zinc-200 flex items-center gap-2">
-                        <Car className="w-3.5 h-3.5 text-brand-blue" />
-                        {booking.plate_number}
-                      </p>
+                    <div className="flex flex-col gap-2">
+                      {booking.plate_number && (
+                        <div>
+                          <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{adm.vehicle}</p>
+                          <p className="text-sm font-bold text-zinc-200 flex items-center gap-2">
+                            <Car className="w-3.5 h-3.5 text-brand-blue" />
+                            {booking.plate_number}
+                          </p>
+                        </div>
+                      )}
+                      {booking.location && (
+                        <div>
+                          <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{t.booking.locationLabel || "Localisation"}</p>
+                          <p className="text-xs font-bold text-zinc-200 flex items-center gap-2 max-w-[160px] truncate" title={booking.location}>
+                            <MapPin className="w-3.5 h-3.5 text-brand-blue shrink-0" />
+                            {booking.location}
+                          </p>
+                        </div>
+                      )}
+                      {!booking.plate_number && !booking.location && (
+                        <div>
+                          <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{adm.vehicle}</p>
+                          <p className="text-sm font-bold text-zinc-400">—</p>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{adm.service}</p>
@@ -609,7 +640,8 @@ export default function AdminBookingsPage() {
               {[
                 { label: adm.status, value: statusText[selectedBooking.status], highlight: true },
                 { label: adm.phone, value: selectedBooking.phone },
-                { label: adm.vehicle, value: selectedBooking.plate_number },
+                ...(selectedBooking.plate_number ? [{ label: adm.vehicle, value: selectedBooking.plate_number }] : []),
+                ...(selectedBooking.location ? [{ label: t.booking.locationLabel || "Localisation", value: selectedBooking.location }] : []),
                 { label: adm.service, value: getServiceTitle(selectedBooking.service_type) },
                 { label: adm.price, value: selectedBooking.price === -1 ? adm.onSite : `${selectedBooking.price} DH` },
                 { label: t.booking.form.date, value: formatDate(selectedBooking.date) },

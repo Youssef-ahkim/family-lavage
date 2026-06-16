@@ -47,6 +47,8 @@ export default function ServiceForm({ initialData, topLevelServices, onSuccess, 
       description_ar: initialData?.description_ar || "",
       description_en: initialData?.description_en || "",
       active: initialData?.active ?? true,
+      requires_location: initialData?.requires_location ?? false,
+      requires_matricule: initialData?.requires_matricule ?? true,
       booking_type: initialData?.booking_type || "has_offers",
       parent_service: initialData?.parent_service || "",
       price: initialData?.price || null,
@@ -132,6 +134,8 @@ export default function ServiceForm({ initialData, topLevelServices, onSuccess, 
       formData.append("description_ar", data.description_ar || "");
       formData.append("description_en", data.description_en || "");
       formData.append("active", data.active.toString());
+      formData.append("requires_location", (data.requires_location ?? false).toString());
+      formData.append("requires_matricule", (data.requires_matricule ?? true).toString());
       formData.append("booking_type", data.booking_type);
       if (data.parent_service) formData.append("parent_service", data.parent_service);
       if (data.price !== undefined && data.price !== null) formData.append("price", data.price.toString());
@@ -267,18 +271,49 @@ export default function ServiceForm({ initialData, topLevelServices, onSuccess, 
           </div>
         </div>
 
-        {/* Active Status */}
-        <div className={`flex items-center gap-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-          <label className="relative inline-flex items-center cursor-pointer group">
-            <input type="checkbox" {...register("active")} className="sr-only peer" />
-            <div className={`w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer 
-              ${dir === 'rtl' 
-                ? 'peer-checked:after:-translate-x-full peer-checked:after:border-white after:right-[2px]' 
-                : 'peer-checked:after:translate-x-full peer-checked:after:border-white after:left-[2px]'
-              } 
-              after:content-[''] after:absolute after:top-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue`}></div>
-            <span className={`text-[10px] font-black uppercase tracking-widest text-zinc-400 ${dir === 'rtl' ? 'mr-3' : 'ml-3'}`}>{sTrans.formActive}</span>
-          </label>
+        {/* Active Status & Requirements Toggles */}
+        <div className="flex flex-col gap-6 bg-zinc-900/20 p-6 rounded-3xl border border-zinc-900">
+          <div className={`flex items-center gap-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+            <label className="relative inline-flex items-center cursor-pointer group">
+              <input type="checkbox" {...register("active")} className="sr-only peer" />
+              <div className={`w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer 
+                ${dir === 'rtl' 
+                  ? 'peer-checked:after:-translate-x-full peer-checked:after:border-white after:right-[2px]' 
+                  : 'peer-checked:after:translate-x-full peer-checked:after:border-white after:left-[2px]'
+                } 
+                after:content-[''] after:absolute after:top-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue`}></div>
+              <span className={`text-[10px] font-black uppercase tracking-widest text-zinc-400 ${dir === 'rtl' ? 'mr-3' : 'ml-3'}`}>{sTrans.formActive}</span>
+            </label>
+          </div>
+
+          <div className="border-t border-zinc-900/80 pt-4">
+            <p className={`text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-4 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+              {sTrans.bookingFieldsRequired}
+            </p>
+            <div className={`flex flex-col sm:flex-row gap-6 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+              <label className="relative inline-flex items-center cursor-pointer group">
+                <input type="checkbox" {...register("requires_matricule")} className="sr-only peer" />
+                <div className={`w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer 
+                  ${dir === 'rtl' 
+                    ? 'peer-checked:after:-translate-x-full peer-checked:after:border-white after:right-[2px]' 
+                    : 'peer-checked:after:translate-x-full peer-checked:after:border-white after:left-[2px]'
+                  } 
+                  after:content-[''] after:absolute after:top-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue`}></div>
+                <span className={`text-[10px] font-black uppercase tracking-widest text-zinc-400 ${dir === 'rtl' ? 'mr-3' : 'ml-3'}`}>{sTrans.fieldMatricule}</span>
+              </label>
+
+              <label className="relative inline-flex items-center cursor-pointer group">
+                <input type="checkbox" {...register("requires_location")} className="sr-only peer" />
+                <div className={`w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer 
+                  ${dir === 'rtl' 
+                    ? 'peer-checked:after:-translate-x-full peer-checked:after:border-white after:right-[2px]' 
+                    : 'peer-checked:after:translate-x-full peer-checked:after:border-white after:left-[2px]'
+                  } 
+                  after:content-[''] after:absolute after:top-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-blue`}></div>
+                <span className={`text-[10px] font-black uppercase tracking-widest text-zinc-400 ${dir === 'rtl' ? 'mr-3' : 'ml-3'}`}>{sTrans.fieldLocation}</span>
+              </label>
+            </div>
+          </div>
         </div>
 
         {/* Configuration */}

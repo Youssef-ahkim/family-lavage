@@ -9,6 +9,8 @@ export const serviceSchema = z.object({
   description_ar: z.string().optional(),
   description_en: z.string().optional(),
   active: z.boolean(),
+  requires_location: z.boolean().optional(),
+  requires_matricule: z.boolean().optional(),
   photo: z.any().optional(), // Handled separately for upload
   gallery: z.any().optional(), // Multiple images for carousel
   parent_service: z.string().optional(),
