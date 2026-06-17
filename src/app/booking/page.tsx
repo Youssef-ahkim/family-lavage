@@ -333,7 +333,7 @@ const BookingPage = () => {
         </div>
 
         {/* Subscription Balance Indicator */}
-        {cachedProfile?.subscription_status === 'active' && (
+        {cachedProfile?.subscription_status === 'active' && selectedService && dbOffers.some(o => o.category === 'subscription') && (
           <div className="mb-10 reveal">
             <div className={`p-5 rounded-[2rem] bg-brand-gold/10 border border-brand-gold/20 flex items-center justify-between ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
               <div className={`flex items-center gap-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
