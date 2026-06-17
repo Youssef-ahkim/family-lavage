@@ -184,7 +184,7 @@ const BookingPage = () => {
   }, [userRequests]);
 
   useEffect(() => {
-    if (serviceIdParam && dbServices.length > 0) {
+    if (serviceIdParam && dbServices.length > 0 && !isCheckingActive) {
       const exists = dbServices.find(s => s.id === serviceIdParam);
       if (exists && selectedService?.id !== exists.id) {
         const timer = setTimeout(() => {
@@ -193,7 +193,7 @@ const BookingPage = () => {
         return () => clearTimeout(timer);
       }
     }
-  }, [serviceIdParam, dbServices, offerIdParam, selectedService?.id, handleServiceSelect]);
+  }, [serviceIdParam, dbServices, offerIdParam, selectedService?.id, handleServiceSelect, isCheckingActive]);
 
   const handleOfferSelect = (offer: ServiceOfferRecord) => {
     setSelectedOffer(offer);
