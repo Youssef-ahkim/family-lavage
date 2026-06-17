@@ -221,6 +221,29 @@ export default function OfferDetailsPage() {
                   </div>
                 ) : offer.category === 'subscription' ? (
                   <div className="flex flex-col gap-4">
+                    {hasActive && activeReq && (
+                      <div className="mb-2 p-6 rounded-[2rem] bg-green-500/10 border border-green-500/20 flex flex-col gap-4 text-left">
+                        <div className={`flex justify-between items-center ${dir === 'rtl' ? 'flex-row-reverse text-right' : 'text-left'}`}>
+                          <span className="text-xs font-black uppercase tracking-widest text-green-600">{t.subscription.washesRemaining || "Lavages restants :"}</span>
+                          <span className="text-lg font-black text-green-600 bg-green-500/25 px-4 py-1 rounded-xl">{activeReq.washes_remaining ?? 0}</span>
+                        </div>
+                        
+                        <div className="h-px w-full bg-green-500/10" />
+                        
+                        <div className="space-y-3">
+                          <div className={`flex justify-between items-center text-xs ${dir === 'rtl' ? 'flex-row-reverse text-right' : 'text-left'}`}>
+                            <span className="font-bold text-zinc-500 uppercase tracking-wider">{language === 'fr' ? 'Débuté le' : language === 'ar' ? 'بدأ في' : 'Started on'}</span>
+                            <span className="font-bold text-zinc-700">{new Date(activeReq.updated || activeReq.created).toLocaleDateString(language === 'fr' ? 'fr-FR' : (language === 'ar' ? 'ar-MA' : 'en-US'))}</span>
+                          </div>
+                          {activeReq.expiry_date && (
+                            <div className={`flex justify-between items-center text-xs ${dir === 'rtl' ? 'flex-row-reverse text-right' : 'text-left'}`}>
+                              <span className="font-bold text-zinc-500 uppercase tracking-wider">{t.subscription.expiresOn || "Expire le :"}</span>
+                              <span className="font-bold text-zinc-700">{new Date(activeReq.expiry_date).toLocaleDateString(language === 'fr' ? 'fr-FR' : (language === 'ar' ? 'ar-MA' : 'en-US'))}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     <button 
                       onClick={handleSubscribe}
                       disabled={subscribing || subSuccess || hasActive || hasPending}
