@@ -250,20 +250,22 @@ export async function getStats() {
   }
 }
 
-export async function getAllSubscriptions(page = 1, perPage = 20, statusFilter = '', searchQuery = '') {
+export async function getAllSubscriptions(page = 1, perPage = 20, statusFilter = '', searchQuery = '', planFilter = '', amountFilter = 0) {
   try {
     await authenticateAdmin();
     const adminPb = await getAdminPB();
 
     const filters: string[] = [];
     if (statusFilter && statusFilter !== 'all') filters.push(`status = "${statusFilter}"`);
+    if (planFilter && planFilter !== 'all') filters.push(`plan = "${planFilter}"`);
+    if (amountFilter && amountFilter > 0) filters.push(`amount = ${amountFilter}`);
     if (searchQuery) {
       const q = searchQuery.replace(/"/g, '\\"');
       filters.push(`(user.full_name ~ "${q}" || user.email ~ "${q}" || plan ~ "${q}")`);
     }
     const filter = filters.join(' && ');
 
-    const cacheKey = `subscriptions:admin:${page}:${perPage}:${statusFilter}:${searchQuery}`;
+    const cacheKey = `subscriptions:admin:${page}:${perPage}:${statusFilter}:${searchQuery}:${planFilter}:${amountFilter}`;
     const records = await cached(cacheKey, 15 * 1000, async () => {
       return await adminPb.collection('subscriptions').getList(page, perPage, {
         filter,

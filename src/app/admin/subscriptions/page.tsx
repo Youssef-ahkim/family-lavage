@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { getAllSubscriptions, approveSubscription, rejectSubscription } from "@/app/actions/admin";
+import { getServiceOffers } from "@/app/admin/services/service-actions";
+import { ServiceOfferRecord } from "@/app/admin/services/service-types";
 import {
   Loader2, 
   Search, 
@@ -13,7 +15,8 @@ import {
   CreditCard,
   User,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Tags
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
@@ -50,11 +53,37 @@ export default function AdminSubscriptionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [subscriptionOffers, setSubscriptionOffers] = useState<ServiceOfferRecord[]>([]);
+  const [selectedOfferFilter, setSelectedOfferFilter] = useState<string>("all");
+
+  useEffect(() => {
+    let active = true;
+    const loadOffers = async () => {
+      try {
+        const offers = await getServiceOffers();
+        const subs = offers.filter(o => o.active && o.category === 'subscription');
+        if (active) setSubscriptionOffers(subs);
+      } catch (err) {
+        console.error("Error loading subscription offers:", err);
+      }
+    };
+    loadOffers();
+    return () => { active = false; };
+  }, []);
 
   const fetchData = useCallback(async () => {
     setRefreshing(true);
     try {
-      const res = await getAllSubscriptions(page, 15, statusFilter, searchQuery);
+      let planFilter = "";
+      let amountFilter = 0;
+      if (selectedOfferFilter !== "all") {
+        const matchingOffer = subscriptionOffers.find(o => o.id === selectedOfferFilter);
+        if (matchingOffer) {
+          planFilter = matchingOffer.plan_type || "";
+          amountFilter = matchingOffer.price;
+        }
+      }
+      const res = await getAllSubscriptions(page, 15, statusFilter, searchQuery, planFilter, amountFilter);
       if (res.success) {
         setItems(res.items as SubscriptionItem[]);
         setTotalPages(res.totalPages);
@@ -65,7 +94,7 @@ export default function AdminSubscriptionsPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [page, statusFilter, searchQuery]);
+  }, [page, statusFilter, searchQuery, selectedOfferFilter, subscriptionOffers]);
 
   useEffect(() => {
     let active = true;
@@ -164,42 +193,77 @@ export default function AdminSubscriptionsPage() {
       </div>
 
       {/* Filters & Search */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-        <div className="lg:col-span-2">
-          <form onSubmit={handleSearch} className="flex gap-2">
-            <div className="relative flex-grow">
-              <Search className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500`} />
-              <input
-                type="text"
-                placeholder={t.admin.searchClientPlaceholder}
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className={`w-full ${dir === 'rtl' ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4'} py-3.5 bg-zinc-900/50 border border-zinc-800/50 rounded-xl text-white placeholder-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 transition-all`}
-              />
+      <div className="flex flex-col gap-4 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2">
+            <form onSubmit={handleSearch} className="flex gap-2">
+              <div className="relative flex-grow">
+                <Search className={`absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500`} />
+                <input
+                  type="text"
+                  placeholder={t.admin.searchClientPlaceholder}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className={`w-full ${dir === 'rtl' ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4'} py-3.5 bg-zinc-900/50 border border-zinc-800/50 rounded-xl text-white placeholder-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 transition-all`}
+                />
+              </div>
+              <button
+                type="submit"
+                className="px-6 py-3.5 bg-brand-blue text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-brand-blue/80 transition-all shadow-lg shadow-brand-blue/20 shrink-0"
+              >
+                {t.admin.searchBtn}
+              </button>
+            </form>
+          </div>
+          <div className={`flex gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+            {['pending', 'active', 'all'].map((status) => (
+              <button
+                key={status}
+                onClick={() => { setStatusFilter(status); setPage(1); }}
+                className={`flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+                  statusFilter === status 
+                    ? "bg-brand-blue text-white border-brand-blue" 
+                    : "bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700"
+                }`}
+              >
+                {status === 'pending' ? t.admin.pending : (status === 'active' ? t.admin.confirmed : t.admin.all)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Subscription Plan Filter (NEW) */}
+        {subscriptionOffers.length > 0 && (
+          <div className="flex-1 overflow-x-auto no-scrollbar">
+            <div className={`flex items-center gap-1 min-w-max ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+              <button
+                onClick={() => { setSelectedOfferFilter('all'); setPage(1); }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${selectedOfferFilter === 'all'
+                  ? "bg-zinc-100 text-zinc-900 border-zinc-100 shadow-lg shadow-white/10"
+                  : "bg-zinc-900/50 text-zinc-500 hover:text-white border border-zinc-800/50"
+                  }`}
+              >
+                <Tags size={14} />
+                {t.admin.allServices || "All"}
+              </button>
+              {subscriptionOffers.map((o) => {
+                const title = language === 'fr' ? o.title_fr : (language === 'ar' ? o.title_ar : o.title_en);
+                return (
+                  <button
+                    key={o.id}
+                    onClick={() => { setSelectedOfferFilter(o.id); setPage(1); }}
+                    className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${selectedOfferFilter === o.id
+                      ? "bg-zinc-100 text-zinc-900 border-zinc-100 shadow-lg shadow-white/10"
+                      : "bg-zinc-900/50 text-zinc-500 hover:text-white border border-zinc-800/50"
+                      }`}
+                  >
+                    {title} ({o.price} DH)
+                  </button>
+                );
+              })}
             </div>
-            <button
-              type="submit"
-              className="px-6 py-3.5 bg-brand-blue text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-brand-blue/80 transition-all shadow-lg shadow-brand-blue/20 shrink-0"
-            >
-              {t.admin.searchBtn}
-            </button>
-          </form>
-        </div>
-        <div className={`flex gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-          {['pending', 'active', 'all'].map((status) => (
-            <button
-              key={status}
-              onClick={() => { setStatusFilter(status); setPage(1); }}
-              className={`flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
-                statusFilter === status 
-                  ? "bg-brand-blue text-white border-brand-blue" 
-                  : "bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700"
-              }`}
-            >
-              {status === 'pending' ? t.admin.pending : (status === 'active' ? t.admin.confirmed : t.admin.all)}
-            </button>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Table (Desktop) / Cards (Mobile) */}
