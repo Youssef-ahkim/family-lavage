@@ -166,7 +166,7 @@ export async function getAllUsers(page = 1, perPage = 20, searchQuery = '') {
     const filters: string[] = [];
     if (searchQuery) {
       const q = searchQuery.replace(/"/g, '\\"');
-      filters.push(`(full_name ~ "${q}" || email ~ "${q}" || phone ~ "${q}" || id ~ "${q}" || plate ~ "${q}" || default_plate ~ "${q}" || plate_number ~ "${q}")`);
+      filters.push(`(full_name ~ "${q}" || email ~ "${q}" || phone ~ "${q}" || id ~ "${q}" || default_plate ~ "${q}")`);
     }
     const filter = filters.join(' && ');
 
