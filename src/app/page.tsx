@@ -35,8 +35,8 @@ function OrbitalHero({
     <div className="relative w-full flex flex-col items-center">
 
       {/* ── Phrase on Top (Dynamic & Premium) ── */}
-      <div className="text-center mb-4 md:mb-12 max-w-5xl px-4 reveal">
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-black uppercase italic tracking-tighter leading-[1.15] mb-4">
+      <div className="text-center mb-3 md:mb-8 max-w-5xl px-4 reveal">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-black uppercase italic tracking-tighter leading-[1.15] mb-2.5 md:mb-4">
           {language === 'ar' ? (
             <>
               أفضل غسيل سيارات متنقل <br className="hidden md:block" />
@@ -54,12 +54,69 @@ function OrbitalHero({
             </>
           )}
         </h1>
-        <p className="text-zinc-500 text-xs md:text-sm font-medium max-w-2xl mx-auto leading-relaxed">
+        <p className="text-zinc-500 text-[11px] md:text-sm font-medium max-w-2xl mx-auto leading-relaxed">
           {language === 'ar' ? 'نأتي إليك أينما كنت في مراكش بأحدث الأجهزة والمنتجات الاحترافية لتبدو سيارتك كالجديدة.'
             : language === 'fr' ? 'Nous venons à vous partout à Marrakech avec nos équipements pro pour rendre votre voiture comme neuve.'
             : 'We come to you anywhere in Marrakech with our pro equipment to make your car look brand new.'}
         </p>
       </div>
+
+      {/* ── 3-Step Process Timeline ── */}
+      <div className="w-full max-w-xl md:max-w-3xl px-4 mb-4 md:mb-8 reveal" style={{ animationDelay: '100ms' }}>
+        <div className="bg-white/45 backdrop-blur-md border border-zinc-200/50 rounded-2xl md:rounded-3xl p-2.5 md:p-5 shadow-sm relative overflow-hidden">
+          {/* Connecting line (Desktop only) */}
+          <div className="absolute top-[32px] md:top-[52px] left-[15%] right-[15%] h-px bg-zinc-200 hidden md:block z-0" />
+          
+          <div className="flex justify-between items-start gap-1 relative z-10">
+            {t.process.steps.map((step: any, idx: number) => {
+              const imgPath = idx === 0 ? "/step-contact.png" : idx === 1 ? "/step-location.png" : "/step-service.png";
+              const isGold = idx === 1 || idx === 2;
+              return (
+                <div key={idx} className="flex-1 flex flex-col items-center text-center group">
+                  {/* Step Circle with Image */}
+                  <div className={`relative w-9 h-9 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm overflow-visible bg-white
+                    ${isGold 
+                      ? 'border border-brand-gold/30 group-hover:scale-105 group-hover:bg-brand-gold/5' 
+                      : 'border border-brand-blue/30 group-hover:scale-105 group-hover:bg-brand-blue/5'
+                    }`}
+                  >
+                    <div className="relative w-[85%] h-[85%]">
+                      <Image
+                        src={imgPath}
+                        alt={step.title}
+                        fill
+                        sizes="(max-width: 768px) 30px, 60px"
+                        className="object-contain"
+                      />
+                    </div>
+                    
+                    {/* Step Number Badge */}
+                    <span className={`absolute -top-0.5 -right-0.5 w-3.5 h-3.5 md:w-4.5 md:h-4.5 text-[7px] md:text-[9px] font-black rounded-full flex items-center justify-center shadow-sm text-white
+                      ${isGold ? 'bg-brand-gold' : 'bg-brand-blue'}`}
+                    >
+                      {step.number}
+                    </span>
+                  </div>
+                  
+                  {/* Title */}
+                  <h3 className={`font-black uppercase italic tracking-tight transition-colors duration-200 mt-1 md:mt-2
+                    text-[7.5px] sm:text-[8.5px] md:text-xs lg:text-sm
+                    ${isGold ? 'text-brand-gold group-hover:text-brand-gold-light' : 'text-zinc-800 group-hover:text-brand-blue'}`}
+                  >
+                    {step.title}
+                  </h3>
+                  
+                  {/* Description */}
+                  <p className="text-zinc-500 text-[10px] md:text-xs font-medium max-w-[200px] leading-relaxed mt-1 hidden md:block">
+                    {step.desc}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
 
       {/* ── Desktop: 3-column layout ── */}
       <div className="hidden md:flex items-center justify-center gap-4 lg:gap-8 xl:gap-12 w-full max-w-7xl px-8">
@@ -190,7 +247,7 @@ function OrbitalHero({
       </div>
 
       {/* Mobile CTA buttons */}
-      <div className="flex md:hidden flex-col gap-3 w-full max-w-xs px-4 mt-5">
+      <div className="flex md:hidden flex-col gap-3.5 w-full max-w-xs px-4 mt-3.5">
         <Link href={dbServices[0] ? `/booking?serviceId=${dbServices[0].id}` : '/booking'}>
           <button className="btn-primary w-full">{t.hero.btnSimple}</button>
         </Link>
@@ -339,7 +396,7 @@ export default function Home() {
       </a>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col items-center justify-start pt-20 md:pt-36 pb-12 overflow-hidden">
+      <section className="relative min-h-screen flex flex-col items-center justify-start pt-28 md:pt-36 pb-12 overflow-hidden">
         {/* Animated gradient blobs */}
         <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-gradient-to-br from-brand-blue/15 to-teal-400/10 rounded-full blur-[140px] pointer-events-none animate-pulse-slow" />
         <div className="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-gradient-to-tl from-brand-gold/10 to-amber-200/5 rounded-full blur-[140px] pointer-events-none animate-pulse-slow" style={{ animationDelay: '4s' }} />
