@@ -35,7 +35,7 @@ function OrbitalHero({
     <div className="relative w-full flex flex-col items-center">
 
       {/* ── Phrase on Top (Dynamic & Premium) ── */}
-      <div className="text-center mb-12 max-w-5xl px-4 reveal">
+      <div className="text-center mb-4 md:mb-12 max-w-5xl px-4 reveal">
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-black uppercase italic tracking-tighter leading-[1.15] mb-4">
           {language === 'ar' ? (
             <>
@@ -128,10 +128,10 @@ function OrbitalHero({
       </div>
 
       {/* ── Mobile: left / center guy / right ── */}
-      <div className="flex md:hidden w-full px-2" style={{ minHeight: 300 }}>
+      <div className="flex md:hidden w-full px-1 justify-center items-center gap-1.5" style={{ minHeight: 180 }}>
 
         {/* LEFT column — centered vertically */}
-        <div className="flex flex-col gap-3 items-end justify-center flex-1 pr-1">
+        <div className="flex flex-col gap-3 items-end justify-center w-[120px]">
           {leftServices.map((service, idx) => {
             const title =
               language === 'fr' ? service.title_fr
@@ -148,27 +148,27 @@ function OrbitalHero({
                 onHover={() => setActiveIdx(globalIdx)}
                 onLeave={() => setActiveIdx(null)}
                 onClick={() => setActiveIdx(isActive ? null : globalIdx)}
-                size={80}
+                size={65}
                 tooltipSide="left"
               />
             );
           })}
         </div>
 
-        {/* CENTER: guy — bigger, no box */}
-        <div className="relative flex-shrink-0 self-center" style={{ width: 160, height: 260 }}>
+        {/* CENTER: guy — smaller, no box */}
+        <div className="relative flex-shrink-0 self-center" style={{ width: 100, height: 160 }}>
           <Image
             src="/home-page-guy.png"
             alt="Family Lavage"
             fill
-            sizes="160px"
+            sizes="100px"
             className="object-contain drop-shadow-2xl"
             priority
           />
         </div>
 
         {/* RIGHT column — centered vertically */}
-        <div className="flex flex-col gap-3 items-start justify-center flex-1 pl-1">
+        <div className="flex flex-col gap-3 items-start justify-center w-[120px]">
           {rightServices.map((service, idx) => {
             const title =
               language === 'fr' ? service.title_fr
@@ -185,7 +185,7 @@ function OrbitalHero({
                 onHover={() => setActiveIdx(globalIdx)}
                 onLeave={() => setActiveIdx(null)}
                 onClick={() => setActiveIdx(isActive ? null : globalIdx)}
-                size={80}
+                size={65}
                 tooltipSide="right"
               />
             );
@@ -251,6 +251,7 @@ function ServiceBubble({
   tooltipSide: 'left' | 'right';
 }) {
   const imgSize = Math.round(size * 0.45);
+  const isMobile = size < 100;
 
   return (
     <Link
@@ -258,7 +259,9 @@ function ServiceBubble({
       onClick={(e) => { if (!service.active) e.preventDefault(); onClick(); }}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
-      className={`group flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-300 cursor-pointer select-none ${
+      className={`group flex items-center transition-all duration-300 cursor-pointer select-none border ${
+        isMobile ? 'gap-1.5 px-2 py-1.5 rounded-xl' : 'gap-3 px-4 py-3 rounded-2xl'
+      } ${
         isActive
           ? 'bg-white/95 border-brand-blue/40 shadow-2xl shadow-brand-blue/15 -translate-y-1'
           : 'bg-white/65 border-white/80 shadow-md shadow-zinc-200/50 hover:bg-white/95 hover:border-brand-blue/30 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-blue/10'
@@ -266,13 +269,13 @@ function ServiceBubble({
       style={{
         backdropFilter: 'blur(18px)',
         WebkitBackdropFilter: 'blur(18px)',
-        minWidth: size * 1.6,
-        maxWidth: size * 2.4,
+        minWidth: isMobile ? size * 1.4 : size * 1.6,
+        maxWidth: isMobile ? size * 2.0 : size * 2.4,
       }}
     >
       {/* Thumbnail */}
       <div
-        className="flex-shrink-0 rounded-xl overflow-hidden"
+        className="flex-shrink-0 rounded-lg overflow-hidden"
         style={{ width: imgSize, height: imgSize }}
       >
         {service.photo ? (
@@ -286,26 +289,30 @@ function ServiceBubble({
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-brand-blue/10 to-teal-400/15 flex items-center justify-center">
-            <Car className="w-5 h-5 text-brand-blue/40" />
+            <Car className="w-4 h-4 text-brand-blue/40" />
           </div>
         )}
       </div>
 
       {/* Title — always visible */}
       <div className="flex-1 min-w-0">
-        <p className={`text-[10px] md:text-[12px] font-black uppercase tracking-wider leading-tight line-clamp-2 transition-colors duration-200 ${
+        <p className={`font-black uppercase tracking-wider leading-tight line-clamp-2 transition-colors duration-200 ${
+          isMobile ? 'text-[9px]' : 'text-[10px] md:text-[12px]'
+        } ${
           isActive ? 'text-brand-blue' : 'text-zinc-700 group-hover:text-brand-blue'
         }`}>
           {title}
         </p>
-        <div className={`mt-1.5 h-0.5 rounded-full bg-brand-blue transition-all duration-300 ${
+        <div className={`h-0.5 rounded-full bg-brand-blue transition-all duration-300 ${
+          isMobile ? 'mt-1' : 'mt-1.5'
+        } ${
           isActive ? 'w-full opacity-100' : 'w-0 opacity-0 group-hover:w-full group-hover:opacity-60'
         }`} />
       </div>
 
       {/* Arrow icon */}
       <ArrowRight
-        className={`flex-shrink-0 w-3.5 h-3.5 transition-all duration-300 ${
+        className={`flex-shrink-0 transition-all duration-300 hidden md:block w-3.5 h-3.5 ${
           isActive ? 'text-brand-blue' : 'text-zinc-300 group-hover:text-brand-blue'
         } ${tooltipSide === 'left' ? 'rotate-180' : ''}`}
       />
@@ -343,7 +350,7 @@ export default function Home() {
       </a>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col items-center justify-start pt-36 pb-16 overflow-hidden">
+      <section className="relative min-h-screen flex flex-col items-center justify-start pt-20 md:pt-36 pb-12 overflow-hidden">
         {/* Animated gradient blobs */}
         <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-gradient-to-br from-brand-blue/15 to-teal-400/10 rounded-full blur-[140px] pointer-events-none animate-pulse-slow" />
         <div className="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-gradient-to-tl from-brand-gold/10 to-amber-200/5 rounded-full blur-[140px] pointer-events-none animate-pulse-slow" style={{ animationDelay: '4s' }} />
