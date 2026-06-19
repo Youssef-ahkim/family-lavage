@@ -63,6 +63,9 @@ export async function createService(formData: FormData) {
     const randomId = Math.random().toString(36).substring(2, 10) + 
                      Math.random().toString(36).substring(2, 9);
     data.id = randomId.substring(0, 15);
+    const nowIso = new Date().toISOString();
+    data.created = nowIso;
+    data.updated = nowIso;
 
     const photo = formData.get("photo");
     const gallery = formData.getAll("gallery");
@@ -114,6 +117,7 @@ export async function updateService(id: string, formData: FormData) {
   const pb = await getAdminPB();
   try {
     const data = prepareServiceData(formData);
+    data.updated = new Date().toISOString();
     const photo = formData.get("photo");
     const galleryNew = formData.getAll("gallery+");
     const galleryDelete = formData.getAll("gallery-");
@@ -265,6 +269,9 @@ export async function createServiceOffer(formData: FormData) {
     const randomId = Math.random().toString(36).substring(2, 10) + 
                      Math.random().toString(36).substring(2, 9);
     data.id = randomId.substring(0, 15);
+    const nowIso = new Date().toISOString();
+    data.created = nowIso;
+    data.updated = nowIso;
 
     const photo = formData.get("photo");
     let payload: Record<string, unknown> | FormData = data;
@@ -301,6 +308,7 @@ export async function updateServiceOffer(id: string, formData: FormData) {
   const pb = await getAdminPB();
   try {
     const data = prepareOfferData(formData);
+    data.updated = new Date().toISOString();
     
     const photo = formData.get("photo");
     let payload: Record<string, unknown> | FormData = data;
