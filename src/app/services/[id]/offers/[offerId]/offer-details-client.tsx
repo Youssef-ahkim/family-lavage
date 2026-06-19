@@ -281,9 +281,46 @@ export default function OfferDetailsClient({ service, offer, serviceId }: OfferD
       {/* Footer */}
       <footer className="py-16 border-t border-zinc-100 bg-zinc-50 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="text-3xl font-black tracking-tighter italic mb-8 block text-zinc-900">
+          <span className="text-3xl font-black tracking-tighter italic mb-6 block text-zinc-900">
             FAMILY <span className="text-brand-blue">LAVAGE</span>
           </span>
+          <div className="flex gap-4 mb-8 justify-center">
+            <a
+              href="https://web.facebook.com/profile.php?id=61590637385270"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-10 h-10 rounded-full border border-zinc-200 flex items-center justify-center text-zinc-400 hover:border-brand-blue hover:text-brand-blue hover:bg-brand-blue/5 transition-all cursor-pointer group"
+              title="Facebook"
+            >
+              <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24">
+                <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"></path>
+              </svg>
+            </a>
+            <a
+              href="https://www.instagram.com/familylavagegroup/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-10 h-10 rounded-full border border-zinc-200 flex items-center justify-center text-zinc-400 hover:border-brand-blue hover:text-brand-blue hover:bg-brand-blue/5 transition-all cursor-pointer group"
+              title="Instagram"
+            >
+              <svg className="w-4.5 h-4.5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+            </a>
+            <a
+              href="https://www.tiktok.com/@family.lavage.group"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-10 h-10 rounded-full border border-zinc-200 flex items-center justify-center text-zinc-400 hover:border-brand-blue hover:text-brand-blue hover:bg-brand-blue/5 transition-all cursor-pointer group"
+              title="TikTok"
+            >
+              <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24">
+                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.02 1.63 4.14 1.04.99 2.45 1.53 3.9 1.6v3.82c-1.52-.07-3.03-.66-4.22-1.63a8.878 8.878 0 0 1-.89-.86v6.62c.04 3.75-2.61 7.15-6.31 7.82-3.83.82-7.85-1.51-8.77-5.32-.98-3.79 1.25-7.85 5.03-8.87.89-.25 1.83-.3 2.75-.15v3.83a4.99 4.99 0 0 0-3.87 4.88c-.04 2.8 2.37 5.08 5.17 4.96 2.65-.05 4.75-2.26 4.7-4.91V0h.01z"></path>
+              </svg>
+            </a>
+          </div>
           <p className="text-zinc-400 text-xs font-bold uppercase tracking-[0.3em]">
             © 2026 FAMILY LAVAGE GROUP. {t.footer.rights}
           </p>
