@@ -137,7 +137,7 @@ export default function ServiceForm({ initialData, topLevelServices, onSuccess, 
       formData.append("requires_location", (data.requires_location ?? false).toString());
       formData.append("requires_matricule", (data.requires_matricule ?? true).toString());
       formData.append("booking_type", data.booking_type);
-      if (data.parent_service) formData.append("parent_service", data.parent_service);
+      formData.append("parent_service", data.parent_service || "");
       if (data.price !== undefined && data.price !== null) formData.append("price", data.price.toString());
       
       if (data.photo instanceof File) {

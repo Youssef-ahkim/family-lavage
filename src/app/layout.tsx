@@ -14,10 +14,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://familylavage.com"),
   title: {
-    default: "Family Lavage Group | Lavage Auto Premium à Marjane Casablanca",
+    default: "Family Lavage Group | Lavage Auto Mobile à Domicile — Marrakech",
     template: "%s | Family Lavage Group",
   },
-  description: "Services de lavage auto professionnels pendant vos courses. Lavage en 15 minutes, technologie écologique et detailing premium à Casablanca.",
+  description: "Service de lavage auto mobile à Marrakech. On vient chez vous, au bureau ou partout où vous êtes avec un équipement professionnel. Rapide, écologique et premium.",
   appleWebApp: {
     title: "Family Lavage",
     statusBarStyle: "default",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
       { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
-  keywords: ["lavage auto", "Casablanca", "Marjane", "nettoyage voiture", "detailing auto", "lavage écologique", "Family Lavage"],
+  keywords: ["lavage auto mobile", "Marrakech", "lavage à domicile", "nettoyage voiture", "detailing auto", "lavage écologique", "Family Lavage", "lavage sur place"],
   authors: [{ name: "Family Lavage Group" }],
   creator: "Family Lavage Group",
   publisher: "Family Lavage Group",
@@ -45,8 +45,8 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Family Lavage Group | Lavage Auto Premium à Marjane Casablanca",
-    description: "Services de lavage auto professionnels pendant vos courses. Lavage en 15 minutes, technologie écologique et detailing premium à Casablanca.",
+    title: "Family Lavage Group | Lavage Auto Mobile à Domicile — Marrakech",
+    description: "Service de lavage auto mobile à Marrakech. On vient chez vous avec un équipement professionnel. Rapide, écologique et premium.",
     url: "https://familylavage.com",
     siteName: "Family Lavage Group",
     locale: "fr_FR",
@@ -56,14 +56,14 @@ export const metadata: Metadata = {
         url: "/home-hero.png",
         width: 1200,
         height: 630,
-        alt: "Family Lavage Group Casablanca",
+        alt: "Family Lavage Group Marrakech — Lavage Auto Mobile",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Family Lavage Group | Lavage Auto Premium à Marjane Casablanca",
-    description: "Services de lavage auto professionnels pendant vos courses. Lavage en 15 minutes, technologie écologique et detailing premium à Casablanca.",
+    title: "Family Lavage Group | Lavage Auto Mobile à Domicile — Marrakech",
+    description: "Service de lavage auto mobile à Marrakech. On vient chez vous avec un équipement professionnel.",
     images: ["/home-hero.png"],
   },
   robots: {

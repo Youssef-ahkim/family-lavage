@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Family Lavage Group',
     short_name: 'Family Lavage',
-    description: 'Services de lavage auto premium à Marjane Casablanca.',
+    description: 'Service de lavage auto mobile à domicile à Marrakech.',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',

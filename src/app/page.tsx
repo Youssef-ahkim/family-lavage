@@ -4,12 +4,314 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import PwaInstall from "@/components/PwaInstall";
-import { Car, MapPin, Clock, Star, MessageCircle, Phone, ArrowRight } from "lucide-react";
+import { Car, MapPin, Clock, MessageCircle, Phone, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { translations } from "@/lib/translations";
 import { getServices } from "./admin/services/service-actions";
 import { ServiceRecord } from "./admin/services/service-types";
 import { useState, useEffect } from "react";
+
+// ─── Side Hero ───────────────────────────────────────────────────────────────
+function OrbitalHero({
+  services,
+  language,
+  dir,
+  t,
+  dbServices,
+}: {
+  services: ServiceRecord[];
+  language: string;
+  dir: string;
+  t: any;
+  dbServices: ServiceRecord[];
+}) {
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
+  const capped = services.slice(0, 6);
+  const half = Math.ceil(capped.length / 2);
+  const leftServices  = capped.slice(0, half);
+  const rightServices = capped.slice(half);
+
+  return (
+    <div className="relative w-full flex flex-col items-center">
+
+      {/* ── Phrase on Top (Dynamic & Premium) ── */}
+      <div className="text-center mb-12 max-w-5xl px-4 reveal">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-black uppercase italic tracking-tighter leading-[1.15] mb-4">
+          {language === 'ar' ? (
+            <>
+              أفضل غسيل سيارات متنقل <br className="hidden md:block" />
+              <span className="bg-gradient-to-r from-brand-blue to-teal-500 bg-clip-text text-transparent">عند باب بيتك</span>
+            </>
+          ) : language === 'fr' ? (
+            <>
+              Le Meilleur Lavage Auto <br className="hidden md:block" />
+              <span className="bg-gradient-to-r from-brand-blue to-teal-500 bg-clip-text text-transparent">Mobile à Domicile</span>
+            </>
+          ) : (
+            <>
+              The Best Mobile Car Wash <br className="hidden md:block" />
+              <span className="bg-gradient-to-r from-brand-blue to-teal-500 bg-clip-text text-transparent">At Your Doorstep</span>
+            </>
+          )}
+        </h1>
+        <p className="text-zinc-500 text-xs md:text-sm font-medium max-w-2xl mx-auto leading-relaxed">
+          {language === 'ar' ? 'نأتي إليك أينما كنت في مراكش بأحدث الأجهزة والمنتجات الاحترافية لتبدو سيارتك كالجديدة.'
+            : language === 'fr' ? 'Nous venons à vous partout à Marrakech avec nos équipements pro pour rendre votre voiture comme neuve.'
+            : 'We come to you anywhere in Marrakech with our pro equipment to make your car look brand new.'}
+        </p>
+      </div>
+
+      {/* ── Desktop: 3-column layout ── */}
+      <div className="hidden md:flex items-center justify-center gap-12 w-full max-w-7xl px-8">
+
+        {/* LEFT column */}
+        <div className="flex flex-col gap-5 items-end flex-1">
+          {leftServices.map((service, idx) => {
+            const title =
+              language === 'fr' ? service.title_fr
+              : language === 'ar' ? service.title_ar
+              : service.title_en;
+            const globalIdx = idx;
+            const isActive = activeIdx === globalIdx;
+            return (
+              <ServiceBubble
+                key={service.id}
+                service={service}
+                title={title}
+                isActive={isActive}
+                onHover={() => setActiveIdx(globalIdx)}
+                onLeave={() => setActiveIdx(null)}
+                onClick={() => setActiveIdx(isActive ? null : globalIdx)}
+                size={170}
+                tooltipSide="left"
+              />
+            );
+          })}
+        </div>
+
+        {/* CENTER: guy — no box, no container */}
+        <div className="relative flex-shrink-0" style={{ width: 320, height: 420 }}>
+          <Image
+            src="/home-page-guy.png"
+            alt="Family Lavage"
+            fill
+            sizes="320px"
+            className="object-contain drop-shadow-2xl"
+            priority
+          />
+        </div>
+
+        {/* RIGHT column */}
+        <div className="flex flex-col gap-5 items-start flex-1">
+          {rightServices.map((service, idx) => {
+            const title =
+              language === 'fr' ? service.title_fr
+              : language === 'ar' ? service.title_ar
+              : service.title_en;
+            const globalIdx = half + idx;
+            const isActive = activeIdx === globalIdx;
+            return (
+              <ServiceBubble
+                key={service.id}
+                service={service}
+                title={title}
+                isActive={isActive}
+                onHover={() => setActiveIdx(globalIdx)}
+                onLeave={() => setActiveIdx(null)}
+                onClick={() => setActiveIdx(isActive ? null : globalIdx)}
+                size={170}
+                tooltipSide="right"
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Mobile: left / center guy / right ── */}
+      <div className="flex md:hidden w-full px-2" style={{ minHeight: 300 }}>
+
+        {/* LEFT column — centered vertically */}
+        <div className="flex flex-col gap-3 items-end justify-center flex-1 pr-1">
+          {leftServices.map((service, idx) => {
+            const title =
+              language === 'fr' ? service.title_fr
+              : language === 'ar' ? service.title_ar
+              : service.title_en;
+            const globalIdx = idx;
+            const isActive = activeIdx === globalIdx;
+            return (
+              <ServiceBubble
+                key={service.id}
+                service={service}
+                title={title}
+                isActive={isActive}
+                onHover={() => setActiveIdx(globalIdx)}
+                onLeave={() => setActiveIdx(null)}
+                onClick={() => setActiveIdx(isActive ? null : globalIdx)}
+                size={80}
+                tooltipSide="left"
+              />
+            );
+          })}
+        </div>
+
+        {/* CENTER: guy — bigger, no box */}
+        <div className="relative flex-shrink-0 self-center" style={{ width: 160, height: 260 }}>
+          <Image
+            src="/home-page-guy.png"
+            alt="Family Lavage"
+            fill
+            sizes="160px"
+            className="object-contain drop-shadow-2xl"
+            priority
+          />
+        </div>
+
+        {/* RIGHT column — centered vertically */}
+        <div className="flex flex-col gap-3 items-start justify-center flex-1 pl-1">
+          {rightServices.map((service, idx) => {
+            const title =
+              language === 'fr' ? service.title_fr
+              : language === 'ar' ? service.title_ar
+              : service.title_en;
+            const globalIdx = half + idx;
+            const isActive = activeIdx === globalIdx;
+            return (
+              <ServiceBubble
+                key={service.id}
+                service={service}
+                title={title}
+                isActive={isActive}
+                onHover={() => setActiveIdx(globalIdx)}
+                onLeave={() => setActiveIdx(null)}
+                onClick={() => setActiveIdx(isActive ? null : globalIdx)}
+                size={80}
+                tooltipSide="right"
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Mobile CTA buttons */}
+      <div className="flex md:hidden flex-col gap-3 w-full max-w-xs px-4 mt-5">
+        <Link href={dbServices[0] ? `/booking?serviceId=${dbServices[0].id}` : '/booking'}>
+          <button className="btn-primary w-full">{t.hero.btnSimple}</button>
+        </Link>
+        <Link href="/services">
+          <button className="btn-outline-gold w-full gap-2">{t.hero.btnVip} <ArrowRight size={16} /></button>
+        </Link>
+      </div>
+
+      {/* ── CTA buttons desktop ── */}
+      <div className="hidden md:flex flex-col items-center gap-4 mt-10 reveal">
+        <div className="flex gap-5">
+          <Link href={dbServices[0] ? `/booking?serviceId=${dbServices[0].id}` : '/booking'}>
+            <button className="btn-primary group">
+              {t.hero.btnSimple}
+              <div className="w-1.5 h-1.5 rounded-full bg-white ml-3 opacity-50 group-hover:scale-150 transition-transform" />
+            </button>
+          </Link>
+          <Link href="/services">
+            <button className="btn-outline-gold group gap-3">
+              {t.hero.btnVip}
+              <ArrowRight size={18} className={`${dir === 'rtl' ? 'rotate-180' : ''} transition-transform`} />
+            </button>
+          </Link>
+        </div>
+        {/* Tagline */}
+        <p className="text-zinc-400 text-sm font-medium tracking-wide">
+          {language === 'fr' ? '✨ On se déplace partout à Marrakech — sans frais de déplacement'
+            : language === 'ar' ? '✨ نخدم جميع مناطق مراكش — بدون رسوم تنقل'
+            : '✨ We come to you anywhere in Marrakech — no travel fees'}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Service Pill Card (glassmorphism, always shows title) ───────────────────
+function ServiceBubble({
+  service,
+  title,
+  isActive,
+  onHover,
+  onLeave,
+  onClick,
+  size,
+  tooltipSide,
+}: {
+  service: ServiceRecord;
+  title: string | null | undefined;
+  isActive: boolean;
+  onHover: () => void;
+  onLeave: () => void;
+  onClick: () => void;
+  size: number;
+  tooltipSide: 'left' | 'right';
+}) {
+  const imgSize = Math.round(size * 0.45);
+
+  return (
+    <Link
+      href={service.active ? `/services/${service.id}` : '#'}
+      onClick={(e) => { if (!service.active) e.preventDefault(); onClick(); }}
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      className={`group flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-300 cursor-pointer select-none ${
+        isActive
+          ? 'bg-white/95 border-brand-blue/40 shadow-2xl shadow-brand-blue/15 -translate-y-1'
+          : 'bg-white/65 border-white/80 shadow-md shadow-zinc-200/50 hover:bg-white/95 hover:border-brand-blue/30 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-blue/10'
+      }`}
+      style={{
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
+        minWidth: size * 1.6,
+        maxWidth: size * 2.4,
+      }}
+    >
+      {/* Thumbnail */}
+      <div
+        className="flex-shrink-0 rounded-xl overflow-hidden"
+        style={{ width: imgSize, height: imgSize }}
+      >
+        {service.photo ? (
+          <Image
+            src={service.photo}
+            alt={title || 'Service'}
+            width={imgSize}
+            height={imgSize}
+            unoptimized
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-brand-blue/10 to-teal-400/15 flex items-center justify-center">
+            <Car className="w-5 h-5 text-brand-blue/40" />
+          </div>
+        )}
+      </div>
+
+      {/* Title — always visible */}
+      <div className="flex-1 min-w-0">
+        <p className={`text-[10px] md:text-[12px] font-black uppercase tracking-wider leading-tight line-clamp-2 transition-colors duration-200 ${
+          isActive ? 'text-brand-blue' : 'text-zinc-700 group-hover:text-brand-blue'
+        }`}>
+          {title}
+        </p>
+        <div className={`mt-1.5 h-0.5 rounded-full bg-brand-blue transition-all duration-300 ${
+          isActive ? 'w-full opacity-100' : 'w-0 opacity-0 group-hover:w-full group-hover:opacity-60'
+        }`} />
+      </div>
+
+      {/* Arrow icon */}
+      <ArrowRight
+        className={`flex-shrink-0 w-3.5 h-3.5 transition-all duration-300 ${
+          isActive ? 'text-brand-blue' : 'text-zinc-300 group-hover:text-brand-blue'
+        } ${tooltipSide === 'left' ? 'rotate-180' : ''}`}
+      />
+    </Link>
+  );
+}
 
 export default function Home() {
   const { language, dir } = useLanguage();
@@ -20,10 +322,7 @@ export default function Home() {
     getServices().then(setDbServices).catch(console.error);
   }, []);
 
-
-
-  const activeServices = dbServices
-    .filter(s => !s.parent_service);
+  const activeServices = dbServices.filter(s => !s.parent_service);
 
   return (
     <div className="min-h-screen bg-white text-zinc-950 font-sans overflow-x-hidden">
@@ -44,98 +343,14 @@ export default function Home() {
       </a>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center pt-28 overflow-hidden">
+      <section className="relative min-h-screen flex flex-col items-center justify-start pt-36 pb-16 overflow-hidden">
         {/* Animated gradient blobs */}
         <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-gradient-to-br from-brand-blue/15 to-teal-400/10 rounded-full blur-[140px] pointer-events-none animate-pulse-slow" />
         <div className="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-gradient-to-tl from-brand-gold/10 to-amber-200/5 rounded-full blur-[140px] pointer-events-none animate-pulse-slow" style={{ animationDelay: '4s' }} />
-        
         {/* Subtle dot grid pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_0.8px,transparent_0.8px)] bg-[size:32px_32px] opacity-40 pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-
-            <div className={`flex flex-col reveal delay-100 ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tighter leading-[1.1] md:leading-[1] mb-6 uppercase">
-                {t.hero.title} <br />
-                <span className="bg-gradient-to-r from-brand-blue to-teal-500 bg-clip-text text-transparent italic">{t.hero.titleAccent}</span>
-              </h1>
-
-              <p className="text-lg md:text-xl text-zinc-500 mb-8 max-w-xl leading-relaxed">
-                {t.hero.desc} <span className="text-zinc-900 font-semibold">{t.hero.descAccent}</span>.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-5 mb-16">
-                <Link href={dbServices[0] ? `/booking?serviceId=${dbServices[0].id}` : "/booking"}>
-                  <button className="btn-primary group w-full sm:w-auto">
-                    {t.hero.btnSimple}
-                    <div className="w-1.5 h-1.5 rounded-full bg-white ml-3 opacity-50 group-hover:scale-150 transition-transform" />
-                  </button>
-                </Link>
-                <Link href="/services">
-                  <button className="btn-outline-gold group gap-3 w-full sm:w-auto">
-                    {t.hero.btnVip}
-                    <ArrowRight size={18} className={`${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'} transition-transform`} />
-                  </button>
-                </Link>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 pt-8 border-t border-zinc-200/60">
-                <div className="flex flex-col group">
-                  <span className="text-2xl md:text-3xl font-black bg-gradient-to-r from-brand-blue to-brand-blue-light bg-clip-text text-transparent group-hover:scale-105 transition-transform origin-left inline-block">- 15m</span>
-                  <span className="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest font-bold">{t.hero.stats.fast}</span>
-                </div>
-                <div className="flex flex-col group">
-                  <span className="text-2xl md:text-3xl font-black text-zinc-900 italic scale-y-90 origin-left group-hover:scale-105 transition-transform inline-block">PRO</span>
-                  <span className="text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest font-bold">{t.hero.stats.quality}</span>
-                </div>
-                <div className="flex flex-col group">
-                  <span className="text-2xl md:text-3xl font-black bg-gradient-to-r from-brand-gold to-brand-gold-light bg-clip-text text-transparent group-hover:scale-105 transition-transform origin-left inline-block">VIP</span>
-                  <span className="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest font-bold">{t.hero.stats.private}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative group reveal delay-300">
-              {/* Animated gradient border */}
-              <div 
-                className="absolute -inset-[2px] rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                style={{
-                  background: 'linear-gradient(135deg, #0070f3, #14b8a6, #c5a059, #0070f3)',
-                  backgroundSize: '300% 300%',
-                  animation: 'gradient-shift 4s ease-in-out infinite',
-                }}
-              />
-              {/* Outer glow */}
-              <div className="absolute -inset-4 bg-gradient-to-r from-brand-blue/10 to-brand-gold/10 rounded-[2rem] blur-2xl opacity-30 group-hover:opacity-60 transition-opacity duration-700" />
-              
-              <div className="relative aspect-square md:aspect-[5/4] rounded-3xl overflow-hidden border border-zinc-200/80 shadow-2xl shadow-zinc-200/50 max-h-[450px] bg-zinc-100">
-                <Image
-                  src="/home-hero.png"
-                  alt="Family Lavage Casablanca"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/50 via-transparent to-transparent " />
-
-                <div className={`absolute bottom-8 ${dir === 'rtl' ? 'right-8 left-auto' : 'left-8 right-auto'} p-6 rounded-2xl border border-white/20 shadow-2xl backdrop-blur-xl`} style={{ background: 'rgba(0,0,0,0.5)' }}>
-                  <div className={`flex items-center gap-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-                    <div className="w-12 h-12 bg-gradient-to-br from-brand-blue to-teal-500 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-blue/30">
-                      <Star className="text-white w-6 h-6 fill-current" />
-                    </div>
-                    <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
-                      <p className="font-black text-white uppercase text-xs tracking-[0.2em] mb-1">{t.hero.guarantee}</p>
-                      <p className="text-zinc-400 text-xs italic font-medium">{t.hero.subGuarantee}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
+        <OrbitalHero services={activeServices.slice(0, 6)} language={language} dir={dir} t={t} dbServices={dbServices} />
       </section>
 
 
@@ -346,7 +561,7 @@ export default function Home() {
               © 2026 FAMILY LAVAGE GROUP. {t.footer.rights}
             </p>
             <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-zinc-400">
-              <span>{language === 'ar' ? 'الدار البيضاء، المغرب' : (language === 'fr' ? 'CASABLANCA, MAROC' : 'CASABLANCA, MOROCCO')}</span>
+              <span>{language === 'ar' ? 'مراكش، المغرب' : (language === 'fr' ? 'MARRAKECH, MAROC' : 'MARRAKECH, MOROCCO')}</span>
             </div>
           </div>
         </div>

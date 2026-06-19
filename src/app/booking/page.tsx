@@ -820,7 +820,9 @@ const BookingPage = () => {
                 </div>
                 <div className={`text-center ${dir === 'rtl' ? 'md:text-left' : 'md:text-right'}`}>
                   <p className="text-zinc-500 text-sm italic mb-2">{b.summary.atLocation}</p>
-                  <p className="text-xs font-black text-brand-blue uppercase tracking-widest">Marjane Casablanca</p>
+                  <p className="text-xs font-black text-brand-blue uppercase tracking-widest">
+                    {language === 'ar' ? 'مراكش - خدمة متنقلة' : (language === 'fr' ? 'Marrakech - Service Mobile' : 'Marrakech - Mobile Service')}
+                  </p>
                 </div>
               </div>
 
