@@ -208,7 +208,7 @@ const BookingPage = () => {
     if (e) e.preventDefault();
 
     const lastSubmit = localStorage.getItem('last_booking');
-    if (lastSubmit && Date.now() - parseInt(lastSubmit) < 60000) {
+    if (lastSubmit && Date.now() - parseInt(lastSubmit) < 15000) {
       setError(t.errors.rateLimit);
       setLoading(false);
       return;
