@@ -62,10 +62,10 @@ function OrbitalHero({
       </div>
 
       {/* ── Desktop: 3-column layout ── */}
-      <div className="hidden md:flex items-center justify-center gap-12 w-full max-w-7xl px-8">
+      <div className="hidden md:flex items-center justify-center gap-4 lg:gap-8 xl:gap-12 w-full max-w-7xl px-8">
 
         {/* LEFT column */}
-        <div className="flex flex-col gap-5 items-end flex-1">
+        <div className="flex flex-col gap-4 lg:gap-5 items-end flex-1">
           {leftServices.map((service, idx) => {
             const title =
               language === 'fr' ? service.title_fr
@@ -82,7 +82,6 @@ function OrbitalHero({
                 onHover={() => setActiveIdx(globalIdx)}
                 onLeave={() => setActiveIdx(null)}
                 onClick={() => setActiveIdx(isActive ? null : globalIdx)}
-                size={170}
                 tooltipSide="left"
               />
             );
@@ -90,19 +89,19 @@ function OrbitalHero({
         </div>
 
         {/* CENTER: guy — no box, no container */}
-        <div className="relative flex-shrink-0" style={{ width: 320, height: 420 }}>
+        <div className="relative flex-shrink-0 w-[200px] h-[260px] lg:w-[260px] lg:h-[340px] xl:w-[320px] xl:h-[420px]">
           <Image
             src="/home-page-guy.png"
             alt="Family Lavage"
             fill
-            sizes="320px"
+            sizes="(max-width: 1024px) 200px, (max-width: 1280px) 260px, 320px"
             className="object-contain drop-shadow-2xl"
             priority
           />
         </div>
 
         {/* RIGHT column */}
-        <div className="flex flex-col gap-5 items-start flex-1">
+        <div className="flex flex-col gap-4 lg:gap-5 items-start flex-1">
           {rightServices.map((service, idx) => {
             const title =
               language === 'fr' ? service.title_fr
@@ -119,7 +118,6 @@ function OrbitalHero({
                 onHover={() => setActiveIdx(globalIdx)}
                 onLeave={() => setActiveIdx(null)}
                 onClick={() => setActiveIdx(isActive ? null : globalIdx)}
-                size={170}
                 tooltipSide="right"
               />
             );
@@ -148,7 +146,6 @@ function OrbitalHero({
                 onHover={() => setActiveIdx(globalIdx)}
                 onLeave={() => setActiveIdx(null)}
                 onClick={() => setActiveIdx(isActive ? null : globalIdx)}
-                size={65}
                 tooltipSide="left"
               />
             );
@@ -185,7 +182,6 @@ function OrbitalHero({
                 onHover={() => setActiveIdx(globalIdx)}
                 onLeave={() => setActiveIdx(null)}
                 onClick={() => setActiveIdx(isActive ? null : globalIdx)}
-                size={65}
                 tooltipSide="right"
               />
             );
@@ -238,7 +234,6 @@ function ServiceBubble({
   onHover,
   onLeave,
   onClick,
-  size,
   tooltipSide,
 }: {
   service: ServiceRecord;
@@ -247,72 +242,66 @@ function ServiceBubble({
   onHover: () => void;
   onLeave: () => void;
   onClick: () => void;
-  size: number;
   tooltipSide: 'left' | 'right';
 }) {
-  const imgSize = Math.round(size * 0.45);
-  const isMobile = size < 100;
-
   return (
     <Link
       href={service.active ? `/services/${service.id}` : '#'}
       onClick={(e) => { if (!service.active) e.preventDefault(); onClick(); }}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
-      className={`group flex items-center transition-all duration-300 cursor-pointer select-none border ${
-        isMobile ? 'gap-1.5 px-2 py-1.5 rounded-xl' : 'gap-3 px-4 py-3 rounded-2xl'
-      } ${
-        isActive
-          ? 'bg-white/95 border-brand-blue/40 shadow-2xl shadow-brand-blue/15 -translate-y-1'
-          : 'bg-white/65 border-white/80 shadow-md shadow-zinc-200/50 hover:bg-white/95 hover:border-brand-blue/30 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-blue/10'
-      }`}
+      className={`group flex items-center transition-all duration-300 cursor-pointer select-none border
+        /* Mobile spacing & sizes */
+        gap-1.5 px-2.5 py-2 rounded-xl w-[115px] sm:w-[125px]
+        /* Tablet/Desktop md spacing & sizes */
+        md:gap-2.5 md:px-3 md:py-2.5 md:rounded-2xl md:w-[190px]
+        /* Large Desktop lg spacing & sizes */
+        lg:gap-3 lg:px-3.5 lg:py-3 lg:w-[230px]
+        /* Extra Large xl spacing & sizes */
+        xl:w-[270px]
+        ${
+          isActive
+            ? 'bg-white/95 border-brand-blue/40 shadow-2xl shadow-brand-blue/15 -translate-y-1'
+            : 'bg-white/65 border-white/80 shadow-md shadow-zinc-200/50 hover:bg-white/95 hover:border-brand-blue/30 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-blue/10'
+        }`}
       style={{
         backdropFilter: 'blur(18px)',
         WebkitBackdropFilter: 'blur(18px)',
-        minWidth: isMobile ? size * 1.4 : size * 1.6,
-        maxWidth: isMobile ? size * 2.0 : size * 2.4,
       }}
     >
       {/* Thumbnail */}
-      <div
-        className="flex-shrink-0 rounded-lg overflow-hidden"
-        style={{ width: imgSize, height: imgSize }}
-      >
+      <div className="flex-shrink-0 rounded-lg md:rounded-xl overflow-hidden w-7 h-7 md:w-11 md:h-11 lg:w-14 lg:h-14 xl:w-16 xl:h-16">
         {service.photo ? (
           <Image
             src={service.photo}
             alt={title || 'Service'}
-            width={imgSize}
-            height={imgSize}
+            width={64}
+            height={64}
             unoptimized
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-brand-blue/10 to-teal-400/15 flex items-center justify-center">
-            <Car className="w-4 h-4 text-brand-blue/40" />
+            <Car className="w-4 h-4 md:w-5 md:h-5 text-brand-blue/40" />
           </div>
         )}
       </div>
 
       {/* Title — always visible */}
       <div className="flex-1 min-w-0">
-        <p className={`font-black uppercase tracking-wider leading-tight line-clamp-2 transition-colors duration-200 ${
-          isMobile ? 'text-[9px]' : 'text-[10px] md:text-[12px]'
-        } ${
-          isActive ? 'text-brand-blue' : 'text-zinc-700 group-hover:text-brand-blue'
-        }`}>
+        <p className={`font-black uppercase tracking-wider leading-tight line-clamp-2 transition-colors duration-200
+          text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-xs
+          ${isActive ? 'text-brand-blue' : 'text-zinc-700 group-hover:text-brand-blue'}`}>
           {title}
         </p>
-        <div className={`h-0.5 rounded-full bg-brand-blue transition-all duration-300 ${
-          isMobile ? 'mt-1' : 'mt-1.5'
-        } ${
+        <div className={`h-0.5 rounded-full bg-brand-blue transition-all duration-300 mt-1 md:mt-1.5 ${
           isActive ? 'w-full opacity-100' : 'w-0 opacity-0 group-hover:w-full group-hover:opacity-60'
         }`} />
       </div>
 
       {/* Arrow icon */}
       <ArrowRight
-        className={`flex-shrink-0 transition-all duration-300 hidden md:block w-3.5 h-3.5 ${
+        className={`flex-shrink-0 transition-all duration-300 hidden md:block w-3 h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 ${
           isActive ? 'text-brand-blue' : 'text-zinc-300 group-hover:text-brand-blue'
         } ${tooltipSide === 'left' ? 'rotate-180' : ''}`}
       />
