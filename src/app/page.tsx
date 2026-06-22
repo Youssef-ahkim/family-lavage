@@ -383,7 +383,7 @@ export default function Home() {
 
       {/* WhatsApp Button */}
       <a
-        href="https://wa.me/212655571251"
+        href="https://wa.me/212661251667"
         target="_blank"
         rel="noopener noreferrer"
         className={`fixed bottom-8 ${dir === 'rtl' ? 'left-8' : 'right-8'} z-[60] bg-[#25D366] p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all group animate-float`}
@@ -540,13 +540,13 @@ export default function Home() {
                     <span className="font-bold">{t.contact.open}</span>
                   </div>
                   <a 
-                    href="tel:+212655571251"
+                    href="tel:+212661251667"
                     className={`flex items-center gap-4 text-white/90 hover:text-white transition-colors ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}
                   >
                     <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
                       <Phone className="text-white w-5 h-5" />
                     </div>
-                    <span className="font-bold">+212 655-571251</span>
+                    <span className="font-bold">+212 661-251667</span>
                   </a>
                 </div>
               </div>
