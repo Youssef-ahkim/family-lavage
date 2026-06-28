@@ -6,6 +6,41 @@ import { getAdminPB, getPublicPB } from '@/lib/pocketbase';
 import { cached, invalidateCache, CACHE_TTL } from '@/lib/cache';
 import { checkRateLimit } from '@/lib/ratelimit';
 
+export async function verifySession(cookieValue: string) {
+  if (!cookieValue) return { isValid: false, model: null };
+
+  try {
+    const pb = getPublicPB();
+    // loadFromCookie automatically parses the URL-encoded JSON cookie value
+    pb.authStore.loadFromCookie(`pb_auth=${cookieValue}`);
+    
+    const realToken = pb.authStore.token;
+    if (!realToken) return { isValid: false, model: null };
+
+    // Cache using the actual JWT token to prevent duplicate refreshes
+    return await cached(`session:${realToken}`, 15 * 1000, async () => {
+      try {
+        const refreshPb = getPublicPB();
+        refreshPb.authStore.save(realToken, null);
+        await refreshPb.collection('users').authRefresh();
+        
+        if (refreshPb.authStore.isValid && refreshPb.authStore.model) {
+          return {
+            isValid: true,
+            model: JSON.parse(JSON.stringify(refreshPb.authStore.model))
+          };
+        }
+      } catch (err) {
+        console.error("verifySession verification request failed:", err);
+      }
+      return { isValid: false, model: null };
+    });
+  } catch (err) {
+    console.error("verifySession failed to load cookie string:", err);
+    return { isValid: false, model: null };
+  }
+}
+
 export async function login(formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
@@ -47,9 +82,30 @@ export async function login(formData: FormData) {
       maxAge: 60 * 60 * 24 * 7 // 1 week
     });
 
-    // Invalidate any stale profile cache for this user
+    // Invalidate any stale profile cache for this user & link guest bookings
     if (pb.authStore.model) {
-      invalidateCache(`profile:${pb.authStore.model.id}`);
+      const userId = pb.authStore.model.id;
+      invalidateCache(`profile:${userId}`);
+
+      // Link guest bookings to this user
+      const guestBookings = cookieStore.get('my_bookings')?.value || "";
+      if (guestBookings) {
+        try {
+          const adminPb = await getAdminPB();
+          const ids = guestBookings.split(',').filter(id => id.length > 0);
+          for (const id of ids) {
+            try {
+              await adminPb.collection('bookings').update(id, { user: userId });
+            } catch (e) {
+              console.error(`Failed to link guest booking ${id} to user ${userId}:`, e);
+            }
+          }
+          cookieStore.delete('my_bookings');
+          invalidateCache(`bookings:${userId}`);
+        } catch (e) {
+          console.error("Error migrating guest bookings during login:", e);
+        }
+      }
     }
 
     return { success: true };
@@ -132,6 +188,27 @@ export async function signup(formData: FormData) {
       maxAge: 60 * 60 * 24 * 7 // 1 week
     });
 
+    if (pb.authStore.model) {
+      const userId = pb.authStore.model.id;
+      const guestBookings = cookieStore.get('my_bookings')?.value || "";
+      if (guestBookings) {
+        try {
+          const ids = guestBookings.split(',').filter(id => id.length > 0);
+          for (const id of ids) {
+            try {
+              await adminPb.collection('bookings').update(id, { user: userId });
+            } catch (e) {
+              console.error(`Failed to link guest booking ${id} to user ${userId}:`, e);
+            }
+          }
+          cookieStore.delete('my_bookings');
+          invalidateCache(`bookings:${userId}`);
+        } catch (e) {
+          console.error("Error migrating guest bookings during signup:", e);
+        }
+      }
+    }
+
     return { success: true };
   } catch (error: unknown) {
     console.error("Signup Error:", error);
@@ -146,11 +223,10 @@ export async function logout() {
   const pbAuth = cookieStore.get('pb_auth');
   if (pbAuth) {
     try {
-      const pb = getPublicPB();
-      pb.authStore.loadFromCookie(`pb_auth=${pbAuth.value}`);
-      if (pb.authStore.model) {
-        invalidateCache(`profile:${pb.authStore.model.id}`);
-        invalidateCache(`bookings:${pb.authStore.model.id}`);
+      const { isValid, model } = await verifySession(pbAuth.value);
+      if (isValid && model) {
+        invalidateCache(`profile:${model.id}`);
+        invalidateCache(`bookings:${model.id}`);
       }
     } catch {}
   }
@@ -166,77 +242,73 @@ export async function getProfile() {
     const pbAuth = cookieStore.get('pb_auth');
     if (!pbAuth) return null;
 
-    const pb = getPublicPB();
-    pb.authStore.loadFromCookie(`pb_auth=${pbAuth.value}`);
+    const { isValid, model } = await verifySession(pbAuth.value);
+    if (!isValid || !model) return null;
 
-    if (pb.authStore.isValid && pb.authStore.model) {
-      const userId = pb.authStore.model.id;
-      
-      // Use cached profile data (60s TTL) — avoids hitting PB on every navigation
-      return await cached(`profile:${userId}`, CACHE_TTL.PROFILE, async () => {
-        try {
-          // Use ADMIN client to fetch fresh user data — bypasses any restrictive view rules
-          const adminPb = await getAdminPB();
-          const freshModel = await adminPb.collection('users').getOne(userId);
+    const userId = model.id;
+    
+    // Use cached profile data (60s TTL) — avoids hitting PB on every navigation
+    return await cached(`profile:${userId}`, CACHE_TTL.PROFILE, async () => {
+      try {
+        // Use ADMIN client to fetch fresh user data — bypasses any restrictive view rules
+        const adminPb = await getAdminPB();
+        const freshModel = await adminPb.collection('users').getOne(userId);
 
-          let phoneStr = freshModel.phone?.toString() || pb.authStore.model!.phone?.toString() || "";
-          if (phoneStr.length === 9 && !phoneStr.startsWith('0') && !phoneStr.startsWith('+')) {
-            phoneStr = '0' + phoneStr;
-          }
-
-          let washes_remaining = 0;
-          let subscription_expiry = "";
-          let subscription_status = "none";
-          
-          if (freshModel.is_subscriber) {
-             try {
-                const subs = await adminPb.collection('subscriptions').getList(1, 1, { filter: `user = "${userId}" && status = "active"`, sort: '-created' });
-                if (subs.items.length > 0) {
-                   washes_remaining = subs.items[0].washes_remaining || 0;
-                   subscription_expiry = subs.items[0].expiry_date || "";
-                   subscription_status = "active";
-                } else {
-                   await adminPb.collection('users').update(userId, { is_subscriber: false });
-                }
-             } catch(e) {
-                console.error("Error fetching active sub for profile:", e);
-             }
-          }
-
-          return {
-            id: freshModel.id,
-            name: freshModel.name || freshModel.full_name || freshModel.fullname || pb.authStore.model!.name || "",
-            email: freshModel.email,
-            phone: phoneStr,
-            plate: freshModel.plate || freshModel.default_plate || freshModel.plate_number || freshModel.carModel || pb.authStore.model!.plate || "",
-            role: freshModel.role || "",
-            subscription_status,
-            subscription_expiry,
-            washes_remaining,
-          };
-        } catch {
-          // Fallback to cookie model if admin fetch fails
-          const model = pb.authStore.model!;
-
-          let phoneStr = model.phone?.toString() || "";
-          if (phoneStr.length === 9 && !phoneStr.startsWith('0') && !phoneStr.startsWith('+')) {
-            phoneStr = '0' + phoneStr;
-          }
-
-          return {
-            id: model.id,
-            name: model.name || model.full_name || model.fullname || "",
-            email: model.email,
-            phone: phoneStr,
-            plate: model.plate || model.default_plate || model.plate_number || model.carModel || "",
-            role: model.role || "",
-            subscription_status: model.is_subscriber ? "active" : "none",
-            subscription_expiry: "",
-            washes_remaining: 0,
-          };
+        let phoneStr = freshModel.phone?.toString() || model.phone?.toString() || "";
+        if (phoneStr.length === 9 && !phoneStr.startsWith('0') && !phoneStr.startsWith('+')) {
+          phoneStr = '0' + phoneStr;
         }
-      });
-    }
+
+        let washes_remaining = 0;
+        let subscription_expiry = "";
+        let subscription_status = "none";
+        
+        if (freshModel.is_subscriber) {
+           try {
+              const subs = await adminPb.collection('subscriptions').getList(1, 1, { filter: `user = "${userId}" && status = "active"`, sort: '-created' });
+              if (subs.items.length > 0) {
+                 washes_remaining = subs.items[0].washes_remaining || 0;
+                 subscription_expiry = subs.items[0].expiry_date || "";
+                 subscription_status = "active";
+              } else {
+                 await adminPb.collection('users').update(userId, { is_subscriber: false });
+              }
+           } catch(e) {
+              console.error("Error fetching active sub for profile:", e);
+           }
+        }
+
+        return {
+          id: freshModel.id,
+          name: freshModel.name || freshModel.full_name || freshModel.fullname || model.name || "",
+          email: freshModel.email,
+          phone: phoneStr,
+          plate: freshModel.plate || freshModel.default_plate || freshModel.plate_number || freshModel.carModel || model.plate || "",
+          role: freshModel.role || "",
+          subscription_status,
+          subscription_expiry,
+          washes_remaining,
+        };
+      } catch {
+        // Fallback to verified model details if admin fetch fails
+        let phoneStr = model.phone?.toString() || "";
+        if (phoneStr.length === 9 && !phoneStr.startsWith('0') && !phoneStr.startsWith('+')) {
+          phoneStr = '0' + phoneStr;
+        }
+
+        return {
+          id: model.id,
+          name: model.name || model.full_name || model.fullname || "",
+          email: model.email,
+          phone: phoneStr,
+          plate: model.plate || model.default_plate || model.plate_number || model.carModel || "",
+          role: model.role || "",
+          subscription_status: model.is_subscriber ? "active" : "none",
+          subscription_expiry: "",
+          washes_remaining: 0,
+        };
+      }
+    });
   } catch (error) {
     console.error("Get Profile Error:", error);
   }

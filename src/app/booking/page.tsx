@@ -42,7 +42,6 @@ const BookingPage = () => {
   const [isFetchingServices, setIsFetchingServices] = useState(true);
   const [isFetchingOffers, setIsFetchingOffers] = useState(false);
   
-  const [hp, setHp] = useState(""); // Honeypot
   const [startTime] = useState(() => Date.now()); // Load time for anti-spam
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -249,10 +248,10 @@ const BookingPage = () => {
         location: formData.location,
         service_type: bookingTitle,
         service_id: selectedService?.id, // NEW: pass the service ID
+        offer_id: selectedOffer?.id,      // Pass the offer ID for server-side verification
         price: finalPrice,
         date: bookingDateTime.toISOString(),
         notes: `Selected service: ${selectedService?.title_en} - ${offerTitle}. Language: ${language}. ${isSubWash ? '(Used Subscription Wash)' : ''}`,
-        hp: hp,
         ts: startTime.toString(),
       });
 
@@ -568,18 +567,6 @@ const BookingPage = () => {
         {step === 2 && (
           <div className="reveal">
             <form className="space-y-8 bg-zinc-50 p-8 md:p-12 rounded-[3rem] border border-zinc-100 relative">
-              {/* Honeypot field - hidden from users */}
-              <div className="absolute -top-[1000px] left-0 opacity-0 pointer-events-none" aria-hidden="true">
-                <input
-                  type="text"
-                  tabIndex={-1}
-                  autoComplete="off"
-                  name="website_url"
-                  value={hp}
-                  onChange={(e) => setHp(e.target.value)}
-                />
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-2">
                   <label className={`text-xs font-black uppercase tracking-widest text-zinc-400 px-1 block ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>{b.form.fullname}</label>

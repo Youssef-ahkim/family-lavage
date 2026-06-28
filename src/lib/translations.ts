@@ -258,6 +258,7 @@ export const translations = {
       alreadyHasBooking: "Vous avez déjà une réservation active. Veuillez attendre qu'elle soit terminée ou l'annuler avant d'en refaire une.",
       rateLimit: "Veuillez attendre 15 secondes avant de réserver à nouveau.",
       unauthorized: "Action non autorisée.",
+      adminBlocked: "Les administrateurs ne peuvent pas effectuer de réservation ou de demande d'abonnement.",
       general: "Une erreur est survenue lors du traitement de votre réservation.",
     },
     admin: {
@@ -723,6 +724,7 @@ export const translations = {
       alreadyHasBooking: "You already have an active reservation. Please wait for it to be completed or cancel it before booking again.",
       rateLimit: "Please wait 15 seconds before booking again.",
       unauthorized: "Unauthorized action.",
+      adminBlocked: "Administrators cannot make bookings or request subscriptions.",
       general: "An error occurred while processing your booking.",
     },
     admin: {
@@ -1188,6 +1190,7 @@ export const translations = {
       alreadyHasBooking: "لديك بالفعل حجز نشط. يرجى الانتظار حتى اكتماله أو إلغاؤه قبل الحجز مرة أخرى.",
       rateLimit: "يرجى الانتظار 15 ثانية قبل الحجز مرة أخرى.",
       unauthorized: "إجراء غير مصرح به.",
+      adminBlocked: "لا يمكن للمسؤولين إجراء حجوزات أو طلب اشتراكات.",
       general: "حدث خطأ أثناء معالجة حجزك.",
     },
     admin: {

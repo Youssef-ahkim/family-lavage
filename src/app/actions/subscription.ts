@@ -3,6 +3,7 @@
 import { getAdminPB, getPublicPB } from '@/lib/pocketbase';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
+import { verifySession } from '@/app/actions/auth';
 
 
 /**
@@ -18,14 +19,16 @@ export async function requestSubscription(planId: string) {
       return { success: false, error: "auth.errors.unauthorized" };
     }
 
-    const pb = getPublicPB();
-    pb.authStore.loadFromCookie(`pb_auth=${pbAuth.value}`);
-    
-    if (!pb.authStore.isValid || !pb.authStore.model) {
+    const { isValid, model } = await verifySession(pbAuth.value);
+    if (!isValid || !model) {
       return { success: false, error: "auth.errors.unauthorized" };
     }
 
-    const userId = pb.authStore.model.id;
+    if (model.role === 'admin' || model.role === 'superadmin') {
+      return { success: false, error: "errors.adminBlocked" };
+    }
+
+    const userId = model.id;
     
     // Use ADMIN client to interact with 'subscriptions' and 'services'
     const adminPb = await getAdminPB();

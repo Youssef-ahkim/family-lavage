@@ -9,6 +9,7 @@ import { useProfile } from "@/context/ProfileContext";
 import { translations } from "@/lib/translations";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
+import { getCookie } from "@/lib/cookies";
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -25,7 +26,7 @@ const Navbar = () => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const loggedIn = document.cookie.includes('pb_logged_in=true');
+    const loggedIn = getCookie('pb_logged_in') === 'true';
     
     const timer = setTimeout(() => {
       setMounted(true);

@@ -1,10 +1,11 @@
 "use server";
-
+ 
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { getAdminPB, getPublicPB } from '@/lib/pocketbase';
 import { cached, invalidateCache, CACHE_TTL } from '@/lib/cache';
-
+import { verifySession } from '@/app/actions/auth';
+ 
 /**
  * Verifies the current user is an admin by checking their cookie token
  * and then fetching their role via the ADMIN PocketBase client.
@@ -14,11 +15,10 @@ async function authenticateAdmin() {
   const pbAuth = cookieStore.get('pb_auth');
   if (!pbAuth) throw new Error("Not authenticated");
 
-  const pb = getPublicPB();
-  pb.authStore.loadFromCookie(`pb_auth=${pbAuth.value}`);
-  if (!pb.authStore.isValid || !pb.authStore.model) throw new Error("Invalid session");
+  const { isValid, model } = await verifySession(pbAuth.value);
+  if (!isValid || !model) throw new Error("Invalid session");
 
-  const userId = pb.authStore.model.id;
+  const userId = model.id;
 
   // Cache the admin role check (60s) — avoids a DB hit on every admin action
   const isAdmin = await cached(`admin_check:${userId}`, CACHE_TTL.PROFILE, async () => {
@@ -87,10 +87,14 @@ export async function updateBookingStatus(bookingId: string, newStatus: string) 
     // Fetch the booking to check its properties before updating
     const booking = await adminPb.collection('bookings').getOne(bookingId);
 
+    if (booking.status === newStatus) {
+      return { success: true };
+    }
+
     await adminPb.collection('bookings').update(bookingId, { status: newStatus });
 
-    // If the booking is completed and used a subscription wash, deduct from user's balance
-    if (newStatus === 'completed' && booking.price === 0 && booking.user) {
+    // If the booking is completed, was not previously completed, and used a subscription wash, deduct from user's balance
+    if (newStatus === 'completed' && booking.status !== 'completed' && booking.price === 0 && booking.user) {
       try {
         const user = await adminPb.collection('users').getOne(booking.user);
         if (user.is_subscriber) {
@@ -333,10 +337,12 @@ export async function approveSubscription(subscriptionId: string) {
     ]);
 
     // Invalidate caches
-    invalidateCache('admin_stats');
-    invalidateCache(`profile:${subRequest.user}`);
-    invalidateCache('users:admin:');
-    invalidateCache('subscriptions:admin:');
+    await Promise.all([
+      invalidateCache('admin_stats'),
+      invalidateCache(`profile:${subRequest.user}`),
+      invalidateCache('users:admin:'),
+      invalidateCache('subscriptions:admin:')
+    ]);
 
     revalidatePath('/admin');
     revalidatePath('/admin/subscriptions');
@@ -363,7 +369,7 @@ export async function rejectSubscription(subscriptionId: string, reason: string)
       updated: new Date().toISOString()
     });
 
-    invalidateCache('subscriptions:admin:');
+    await invalidateCache('subscriptions:admin:');
 
     revalidatePath('/admin');
     revalidatePath('/admin/subscriptions');

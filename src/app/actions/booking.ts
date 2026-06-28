@@ -4,16 +4,11 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { getAdminPB, getPublicPB } from '@/lib/pocketbase';
 import { invalidateCache } from '@/lib/cache';
+import { verifySession } from '@/app/actions/auth';
 
 export async function submitBooking(formData: Record<string, unknown>) {
   try {
-    // 1. Honeypot check
-    if (typeof formData.hp === 'string' && formData.hp.length > 0) {
-      console.warn("Spam detected: Honeypot filled");
-      return { success: false, error: "errors.spam" };
-    }
-
-    // 2. Timestamp check (anti-bot speed)
+    // 1. Timestamp check (anti-bot speed)
     const startTime = parseInt(typeof formData.ts === 'string' ? formData.ts : "0");
     const currentTime = Date.now();
     if (currentTime - startTime < 3000) { // Less than 3 seconds is suspicious
@@ -56,16 +51,68 @@ export async function submitBooking(formData: Record<string, unknown>) {
     // Use ADMIN client for all database operations
     const adminPb = await getAdminPB();
 
-    // Check service requirements (matricule and/or location)
+    // 4. Check if user is logged in to link the reservation securely
+    const cookieStore = await cookies();
+    const pbAuth = cookieStore.get('pb_auth');
+    let userId = null;
+
+    if (pbAuth) {
+      try {
+        const { isValid, model } = await verifySession(pbAuth.value);
+        if (isValid && model) {
+          if (model.role === 'admin' || model.role === 'superadmin') {
+            return { success: false, error: "errors.adminBlocked" };
+          }
+          userId = model.id;
+        }
+      } catch (e) {
+        console.error("Error reading auth cookie for booking:", e);
+      }
+    }
+
+    // Check service requirements and fetch the authentic price
     let requiresLocation = false;
     let requiresMatricule = true; // Default to true (standard car washes)
+    let calculatedPrice = -1; // -1 represents On site/Free text
+    let isSubscriptionWash = false;
+
     if (formData.service_id && typeof formData.service_id === 'string') {
       try {
         const service = await adminPb.collection('services').getOne(formData.service_id);
         requiresLocation = !!service.requires_location;
         requiresMatricule = service.requires_matricule !== undefined ? !!service.requires_matricule : true;
+
+        if (service.booking_type === 'direct') {
+          calculatedPrice = service.price ? Number(service.price) : -1;
+        } else if (formData.offer_id && typeof formData.offer_id === 'string') {
+          const offer = await adminPb.collection('service_offers').getOne(formData.offer_id);
+          calculatedPrice = Number(offer.price);
+
+          // If the offer is a subscription, check if the user actually has a valid subscription
+          if (offer.category === 'subscription') {
+            if (userId) {
+              const user = await adminPb.collection('users').getOne(userId);
+              if (user.is_subscriber) {
+                const subs = await adminPb.collection('subscriptions').getList(1, 1, {
+                  filter: `user = "${userId}" && plan = "${offer.plan_type}" && status = "active"`,
+                  sort: '-created'
+                });
+                if (subs.items.length > 0 && subs.items[0].washes_remaining > 0) {
+                  isSubscriptionWash = true;
+                  calculatedPrice = 0; // Subscription wash price is 0
+                }
+              }
+            }
+
+            // If the user claimed it's a subscription wash but validation failed, return error
+            if (!isSubscriptionWash) {
+              return { success: false, error: "subscription.errors.general" };
+            }
+          }
+        }
       } catch (err) {
-        console.error("Error fetching service to check requirements:", err);
+        console.error("Error validating service or offer details:", err);
+        return { success: false, error: "errors.general" };
       }
     }
 
@@ -83,28 +130,11 @@ export async function submitBooking(formData: Record<string, unknown>) {
       }
     }
 
-    // 4. Date validation (must not be in the past)
+    // 5. Date validation (must not be in the past)
     const bookingDate = new Date(typeof formData.date === 'string' ? formData.date : '');
     const now = new Date();
     if (bookingDate < now) {
       return { success: false, error: "errors.pastDate" };
-    }
-
-    // 5. Check if user is logged in to link the reservation
-    const cookieStore = await cookies();
-    const pbAuth = cookieStore.get('pb_auth');
-    let userId = null;
-
-    if (pbAuth) {
-      try {
-        const pb = getPublicPB();
-        pb.authStore.loadFromCookie(`pb_auth=${pbAuth.value}`);
-        if (pb.authStore.isValid && pb.authStore.model) {
-          userId = pb.authStore.model.id;
-        }
-      } catch (e) {
-        console.error("Error reading auth cookie for booking:", e);
-      }
     }
 
     const data: Record<string, unknown> = {
@@ -114,9 +144,9 @@ export async function submitBooking(formData: Record<string, unknown>) {
       location: requiresLocation ? cleanLocation : "",
       service_type: formData.service_type,
       service: formData.service_id || null, // Link to the specific service
-      price: formData.price,
+      price: calculatedPrice,
       status: "pending", // FORCED server-side — users can never set their own status
-      notes: cleanNotes + " (Validated Server Action)",
+      notes: cleanNotes + ` (Validated Server Action. SubWash: ${isSubscriptionWash})`,
       date: formData.date,
       created: new Date().toISOString(),
     };

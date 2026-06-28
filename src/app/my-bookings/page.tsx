@@ -21,6 +21,7 @@ import {
   MapPin
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { getCookie } from "@/lib/cookies";
 
 interface LocalBooking {
   id: string;
@@ -47,7 +48,7 @@ const MyBookingsPage = () => {
 
   useEffect(() => {
     // Check if user is logged in via cookie
-    const isLoggedIn = document.cookie.includes('pb_logged_in=true');
+    const isLoggedIn = getCookie('pb_logged_in') === 'true';
     if (isLoggedIn) {
       router.push("/profile");
       return;
