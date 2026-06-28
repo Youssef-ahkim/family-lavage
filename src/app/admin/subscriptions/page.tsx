@@ -394,10 +394,10 @@ export default function AdminSubscriptionsPage() {
                             <button
                               onClick={() => handleCancelActive(item.id)}
                               disabled={!!processingId}
-                              className="px-3 py-1.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg hover:bg-red-50 hover:text-white transition-all text-xs font-bold disabled:opacity-50"
+                              className="px-3 py-1.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg hover:bg-red-500 hover:text-white transition-all text-xs font-bold disabled:opacity-50"
                               title="Cancel Subscription"
                             >
-                              {processingId === item.id ? <Loader2 size={12} className="animate-spin" /> : (t.myBookings.cancel || "Cancel")}
+                              {processingId === item.id ? <Loader2 size={12} className="animate-spin" /> : t.admin.cancelSub}
                             </button>
                           )}
                           {item.status !== 'pending' && item.status !== 'active' && (
@@ -502,7 +502,7 @@ export default function AdminSubscriptionsPage() {
                         className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 disabled:opacity-50"
                       >
                         {processingId === item.id ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
-                        {t.myBookings.cancel || "Cancel"}
+                        {t.admin.cancelSub}
                       </button>
                     </div>
                   )}
