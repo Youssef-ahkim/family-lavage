@@ -384,6 +384,51 @@ export async function rejectSubscription(subscriptionId: string, reason: string)
   }
 }
 
+export async function cancelActiveSubscription(subscriptionId: string, reason: string) {
+  try {
+    await authenticateAdmin();
+    const adminPb = await getAdminPB();
+
+    // 1. Get current subscription record
+    const sub = await adminPb.collection('subscriptions').getOne(subscriptionId);
+    if (sub.status !== 'active') {
+      throw new Error("Subscription is not active.");
+    }
+
+    // 2. Expire the subscription and reset user status
+    await Promise.all([
+      adminPb.collection('subscriptions').update(subscriptionId, {
+        status: 'expired',
+        notes: (sub.notes || "") + "\nCancelled by Admin: " + reason,
+        updated: new Date().toISOString()
+      }),
+      adminPb.collection('users').update(sub.user, {
+        is_subscriber: false,
+        role: 'client'
+      })
+    ]);
+
+    // 3. Invalidate caches
+    await Promise.all([
+      invalidateCache('admin_stats'),
+      invalidateCache(`profile:${sub.user}`),
+      invalidateCache('users:admin:'),
+      invalidateCache('subscriptions:admin:')
+    ]);
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/subscriptions');
+    revalidatePath('/subscribe');
+    revalidatePath('/profile');
+
+    return { success: true };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Admin cancelActiveSubscription error:", error);
+    return { success: false, error: message };
+  }
+}
+
 export async function updateBookingAdminNotes(bookingId: string, notes: string) {
   try {
     await authenticateAdmin();

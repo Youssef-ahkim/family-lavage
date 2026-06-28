@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { getAllSubscriptions, approveSubscription, rejectSubscription } from "@/app/actions/admin";
+import { getAllSubscriptions, approveSubscription, rejectSubscription, cancelActiveSubscription } from "@/app/actions/admin";
 import { getServiceOffers } from "@/app/admin/services/service-actions";
 import { ServiceOfferRecord } from "@/app/admin/services/service-types";
 import {
@@ -145,6 +145,24 @@ export default function AdminSubscriptionsPage() {
       }
     } catch {
       alert(t.admin.errorRejectSub);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleCancelActive = async (id: string) => {
+    const reason = prompt(t.admin.rejectPrompt || "Reason for cancellation:");
+    if (reason === null) return;
+    setProcessingId(id);
+    try {
+      const res = await cancelActiveSubscription(id, reason);
+      if (res.success) {
+        fetchData();
+      } else {
+        alert(res.error);
+      }
+    } catch {
+      alert(t.admin.errorRejectSub || "Error cancelling subscription");
     } finally {
       setProcessingId(null);
     }
@@ -322,7 +340,7 @@ export default function AdminSubscriptionsPage() {
                         }`}>
                           {item.status === 'pending' ? t.admin.pending : 
                            item.status === 'active' ? t.admin.confirmed : 
-                           item.status === 'rejected' ? t.admin.cancelled : item.status}
+                           (item.status === 'rejected' || item.status === 'expired') ? t.admin.cancelled : item.status}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-zinc-500 text-xs">
@@ -372,7 +390,17 @@ export default function AdminSubscriptionsPage() {
                               </button>
                             </>
                           )}
-                          {item.status !== 'pending' && (
+                          {item.status === 'active' && (
+                            <button
+                              onClick={() => handleCancelActive(item.id)}
+                              disabled={!!processingId}
+                              className="px-3 py-1.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg hover:bg-red-50 hover:text-white transition-all text-xs font-bold disabled:opacity-50"
+                              title="Cancel Subscription"
+                            >
+                              {processingId === item.id ? <Loader2 size={12} className="animate-spin" /> : (t.myBookings.cancel || "Cancel")}
+                            </button>
+                          )}
+                          {item.status !== 'pending' && item.status !== 'active' && (
                             <span className="text-zinc-600 text-xs italic">{t.admin.processed}</span>
                           )}
                         </div>
@@ -412,7 +440,7 @@ export default function AdminSubscriptionsPage() {
                   }`}>
                     {item.status === 'pending' ? t.admin.pending : 
                      item.status === 'active' ? t.admin.confirmed : 
-                     item.status === 'rejected' ? t.admin.cancelled : item.status}
+                     (item.status === 'rejected' || item.status === 'expired') ? t.admin.cancelled : item.status}
                   </span>
                 </div>
 
@@ -462,6 +490,19 @@ export default function AdminSubscriptionsPage() {
                       >
                         <X size={14} />
                         {t.admin.reject}
+                      </button>
+                    </div>
+                  )}
+
+                  {item.status === 'active' && (
+                    <div className="pt-2">
+                      <button
+                        onClick={() => handleCancelActive(item.id)}
+                        disabled={!!processingId}
+                        className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 disabled:opacity-50"
+                      >
+                        {processingId === item.id ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
+                        {t.myBookings.cancel || "Cancel"}
                       </button>
                     </div>
                   )}
