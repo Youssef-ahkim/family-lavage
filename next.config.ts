@@ -12,6 +12,9 @@ const getPocketBaseOrigin = () => {
 const pbOrigin = getPocketBaseOrigin();
 
 const nextConfig: NextConfig = {
+  // Disable the X-Powered-By header to prevent technology fingerprinting
+  poweredByHeader: false,
+
   images: {
     remotePatterns: [
       {
@@ -23,6 +26,24 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
+    const cspDirectives = [
+      "default-src 'self'",
+      // 'unsafe-inline' required for Next.js hydration; 'unsafe-eval' only in dev (React debugging)
+      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
+      "style-src 'self' 'unsafe-inline'",
+      `img-src 'self' data: blob: ${pbOrigin}`,
+      "font-src 'self'",
+      `connect-src 'self' ${pbOrigin} https://*.pocketbase.io`,
+      // Explicit directives to close fallback gaps flagged by ZAP
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "media-src 'self'",
+      "worker-src 'self' blob:",
+      "upgrade-insecure-requests",
+    ];
+
     return [
       {
         source: "/(.*)",
@@ -49,7 +70,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${pbOrigin}; font-src 'self'; connect-src 'self' ${pbOrigin} https://*.pocketbase.io;`,
+            value: cspDirectives.join("; "),
           },
         ],
       },
